@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<title>朝ルーティン & 目標管理</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{background:#0A0F1E;color:#E5E7EB;font-family:'Noto Sans JP',sans-serif;min-height:100vh;overflow-x:hidden}
+  select{-webkit-appearance:auto;appearance:auto}
+  input,textarea,select{font-family:'Noto Sans JP',sans-serif}
+  button{font-family:'Noto Sans JP',sans-serif}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<script type="text/babel">
+const {useState,useEffect,useCallback,useRef}=React;
+
+// ── Constants ─────────────────────────────────────────────────────────────────
+const TIME_HORIZONS=["人生の目標","5年後","1年後","半年後","1ヶ月後","1週間後","今日"];
+const STATUSES=["未着手","進行中","完了"];
+const LIFE_AREAS=["仕事","家族・恋人","プライベート","健康"];
+const AREA_COLORS={"仕事":"#60A5FA","家族・恋人":"#F472B6","プライベート":"#A78BFA","健康":"#34D399"};
+const HORIZON_COLORS={"人生の目標":"#A78BFA","5年後":"#60A5FA","1年後":"#34D399","半年後":"#FBBF24","1ヶ月後":"#FB923C","1週間後":"#F87171","今日":"#F472B6"};
+const STATUS_COLORS={"未着手":{bg:"rgba(107,114,128,.15)",text:"#9CA3AF",dot:"#6B7280"},"進行中":{bg:"rgba(59,130,246,.15)",text:"#60A5FA",dot:"#3B82F6"},"完了":{bg:"rgba(16,185,129,.15)",text:"#34D399",dot:"#10B981"}};
+const PRIORITY_COLORS={"高":{text:"#F87171",border:"rgba(248,113,113,.4)"},"中":{text:"#FBBF24",border:"rgba(251,191,36,.4)"},"低":{text:"#9CA3AF",border:"rgba(156,163,175,.3)"}};
+const FONT="'Noto Sans JP',sans-serif",BG="#0A0F1E",CARD="rgba(255,255,255,.03)",BORDER="rgba(255,255,255,.07)",TEXT="#E5E7EB",MUTED="#6B7280";
+const uid=()=>Math.random().toString(36).slice(2,10);
+const todayKey=()=>new Date().toISOString().slice(0,10);
+const yestKey=()=>{const d=new Date();d.setDate(d.getDate()-1);return d.toISOString().slice(0,10);};
+const monthKey=()=>new Date().toISOString().slice(0,7);
+const weekKey=()=>{const d=new Date();const day=d.getDay()||7;d.setDate(d.getDate()-day+1);return d.toISOString().slice(0,10);};
+
+// ── localStorage helpers ───────────────────────────────────────────────────────
+const lsGet=(key,def=null)=>{try{const v=localStorage.getItem(key);return v!=null?JSON.parse(v):def;}catch{return def;}};
+const lsSet=(key,val)=>{try{localStorage.setItem(key,JSON.stringify(val));}catch{}};
+
+const defaultGoalData={
+  nodes:{
+    "r1":{id:"r1",title:"理想の後輩（チャレンジャー）になる",timeHorizon:"1年後",status:"進行中",progress:10,priority:"高",lifeArea:"仕事",parentId:null,children:["r1a","r1b"]},
+    "r1a":{id:"r1a",title:"期日をしっかり守れる",timeHorizon:"1年後",status:"未着手",progress:0,priority:"高",lifeArea:"仕事",parentId:"r1",children:[]},
+    "r1b":{id:"r1b",title:"記録と改善の習慣を作る",timeHorizon:"1ヶ月後",status:"進行中",progress:20,priority:"高",lifeArea:"仕事",parentId:"r1",children:[]},
+  },
+  rootIds:["r1"],
+};
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function nodeMatchesFilter(nodes,id,area,horizon,status){
+  const n=nodes[id];if(!n)return false;
+  const self=(area==="全て"||n.lifeArea===area)&&(horizon==="全て"||n.timeHorizon===horizon)&&(status==="全て"||n.status===status);
+  if(self)return true;
+  return(n.children||[]).some(c=>nodeMatchesFilter(nodes,c,area,horizon,status));
+}
+function getLeafNodes(nodes){return Object.values(nodes).filter(n=>n.status!=="完了"&&(!n.children||n.children.length===0));}
+function getParentsOfLeaves(nodes){
+  const leafIds=new Set(Object.values(nodes).filter(n=>!n.children||n.children.length===0).map(n=>n.id));
+  return Object.values(nodes).filter(n=>n.status!=="完了"&&n.children?.some(c=>leafIds.has(c)));
+}
+function getGrandparentsOfLeaves(nodes){
+  const polIds=new Set(getParentsOfLeaves(nodes).map(n=>n.id));
+  return Object.values(nodes).filter(n=>n.status!=="完了"&&n.children?.some(c=>polIds.has(c)));
+}
+function parseIndentedText(text,defaultArea,defaultHorizon){
+  const lines=text.split("\n").map(l=>l.replace(/\r/,"")).filter(l=>l.trim());
+  if(!lines.length)return{nodes:{},rootIds:[]};
+  const getIndent=s=>{let i=0;for(const c of s){if(c===" ")i++;else if(c==="\t")i+=2;else break;}return i;};
+  const nodes={},rootIds=[],stack=[];
+  lines.forEach(line=>{
+    const indent=getIndent(line);
+    const title=line.replace(/^[\s\-\*•]+/,"").replace(/\t/g,"").trim();
+    if(!title)return;
+    const id=uid();
+    const node={id,title,timeHorizon:defaultHorizon,status:"未着手",progress:0,priority:"中",lifeArea:defaultArea,parentId:null,children:[]};
+    while(stack.length&&stack[stack.length-1].indent>=indent)stack.pop();
+    if(stack.length){const pid=stack[stack.length-1].id;node.parentId=pid;nodes[pid].children.push(id);}
+    else{rootIds.push(id);}
+    nodes[id]=node;stack.push({id,indent});
+  });
+  return{nodes,rootIds};
+}
+
+// ── NodeCard ──────────────────────────────────────────────────────────────────
+function NodeCard({nodeId,nodes,depth=0,onUpdate,onAdd,onDelete,areaF,horizonF,statusF}){
+  const node=nodes[nodeId];if(!node)return null;
+  if(!nodeMatchesFilter(nodes,nodeId,areaF,horizonF,statusF))return null;
+  const [exp,setExp]=useState(true);
+  const [editing,setEditing]=useState(false);
+  const [et,setEt]=useState(node.title);
+  const ref=useRef(null);
+  useEffect(()=>{if(editing&&ref.current)ref.current.focus();},[editing]);
+  const sc=STATUS_COLORS[node.status]||STATUS_COLORS["未着手"];
+  const hc=HORIZON_COLORS[node.timeHorizon]||"#9CA3AF";
+  const ac=AREA_COLORS[node.lifeArea||"仕事"]||"#60A5FA";
+  const pc=PRIORITY_COLORS[node.priority||"中"]||PRIORITY_COLORS["中"];
+  const blur=()=>{setEditing(false);if(et.trim())onUpdate(nodeId,{title:et.trim()});else setEt(node.title);};
+  return(
+    <div style={{marginLeft:`${depth*14}px`,overflow:"hidden"}}>
+      <div style={{background:CARD,border:`1px solid ${BORDER}`,borderLeft:`3px solid ${hc}`,borderRadius:"8px",padding:"8px 10px",marginBottom:"5px",overflow:"hidden"}}>
+        <div style={{display:"flex",alignItems:"center",gap:"5px",overflow:"hidden"}}>
+          {node.children.length>0?<button onClick={()=>setExp(!exp)} style={{background:"none",border:"none",cursor:"pointer",color:MUTED,fontSize:"9px",padding:"1px",transform:exp?"rotate(90deg)":"none",transition:"transform .15s",flexShrink:0}}>▶</button>:<div style={{width:"14px",flexShrink:0}}/>}
+          <div onClick={()=>{const nx=node.status==="完了"?"未着手":node.status==="未着手"?"進行中":"完了";onUpdate(nodeId,{status:nx,progress:nx==="完了"?100:node.progress});}} style={{width:"14px",height:"14px",borderRadius:"3px",border:`2px solid ${sc.dot}`,background:node.status==="完了"?sc.dot:"transparent",cursor:"pointer",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+            {node.status==="完了"&&<span style={{color:"#fff",fontSize:"8px"}}>✓</span>}
+          </div>
+          {editing?<input ref={ref} value={et} onChange={e=>setEt(e.target.value)} onBlur={blur} onKeyDown={e=>{if(e.key==="Enter")blur();if(e.key==="Escape"){setEditing(false);setEt(node.title);}}} style={{flex:1,minWidth:0,background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.2)",borderRadius:"4px",padding:"2px 6px",color:TEXT,fontSize:"13px",fontFamily:FONT}}/>
+          :<span onClick={()=>setEditing(true)} style={{flex:1,minWidth:0,fontSize:"13px",color:node.status==="完了"?MUTED:TEXT,textDecoration:node.status==="完了"?"line-through":"none",cursor:"text",lineHeight:"1.4",fontFamily:FONT,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{node.title}</span>}
+          <span style={{fontSize:"9px",padding:"1px 4px",borderRadius:"3px",border:`1px solid ${pc.border}`,color:pc.text,flexShrink:0}}>{node.priority||"中"}</span>
+          <button onClick={()=>onDelete(nodeId)} style={{background:"none",border:"none",cursor:"pointer",color:"#374151",fontSize:"13px",flexShrink:0}}>×</button>
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:"4px",marginTop:"5px",marginLeft:"19px",flexWrap:"wrap"}}>
+          <select value={node.lifeArea||"仕事"} onChange={e=>onUpdate(nodeId,{lifeArea:e.target.value})} style={{background:`${ac}22`,color:ac,border:"none",borderRadius:"3px",fontSize:"10px",padding:"2px 3px"}}>
+            {LIFE_AREAS.map(a=><option key={a} value={a}>{a}</option>)}
+          </select>
+          <select value={node.status} onChange={e=>onUpdate(nodeId,{status:e.target.value,progress:e.target.value==="完了"?100:node.progress})} style={{background:sc.bg,color:sc.text,border:"none",borderRadius:"3px",fontSize:"10px",padding:"2px 3px"}}>
+            {STATUSES.map(s=><option key={s} value={s}>{s}</option>)}
+          </select>
+          <select value={node.timeHorizon} onChange={e=>onUpdate(nodeId,{timeHorizon:e.target.value})} style={{background:`${hc}22`,color:hc,border:"none",borderRadius:"3px",fontSize:"10px",padding:"2px 3px"}}>
+            {TIME_HORIZONS.map(h=><option key={h} value={h}>{h}</option>)}
+          </select>
+          <button onClick={()=>onAdd(nodeId)} style={{background:"rgba(59,130,246,.12)",border:"1px solid rgba(59,130,246,.3)",color:"#60A5FA",borderRadius:"3px",fontSize:"10px",padding:"2px 8px",cursor:"pointer"}}>＋子</button>
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:"5px",marginTop:"3px",marginLeft:"19px"}}>
+          <div style={{flex:1,height:"2px",background:"rgba(255,255,255,.06)",borderRadius:"1px"}}>
+            <div style={{height:"100%",width:`${node.progress}%`,background:node.status==="完了"?"#10B981":"#3B82F6",borderRadius:"1px"}}/>
+          </div>
+          <span style={{fontSize:"9px",color:MUTED}}>{node.progress}%</span>
+        </div>
+      </div>
+      {exp&&(node.children||[]).map(c=><NodeCard key={c} nodeId={c} nodes={nodes} depth={depth+1} onUpdate={onUpdate} onAdd={onAdd} onDelete={onDelete} areaF={areaF} horizonF={horizonF} statusF={statusF}/>)}
+    </div>
+  );
+}
+
+// ── BulkImport ────────────────────────────────────────────────────────────────
+function BulkImport({onImport,onClose,defaultArea,defaultHorizon}){
+  const [text,setText]=useState("");
+  const [area,setArea]=useState(defaultArea||"仕事");
+  const [horizon,setHorizon]=useState(defaultHorizon||"1年後");
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.7)",zIndex:200,display:"flex",alignItems:"flex-end"}}>
+      <div style={{width:"100%",background:"#111827",borderRadius:"12px 12px 0 0",padding:"16px"}}>
+        <div style={{fontSize:"13px",color:TEXT,marginBottom:"6px",fontWeight:"600"}}>📋 一括登録</div>
+        <div style={{fontSize:"11px",color:MUTED,marginBottom:"8px"}}>インデントでサブタスクになります</div>
+        <textarea value={text} onChange={e=>setText(e.target.value)} rows={8} placeholder={"目標A\n  サブ目標1\n目標B"} style={{width:"100%",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:"6px",padding:"8px",color:TEXT,fontSize:"12px",fontFamily:"monospace",boxSizing:"border-box",resize:"none"}}/>
+        <div style={{display:"flex",gap:"6px",marginTop:"8px",flexWrap:"wrap"}}>
+          <select value={area} onChange={e=>setArea(e.target.value)} style={{background:`${AREA_COLORS[area]}22`,color:AREA_COLORS[area],border:"none",borderRadius:"4px",fontSize:"11px",padding:"4px 6px"}}>
+            {LIFE_AREAS.map(a=><option key={a} value={a}>{a}</option>)}
+          </select>
+          <select value={horizon} onChange={e=>setHorizon(e.target.value)} style={{background:"rgba(255,255,255,.05)",border:"none",borderRadius:"4px",color:TEXT,fontSize:"11px",padding:"4px 6px"}}>
+            {TIME_HORIZONS.map(h=><option key={h} value={h}>{h}</option>)}
+          </select>
+          <div style={{flex:1}}/>
+          <button onClick={onClose} style={{background:"none",border:"1px solid rgba(255,255,255,.15)",color:MUTED,borderRadius:"4px",padding:"4px 10px",fontSize:"11px",cursor:"pointer"}}>キャンセル</button>
+          <button onClick={()=>{if(!text.trim())return;onImport(parseIndentedText(text,area,horizon));}} style={{background:"#3B82F6",color:"#fff",border:"none",borderRadius:"4px",padding:"4px 14px",fontSize:"11px",cursor:"pointer"}}>登録</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── GoalTab ───────────────────────────────────────────────────────────────────
+function GoalTab({data,setData}){
+  const [areaF,setAreaF]=useState("全て");
+  const [horizonF,setHorizonF]=useState("全て");
+  const [statusF,setStatusF]=useState("全て");
+  const [showBulk,setShowBulk]=useState(false);
+  const [quickTitle,setQuickTitle]=useState("");
+  const [quickArea,setQuickArea]=useState("仕事");
+  const [quickHorizon,setQuickHorizon]=useState("1年後");
+
+  const save=(d)=>{setData(d);lsSet("goal-data",d);};
+  const upd=useCallback((id,ch)=>save({...data,nodes:{...data.nodes,[id]:{...data.nodes[id],...ch}}}),[data]);
+  const addChild=useCallback((pid)=>{
+    const nid=uid(),p=data.nodes[pid];
+    const n={id:nid,title:"新しい目標",timeHorizon:p.timeHorizon,status:"未着手",progress:0,priority:"中",lifeArea:p.lifeArea||"仕事",parentId:pid,children:[]};
+    save({...data,nodes:{...data.nodes,[nid]:n,[pid]:{...data.nodes[pid],children:[...data.nodes[pid].children,nid]}}});
+  },[data]);
+  const del=useCallback((id)=>{
+    const node=data.nodes[id];if(!node)return;
+    const toD=new Set();const col=i=>{toD.add(i);(data.nodes[i]?.children||[]).forEach(col);};col(id);
+    const nn={...data.nodes};toD.forEach(i=>delete nn[i]);
+    if(node.parentId&&nn[node.parentId])nn[node.parentId]={...nn[node.parentId],children:nn[node.parentId].children.filter(c=>c!==id)};
+    save({...data,nodes:nn,rootIds:data.rootIds.filter(r=>r!==id)});
+  },[data]);
+  const quickAdd=()=>{
+    if(!quickTitle.trim())return;
+    const nid=uid();
+    const n={id:nid,title:quickTitle.trim(),timeHorizon:quickHorizon,status:"未着手",progress:0,priority:"高",lifeArea:quickArea,parentId:null,children:[]};
+    save({...data,nodes:{...data.nodes,[nid]:n},rootIds:[...data.rootIds,nid]});
+    setQuickTitle("");
+  };
+  const bulkImport=({nodes:nn,rootIds:nr})=>{
+    save({...data,nodes:{...data.nodes,...nn},rootIds:[...data.rootIds,...nr]});
+    setShowBulk(false);
+  };
+  const roots=(data?.rootIds||[]).filter(id=>nodeMatchesFilter(data.nodes,id,areaF,horizonF,statusF));
+  const all=data?Object.values(data.nodes):[];
+  const done=all.filter(n=>n.status==="完了").length;
+  const Pill=({active,color,label,onClick})=>(
+    <button onClick={onClick} style={{background:active?`${color||"rgba(255,255,255,.1)"}22`:"transparent",color:active?(color||TEXT):MUTED,border:`1px solid ${active?(color||"rgba(255,255,255,.2)"):"rgba(255,255,255,.08)"}`,borderRadius:"20px",padding:"3px 9px",fontSize:"10px",cursor:"pointer",whiteSpace:"nowrap",flexShrink:0}}>{label}</button>
+  );
+  return(
+    <div>
+      <div style={{padding:"8px 12px",borderBottom:`1px solid ${BORDER}`,display:"flex",gap:"6px",alignItems:"center",overflow:"hidden"}}>
+        <input value={quickTitle} onChange={e=>setQuickTitle(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")quickAdd();}} placeholder="目標を入力してEnter" style={{flex:1,minWidth:0,background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.1)",borderRadius:"6px",padding:"7px 8px",color:TEXT,fontSize:"12px",outline:"none"}}/>
+        <select value={quickArea} onChange={e=>setQuickArea(e.target.value)} style={{background:`${AREA_COLORS[quickArea]}22`,color:AREA_COLORS[quickArea],border:"none",borderRadius:"4px",fontSize:"10px",padding:"5px 4px"}}>
+          {LIFE_AREAS.map(a=><option key={a} value={a}>{a}</option>)}
+        </select>
+        <button onClick={quickAdd} style={{background:"#3B82F6",color:"#fff",border:"none",borderRadius:"5px",padding:"5px 12px",fontSize:"11px",cursor:"pointer",flexShrink:0}}>追加</button>
+        <button onClick={()=>setShowBulk(true)} style={{background:"rgba(255,255,255,.05)",color:MUTED,border:"1px solid rgba(255,255,255,.1)",borderRadius:"5px",padding:"5px 8px",fontSize:"11px",cursor:"pointer",flexShrink:0}}>一括</button>
+      </div>
+      <div style={{padding:"5px 12px",display:"flex",gap:"4px",borderBottom:`1px solid ${BORDER}`,overflowX:"auto",WebkitOverflowScrolling:"touch"}}>
+        <Pill active={statusF==="全て"} label="全て" onClick={()=>setStatusF("全て")}/>
+        {STATUSES.map(s=><Pill key={s} active={statusF===s} color={STATUS_COLORS[s]?.dot} label={s} onClick={()=>setStatusF(s)}/>)}
+      </div>
+      <div style={{padding:"4px 12px",display:"flex",gap:"4px",borderBottom:`1px solid ${BORDER}`,overflowX:"auto",WebkitOverflowScrolling:"touch"}}>
+        <Pill active={areaF==="全て"} label="全て" onClick={()=>setAreaF("全て")}/>
+        {LIFE_AREAS.map(a=><Pill key={a} active={areaF===a} color={AREA_COLORS[a]} label={a} onClick={()=>setAreaF(a)}/>)}
+      </div>
+      <div style={{padding:"4px 12px",display:"flex",gap:"4px",borderBottom:`1px solid ${BORDER}`,overflowX:"auto",WebkitOverflowScrolling:"touch"}}>
+        <Pill active={horizonF==="全て"} label="全て" onClick={()=>setHorizonF("全て")}/>
+        {TIME_HORIZONS.map(h=><Pill key={h} active={horizonF===h} color={HORIZON_COLORS[h]} label={h} onClick={()=>setHorizonF(h)}/>)}
+      </div>
+      <div style={{padding:"10px 12px"}}>
+        <div style={{textAlign:"right",fontSize:"10px",color:MUTED,marginBottom:"6px"}}>完了 {done}/{all.length}</div>
+        {roots.map(id=><NodeCard key={id} nodeId={id} nodes={data.nodes} depth={0} onUpdate={upd} onAdd={addChild} onDelete={del} areaF={areaF} horizonF={horizonF} statusF={statusF}/>)}
+        {roots.length===0&&<div style={{color:MUTED,textAlign:"center",padding:"30px",fontSize:"12px"}}>条件に合う目標がありません</div>}
+      </div>
+      {showBulk&&<BulkImport onImport={bulkImport} onClose={()=>setShowBulk(false)} defaultArea={quickArea} defaultHorizon={quickHorizon}/>}
+    </div>
+  );
+}
+
+// ── MeditationTimer ───────────────────────────────────────────────────────────
+function MeditationTimer(){
+  const [mins,setMins]=useState(5);
+  const [secs,setSecs]=useState(null);
+  const [running,setRunning]=useState(false);
+  const [done,setDone]=useState(false);
+  const ref=useRef(null);
+  useEffect(()=>{
+    if(running&&secs!==null){ref.current=setInterval(()=>setSecs(s=>{if(s<=1){clearInterval(ref.current);setRunning(false);setDone(true);return 0;}return s-1;}),1000);}
+    return()=>clearInterval(ref.current);
+  },[running]);
+  const fmt=s=>s===null?`${mins}:00`:`${Math.floor(s/60)}:${(s%60).toString().padStart(2,"0")}`;
+  return(
+    <div style={{background:"rgba(16,185,129,.07)",border:"1px solid rgba(16,185,129,.2)",borderRadius:"10px",padding:"12px",textAlign:"center",marginBottom:"12px"}}>
+      <div style={{fontSize:"10px",color:"#34D399",marginBottom:"6px"}}>🧘 瞑想タイマー</div>
+      {!running&&secs===null&&<div style={{display:"flex",justifyContent:"center",gap:"5px",marginBottom:"6px"}}>{[3,5,10].map(m=><button key={m} onClick={()=>setMins(m)} style={{background:mins===m?"rgba(16,185,129,.25)":"rgba(255,255,255,.04)",border:`1px solid ${mins===m?"#10B981":"rgba(255,255,255,.1)"}`,color:mins===m?"#34D399":MUTED,borderRadius:"20px",padding:"2px 10px",fontSize:"11px",cursor:"pointer"}}>{m}分</button>)}</div>}
+      <div style={{fontSize:"26px",fontWeight:"700",color:done?"#34D399":running?"#60A5FA":TEXT,fontFamily:"monospace",marginBottom:"6px"}}>{done?"完了✨":fmt(secs)}</div>
+      {done?<button onClick={()=>{setDone(false);setSecs(null);}} style={{background:"rgba(16,185,129,.15)",border:"1px solid rgba(16,185,129,.3)",color:"#34D399",borderRadius:"5px",padding:"4px 12px",fontSize:"11px",cursor:"pointer"}}>もう一度</button>
+      :running?<button onClick={()=>{clearInterval(ref.current);setRunning(false);setSecs(null);}} style={{background:"rgba(248,113,113,.12)",border:"1px solid rgba(248,113,113,.3)",color:"#F87171",borderRadius:"5px",padding:"4px 12px",fontSize:"11px",cursor:"pointer"}}>停止</button>
+      :<button onClick={()=>{setSecs(mins*60);setRunning(true);setDone(false);}} style={{background:"rgba(16,185,129,.15)",border:"1px solid rgba(16,185,129,.3)",color:"#34D399",borderRadius:"5px",padding:"4px 12px",fontSize:"11px",cursor:"pointer"}}>開始</button>}
+    </div>
+  );
+}
+
+// ── RoutineTab ────────────────────────────────────────────────────────────────
+function RoutineTab({goalData}){
+  const today=todayKey(),yest=yestKey(),month=monthKey(),week=weekKey();
+  const [entries,setEntries]=useState(()=>lsGet("routine-entries",{}));
+  const [monthlyGoal,setMonthlyGoal]=useState(()=>lsGet(`monthly-${month}`,""));
+  const [weeklyGoal,setWeeklyGoal]=useState(()=>lsGet(`weekly-${week}`,""));
+  const [view,setView]=useState("today");
+  const [search,setSearch]=useState("");
+
+  const saveEntry=(date,data)=>{
+    const ne={...entries,[date]:data};
+    setEntries(ne);
+    lsSet("routine-entries",ne);
+  };
+  const cur=entries[today]||{goal:"",tasks:[{text:"",done:false,ts:null},{text:"",done:false,ts:null},{text:"",done:false,ts:null}],challenge:"",challengeResponse:""};
+  const upd=(field,val)=>saveEntry(today,{...cur,[field]:val});
+  const updTask=(i,field,val)=>{
+    const tasks=[...(cur.tasks||[{text:"",done:false,ts:null},{text:"",done:false,ts:null},{text:"",done:false,ts:null}])];
+    tasks[i]={...tasks[i],[field]:val};
+    if(field==="done"&&val)tasks[i].ts=new Date().toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"});
+    saveEntry(today,{...cur,tasks});
+  };
+  const yestEntry=entries[yest];
+  const totalDays=Object.keys(entries).length;
+  const datesDesc=Object.keys(entries).filter(d=>d!==today).sort((a,b)=>b.localeCompare(a));
+  const filtered=search?datesDesc.filter(d=>{const e=entries[d];return[e.goal,e.challenge,e.challengeResponse,...(e.tasks||[]).map(t=>t.text||t||"")].join(" ").toLowerCase().includes(search.toLowerCase());}):datesDesc;
+  const goalNodes=goalData?.nodes||{};
+  const leafOptions=getLeafNodes(goalNodes);
+  const weekOptions=getParentsOfLeaves(goalNodes);
+  const monthOptions=getGrandparentsOfLeaves(goalNodes);
+  const tasks=cur.tasks||[{text:"",done:false,ts:null},{text:"",done:false,ts:null},{text:"",done:false,ts:null}];
+
+  return(
+    <div>
+      <div style={{display:"flex",padding:"8px 12px",gap:"5px",borderBottom:`1px solid ${BORDER}`,alignItems:"center"}}>
+        {[["today","今日"],["history","振り返り"]].map(([id,label])=>(
+          <button key={id} onClick={()=>setView(id)} style={{background:view===id?"rgba(59,130,246,.15)":"transparent",border:`1px solid ${view===id?"#3B82F6":"rgba(255,255,255,.08)"}`,color:view===id?"#60A5FA":MUTED,borderRadius:"20px",padding:"3px 12px",fontSize:"11px",cursor:"pointer"}}>{label}</button>
+        ))}
+        <span style={{marginLeft:"auto",fontSize:"10px",color:MUTED}}>{totalDays}日目</span>
+      </div>
+      {view==="today"?(
+        <div style={{padding:"12px"}}>
+          <div style={{textAlign:"center",fontSize:"11px",color:MUTED,marginBottom:"10px"}}>{today.replace(/-/g,"/")} の朝ルーティン</div>
+          <div style={{background:"rgba(168,139,250,.07)",border:"1px solid rgba(168,139,250,.2)",borderRadius:"8px",padding:"10px",marginBottom:"8px"}}>
+            <div style={{fontSize:"10px",color:"#A78BFA",fontWeight:"600",marginBottom:"6px"}}>📅 今月の目標（{month}）</div>
+            <select value={monthlyGoal} onChange={e=>{setMonthlyGoal(e.target.value);lsSet(`monthly-${month}`,e.target.value);}} style={{width:"100%",background:"rgba(255,255,255,.05)",border:"1px solid rgba(168,139,250,.3)",borderRadius:"6px",padding:"7px 8px",color:monthlyGoal?TEXT:MUTED,fontSize:"13px",boxSizing:"border-box"}}>
+              <option value="">月頭に目標を選択...</option>
+              {(monthOptions.length>0?monthOptions:weekOptions).map(n=><option key={n.id} value={n.title}>{n.title}</option>)}
+            </select>
+          </div>
+          <div style={{background:"rgba(52,211,153,.07)",border:"1px solid rgba(52,211,153,.2)",borderRadius:"8px",padding:"10px",marginBottom:"10px"}}>
+            <div style={{fontSize:"10px",color:"#34D399",fontWeight:"600",marginBottom:"6px"}}>📆 今週の目標（{week}〜）</div>
+            <select value={weeklyGoal} onChange={e=>{setWeeklyGoal(e.target.value);lsSet(`weekly-${week}`,e.target.value);}} style={{width:"100%",background:"rgba(255,255,255,.05)",border:"1px solid rgba(52,211,153,.3)",borderRadius:"6px",padding:"7px 8px",color:weeklyGoal?TEXT:MUTED,fontSize:"13px",boxSizing:"border-box"}}>
+              <option value="">週頭に目標を選択...</option>
+              {weekOptions.map(n=><option key={n.id} value={n.title}>{n.title}</option>)}
+            </select>
+          </div>
+          {yestEntry?.challenge&&(
+            <div style={{background:"rgba(251,191,36,.07)",border:"1px solid rgba(251,191,36,.2)",borderRadius:"8px",padding:"10px",marginBottom:"10px"}}>
+              <div style={{fontSize:"10px",color:"#FBBF24",marginBottom:"4px",fontWeight:"600"}}>⚠️ 昨日の課題（自動表示）</div>
+              <div style={{fontSize:"13px",color:TEXT,lineHeight:"1.5"}}>{yestEntry.challenge}</div>
+            </div>
+          )}
+          <div style={{marginBottom:"10px"}}>
+            <div style={{fontSize:"10px",color:"#60A5FA",marginBottom:"4px",fontWeight:"600"}}>🎯 今日の目標</div>
+            <select value={cur.goal||""} onChange={e=>upd("goal",e.target.value)} style={{width:"100%",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.09)",borderRadius:"6px",padding:"8px 10px",color:cur.goal?TEXT:MUTED,fontSize:"13px",boxSizing:"border-box"}}>
+              <option value="">目標を選択...</option>
+              {leafOptions.map(n=><option key={n.id} value={n.title}>{n.title}</option>)}
+            </select>
+          </div>
+          <div style={{marginBottom:"10px"}}>
+            <div style={{fontSize:"10px",color:"#A78BFA",marginBottom:"4px",fontWeight:"600"}}>📋 今日のタスク（3つまで）</div>
+            {tasks.map((t,i)=>(
+              <div key={i} style={{display:"flex",alignItems:"center",gap:"7px",marginBottom:"5px"}}>
+                <div onClick={()=>updTask(i,"done",!t.done)} style={{width:"16px",height:"16px",borderRadius:"3px",border:`2px solid ${t.done?"#10B981":"rgba(255,255,255,.2)"}`,background:t.done?"#10B981":"transparent",cursor:"pointer",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  {t.done&&<span style={{color:"#fff",fontSize:"9px"}}>✓</span>}
+                </div>
+                <input value={t.text||""} onChange={e=>updTask(i,"text",e.target.value)} placeholder={`タスク ${i+1}`} style={{flex:1,background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.09)",borderRadius:"6px",padding:"6px 8px",color:t.done?MUTED:TEXT,fontSize:"13px",outline:"none",textDecoration:t.done?"line-through":"none"}}/>
+                {t.done&&t.ts&&<span style={{fontSize:"9px",color:"#10B981",flexShrink:0,whiteSpace:"nowrap"}}>{t.ts}</span>}
+              </div>
+            ))}
+          </div>
+          {yestEntry?.challenge&&(
+            <div style={{marginBottom:"10px"}}>
+              <div style={{fontSize:"10px",color:"#34D399",marginBottom:"4px",fontWeight:"600"}}>🔄 昨日の課題 → 今日どうするか</div>
+              <textarea value={cur.challengeResponse||""} onChange={e=>upd("challengeResponse",e.target.value)} rows={2} style={{width:"100%",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.09)",borderRadius:"6px",padding:"8px",color:TEXT,fontSize:"13px",boxSizing:"border-box",resize:"none"}}/>
+            </div>
+          )}
+          <MeditationTimer/>
+          <div style={{marginBottom:"6px"}}>
+            <div style={{fontSize:"10px",color:"#F87171",marginBottom:"4px",fontWeight:"600"}}>⚠️ 今日の課題（夜に記録）</div>
+            <textarea value={cur.challenge||""} onChange={e=>upd("challenge",e.target.value)} rows={2} style={{width:"100%",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.09)",borderRadius:"6px",padding:"8px",color:TEXT,fontSize:"13px",boxSizing:"border-box",resize:"none"}}/>
+          </div>
+          <div style={{textAlign:"center",fontSize:"9px",color:"#374151",marginTop:"6px"}}>自動保存されています</div>
+        </div>
+      ):(
+        <div style={{padding:"12px"}}>
+          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 過去の記録を検索..." style={{width:"100%",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.1)",borderRadius:"7px",padding:"7px 10px",color:TEXT,fontSize:"12px",boxSizing:"border-box",marginBottom:"10px",outline:"none"}}/>
+          {filtered.length===0?<div style={{color:MUTED,textAlign:"center",padding:"30px",fontSize:"12px"}}>記録がありません</div>
+          :filtered.map(date=>{
+            const e=entries[date];const ts=e.tasks||[];
+            return(
+              <div key={date} style={{background:CARD,border:`1px solid ${BORDER}`,borderRadius:"8px",padding:"10px",marginBottom:"8px"}}>
+                <div style={{fontSize:"10px",color:"#FBBF24",marginBottom:"5px",fontWeight:"600"}}>{date.replace(/-/g,"/")}</div>
+                {e.goal&&<div style={{fontSize:"12px",color:"#60A5FA",marginBottom:"3px"}}>🎯 {e.goal}</div>}
+                {ts.filter(t=>(t.text||t||"")).map((t,i)=>{const tx=t.text||t||"";const dn=t.done||false;const stamp=t.ts||null;return tx?<div key={i} style={{fontSize:"11px",color:dn?"#10B981":TEXT,marginBottom:"2px",paddingLeft:"8px",textDecoration:dn?"line-through":"none"}}>{dn?"✓":""} {tx}{stamp?` (${stamp})`:""}</div>:null;})}
+                {e.challengeResponse&&<div style={{fontSize:"11px",color:"#34D399",marginTop:"4px"}}>🔄 {e.challengeResponse}</div>}
+                {e.challenge&&<div style={{fontSize:"11px",color:"#F87171",marginTop:"2px"}}>⚠️ {e.challenge}</div>}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── App ───────────────────────────────────────────────────────────────────────
+function App(){
+  const [tab,setTab]=useState("routine");
+  const [data,setData]=useState(()=>lsGet("goal-data",defaultGoalData));
+  return(
+    <div style={{minHeight:"100vh",background:BG,color:TEXT}}>
+      <div style={{position:"sticky",top:0,zIndex:100,background:BG,borderBottom:`1px solid ${BORDER}`}}>
+        <div style={{padding:"10px 14px 0",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <div style={{fontSize:"15px",fontWeight:"700"}}>{tab==="routine"?"🌅 朝ルーティン":"🎯 目標管理"}</div>
+          <div style={{fontSize:"10px",color:MUTED}}>{todayKey().replace(/-/g,"/")}</div>
+        </div>
+        <div style={{display:"flex",marginTop:"6px"}}>
+          {[["routine","🌅 朝ルーティン"],["goals","🎯 目標管理"]].map(([id,label])=>(
+            <button key={id} onClick={()=>setTab(id)} style={{flex:1,padding:"8px 4px",background:"none",border:"none",borderBottom:`2px solid ${tab===id?"#3B82F6":"transparent"}`,color:tab===id?"#60A5FA":MUTED,fontSize:"12px",cursor:"pointer",fontWeight:tab===id?"600":"400"}}>{label}</button>
+          ))}
+        </div>
+      </div>
+      {tab==="routine"?<RoutineTab goalData={data}/>:<GoalTab data={data} setData={setData}/>}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
