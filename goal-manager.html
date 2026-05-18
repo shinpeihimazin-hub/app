@@ -305,7 +305,7 @@ const todayStr=()=>fmtDate(new Date());
 const yesterdayStr=()=>{const d=new Date();d.setDate(d.getDate()-1);return fmtDate(d);};
 const monthStr=()=>{const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;};
 const weekStr=()=>{const d=new Date();const day=d.getDay()||7;d.setDate(d.getDate()-day+1);return fmtDate(d);};
-const fmtDate=d=>d.replace(/-/g,"/");
+const fmtDisplay=d=>d.replace(/-/g,"/");
 const weekdays=["日","月","火","水","木","金","土"];
 const todayLabel=()=>{const d=new Date();return`${d.getMonth()+1}月${d.getDate()}日（${weekdays[d.getDay()]}）`;};
 
@@ -579,7 +579,7 @@ ${yest&&yest.challenge?`<div class="card card-green">
 ${filtered.length===0?'<div style="text-align:center;padding:40px;color:var(--text-light);font-size:13px">記録がまだありません</div>':filtered.map(d=>{
   const en=routineEntries[d];const ts=en.tasks||[];
   return`<div class="history-card">
-<div class="history-date">${fmtDate(d)}</div>
+<div class="history-date">${fmtDisplay(d)}</div>
 ${en.goal?`<div style="font-size:12px;color:var(--amber);font-weight:700;margin-bottom:4px">🎯 ${esc(en.goal)}</div>`:""}
 ${ts.filter(t=>t.t||t).map(t=>{const tx=t.t||t||"";const dn=t.done;return tx?`<div style="font-size:12px;color:${dn?"var(--green)":"var(--text)"};padding-left:6px;text-decoration:${dn?"line-through":"none"};font-weight:${dn?"600":"400"}">${dn?"✓ ":"· "}${esc(tx)}${t.ts?` <span style="font-size:10px;color:var(--text-light)">(${t.ts})</span>`:""}</div>`:""}).join("")}
 ${en.challengeResponse?`<div style="font-size:11px;color:var(--green);margin-top:5px;font-weight:600">🔄 ${esc(en.challengeResponse)}</div>`:""}
