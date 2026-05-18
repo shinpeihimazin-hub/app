@@ -2,405 +2,560 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
 <title>朝ルーティン & 目標管理</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAxODAgMTgwJz4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0nYmcnIHgxPScwJyB5MT0nMCcgeDI9JzAuNycgeTI9JzEnPgogICAgICA8c3RvcCBvZmZzZXQ9JzAlMjUnIHN0b3AtY29sb3I9JyUyM0ZFRjNDNycvPgogICAgICA8c3RvcCBvZmZzZXQ9JzUwJTI1JyBzdG9wLWNvbG9yPSclMjNGREU2OEEnLz4KICAgICAgPHN0b3Agb2Zmc2V0PScxMDAlMjUnIHN0b3AtY29sb3I9JyUyM0ZCOTIzQycvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9JzE4MCcgaGVpZ2h0PScxODAnIHJ4PSczOCcgZmlsbD0ndXJsKCUyM2JnKScvPgogIDwhLS0gU3VuIGdsb3cgLS0+CiAgPGNpcmNsZSBjeD0nOTAnIGN5PSc4Micgcj0nNDInIGZpbGw9JyUyM0ZFRjlDMycgb3BhY2l0eT0nMC41Jy8+CiAgPCEtLSBTdW4gYm9keSAtLT4KICA8Y2lyY2xlIGN4PSc5MCcgY3k9JzgyJyByPSczMCcgZmlsbD0nJTIzRjU5RTBCJy8+CiAgPCEtLSBTdW4gcmF5cyAtLT4KICA8ZyBzdHJva2U9JyUyM0Y1OUUwQicgc3Ryb2tlLXdpZHRoPSc1JyBzdHJva2UtbGluZWNhcD0ncm91bmQnPgogICAgPGxpbmUgeDE9JzkwJyB5MT0nMjgnIHgyPSc5MCcgeTI9JzE4Jy8+CiAgICA8bGluZSB4MT0nOTAnIHkxPScxMzYnIHgyPSc5MCcgeTI9JzE0NicvPgogICAgPGxpbmUgeDE9JzEzNicgeTE9JzgyJyB4Mj0nMTQ2JyB5Mj0nODInLz4KICAgIDxsaW5lIHgxPSc0NCcgeTE9JzgyJyB4Mj0nMzQnIHkyPSc4MicvPgogICAgPGxpbmUgeDE9JzEyMicgeTE9JzUwJyB4Mj0nMTI5JyB5Mj0nNDMnLz4KICAgIDxsaW5lIHgxPSc1OCcgeTE9JzExNCcgeDI9JzUxJyB5Mj0nMTIxJy8+CiAgICA8bGluZSB4MT0nMTIyJyB5MT0nMTE0JyB4Mj0nMTI5JyB5Mj0nMTIxJy8+CiAgICA8bGluZSB4MT0nNTgnIHkxPSc1MCcgeDI9JzUxJyB5Mj0nNDMnLz4KICA8L2c+CiAgPCEtLSBIb3Jpem9uIGxpbmUgLS0+CiAgPHJlY3QgeD0nMjInIHk9JzExOCcgd2lkdGg9JzEzNicgaGVpZ2h0PSc2JyByeD0nMycgZmlsbD0nJTIzRjk3MzE2JyBvcGFjaXR5PScwLjYnLz4KICA8IS0tIFRleHQgLS0+CiAgPHRleHQgeD0nOTAnIHk9JzE1OCcgdGV4dC1hbmNob3I9J21pZGRsZScgZm9udC1mYW1pbHk9J3NhbnMtc2VyaWYnIGZvbnQtc2l6ZT0nMjAnIGZvbnQtd2VpZ2h0PSc5MDAnIGZpbGw9JyUyM0I0NTMwOSc+5pyd44Or44O844OG44Kj44OzPC90ZXh0Pgo8L3N2Zz4="/>
+<meta name="apple-mobile-web-app-title" content="朝ルーティン"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet"/>
 <style>
-  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-  body{background:#0A0F1E;color:#E5E7EB;font-family:'Noto Sans JP',sans-serif;min-height:100vh;overflow-x:hidden}
-  select{-webkit-appearance:auto;appearance:auto}
-  input,textarea,select{font-family:'Noto Sans JP',sans-serif}
-  button{font-family:'Noto Sans JP',sans-serif}
+:root {
+  --cream: #FFFBF0;
+  --warm-white: #FFFFFF;
+  --amber: #F59E0B;
+  --amber-light: #FDE68A;
+  --amber-pale: #FEF3C7;
+  --coral: #F97316;
+  --coral-pale: #FFEDD5;
+  --green: #10B981;
+  --green-pale: #D1FAE5;
+  --red: #EF4444;
+  --red-pale: #FEE2E2;
+  --purple: #8B5CF6;
+  --purple-pale: #EDE9FE;
+  --blue: #3B82F6;
+  --blue-pale: #DBEAFE;
+  --text: #1C1917;
+  --text-muted: #78716C;
+  --text-light: #A8A29E;
+  --border: rgba(0,0,0,0.06);
+  --shadow: 0 2px 12px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 20px rgba(0,0,0,0.10);
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body {
+  background: var(--cream);
+  color: var(--text);
+  font-family: 'M PLUS Rounded 1c', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+input, textarea, select, button { font-family: 'M PLUS Rounded 1c', sans-serif; }
+select { -webkit-appearance: auto; }
+
+/* Animations */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
+.fade-in { animation: fadeIn 0.4s ease both; }
+
+/* Save indicator */
+.save-badge {
+  position: fixed; top: 12px; right: 12px;
+  background: var(--green); color: #fff;
+  font-size: 11px; font-weight: 700;
+  padding: 4px 10px; border-radius: 20px;
+  opacity: 0; transition: opacity 0.3s;
+  pointer-events: none; z-index: 999;
+  box-shadow: 0 2px 8px rgba(16,185,129,0.3);
+}
+.save-badge.show { opacity: 1; }
+
+/* Header */
+.header {
+  background: linear-gradient(135deg, #FEF3C7 0%, #FFEDD5 50%, #FDE8D8 100%);
+  padding: 16px 16px 0;
+  position: sticky; top: 0; z-index: 100;
+  border-bottom: 1px solid rgba(245,158,11,0.15);
+}
+.header-top {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.header-title {
+  font-size: 18px; font-weight: 800; color: var(--text);
+  letter-spacing: -0.3px;
+}
+.header-date {
+  font-size: 11px; color: var(--text-muted); font-weight: 500;
+  background: rgba(255,255,255,0.6); padding: 3px 8px; border-radius: 20px;
+}
+.tabs {
+  display: flex; gap: 4px;
+}
+.tab-btn {
+  flex: 1; padding: 9px 4px;
+  background: none; border: none; border-bottom: 2.5px solid transparent;
+  font-size: 12px; font-weight: 700; cursor: pointer;
+  color: var(--text-muted); transition: all 0.2s;
+}
+.tab-btn.active {
+  color: var(--amber); border-bottom-color: var(--amber);
+}
+
+/* Cards */
+.card {
+  background: var(--warm-white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px;
+  margin-bottom: 10px;
+  border: 1px solid var(--border);
+}
+.card-amber { border-left: 3px solid var(--amber); }
+.card-coral { border-left: 3px solid var(--coral); }
+.card-green { border-left: 3px solid var(--green); }
+.card-red { border-left: 3px solid var(--red); }
+.card-purple { border-left: 3px solid var(--purple); }
+
+.section-label {
+  font-size: 10px; font-weight: 800;
+  letter-spacing: 0.8px; text-transform: uppercase;
+  margin-bottom: 7px;
+}
+.label-amber { color: var(--amber); }
+.label-coral { color: var(--coral); }
+.label-green { color: var(--green); }
+.label-red { color: var(--red); }
+.label-purple { color: var(--purple); }
+.label-blue { color: var(--blue); }
+
+/* Inputs */
+.input-clean {
+  width: 100%; background: var(--cream);
+  border: 1.5px solid rgba(0,0,0,0.08);
+  border-radius: var(--radius-sm); padding: 9px 12px;
+  color: var(--text); font-size: 13px; outline: none;
+  transition: border-color 0.2s;
+}
+.input-clean:focus { border-color: var(--amber); }
+.textarea-clean {
+  width: 100%; background: var(--cream);
+  border: 1.5px solid rgba(0,0,0,0.08);
+  border-radius: var(--radius-sm); padding: 9px 12px;
+  color: var(--text); font-size: 13px; outline: none;
+  resize: none; transition: border-color 0.2s;
+}
+.textarea-clean:focus { border-color: var(--amber); }
+.select-clean {
+  width: 100%; background: var(--cream);
+  border: 1.5px solid rgba(0,0,0,0.08);
+  border-radius: var(--radius-sm); padding: 9px 12px;
+  color: var(--text); font-size: 13px; outline: none;
+}
+
+/* Buttons */
+.btn-primary {
+  background: linear-gradient(135deg, var(--amber), var(--coral));
+  color: #fff; border: none; border-radius: var(--radius-sm);
+  padding: 9px 16px; font-size: 12px; font-weight: 700;
+  cursor: pointer; box-shadow: 0 2px 8px rgba(245,158,11,0.3);
+  white-space: nowrap; flex-shrink: 0;
+}
+.btn-outline {
+  background: var(--cream); color: var(--text-muted);
+  border: 1.5px solid rgba(0,0,0,0.1); border-radius: var(--radius-sm);
+  padding: 7px 12px; font-size: 11px; font-weight: 600; cursor: pointer;
+}
+.btn-ghost {
+  background: none; border: none; cursor: pointer;
+  color: var(--text-light); font-size: 16px; padding: 2px 4px;
+  flex-shrink: 0; line-height: 1;
+}
+
+/* Pills */
+.pill {
+  border-radius: 20px; padding: 4px 10px; font-size: 10px;
+  font-weight: 700; cursor: pointer; white-space: nowrap;
+  flex-shrink: 0; border: 1.5px solid transparent;
+  background: var(--cream); color: var(--text-muted);
+  transition: all 0.15s;
+}
+
+/* Checkbox */
+.check-box {
+  width: 18px; height: 18px; border-radius: 5px;
+  border: 2px solid #D6D3D1; background: transparent;
+  cursor: pointer; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.check-box.checked {
+  background: var(--green); border-color: var(--green);
+}
+
+/* Goal node */
+.node-card {
+  background: var(--warm-white);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  overflow: hidden;
+}
+
+/* Progress bar */
+.progress-bar {
+  height: 3px; background: #E7E5E4; border-radius: 2px; flex: 1;
+}
+.progress-fill {
+  height: 100%; border-radius: 2px; transition: width 0.3s;
+}
+
+/* Meditation timer */
+.med-timer {
+  background: linear-gradient(135deg, #D1FAE5, #A7F3D0);
+  border-radius: var(--radius);
+  padding: 16px;
+  text-align: center;
+  margin-bottom: 10px;
+}
+.med-time {
+  font-size: 36px; font-weight: 800; color: #065F46;
+  font-family: 'Zen Maru Gothic', monospace;
+  letter-spacing: 2px;
+}
+.med-btn {
+  background: #059669; color: #fff; border: none;
+  border-radius: 20px; padding: 8px 20px;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  font-family: 'M PLUS Rounded 1c', sans-serif;
+  box-shadow: 0 2px 8px rgba(5,150,105,0.3);
+}
+
+/* Today banner */
+.today-banner {
+  background: linear-gradient(135deg, var(--amber-pale), var(--coral-pale));
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.today-banner .sun { font-size: 22px; }
+.today-banner .date-text { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+
+/* History entry */
+.history-card {
+  background: var(--warm-white);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 14px;
+  margin-bottom: 8px;
+  box-shadow: var(--shadow);
+}
+.history-date {
+  font-size: 11px; font-weight: 800; color: var(--amber);
+  letter-spacing: 0.5px; margin-bottom: 8px;
+}
+
+/* Bulk modal */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.3);
+  z-index: 200; display: flex; align-items: flex-end;
+  backdrop-filter: blur(2px);
+}
+.modal-sheet {
+  width: 100%; background: var(--warm-white);
+  border-radius: 20px 20px 0 0; padding: 20px;
+  max-height: 80vh; overflow-y: auto;
+}
+
+/* Filter bar */
+.filter-bar {
+  padding: 6px 14px; display: flex; gap: 5px;
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+  border-bottom: 1px solid var(--border);
+  background: var(--cream);
+}
+.filter-bar::-webkit-scrollbar { display: none; }
+
+/* Quick add */
+.quick-add {
+  padding: 10px 14px; display: flex; gap: 8px;
+  align-items: center; border-bottom: 1px solid var(--border);
+  background: var(--warm-white);
+}
 </style>
 </head>
 <body>
-<div id="root"></div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
-<script type="text/babel">
-const {useState,useEffect,useCallback,useRef}=React;
+<div class="save-badge" id="saveIndicator">保存 ✓</div>
+<div id="app"></div>
+<script>
+// ── Storage ────────────────────────────────────────────────────────────────────
+const lsGet=(k,d=null)=>{try{const v=localStorage.getItem(k);return v!=null?JSON.parse(v):d;}catch{return d;}};
+let saveTimer=null;
+const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));const el=document.getElementById('saveIndicator');if(el){el.classList.add('show');clearTimeout(saveTimer);saveTimer=setTimeout(()=>el.classList.remove('show'),1500);}}catch{}};
 
-// ── Constants ─────────────────────────────────────────────────────────────────
-const TIME_HORIZONS=["人生の目標","5年後","1年後","半年後","1ヶ月後","1週間後","今日"];
+// ── Constants ──────────────────────────────────────────────────────────────────
+const HORIZONS=["人生の目標","5年後","1年後","半年後","1ヶ月後","1週間後","今日"];
 const STATUSES=["未着手","進行中","完了"];
-const LIFE_AREAS=["仕事","家族・恋人","プライベート","健康"];
-const AREA_COLORS={"仕事":"#60A5FA","家族・恋人":"#F472B6","プライベート":"#A78BFA","健康":"#34D399"};
-const HORIZON_COLORS={"人生の目標":"#A78BFA","5年後":"#60A5FA","1年後":"#34D399","半年後":"#FBBF24","1ヶ月後":"#FB923C","1週間後":"#F87171","今日":"#F472B6"};
-const STATUS_COLORS={"未着手":{bg:"rgba(107,114,128,.15)",text:"#9CA3AF",dot:"#6B7280"},"進行中":{bg:"rgba(59,130,246,.15)",text:"#60A5FA",dot:"#3B82F6"},"完了":{bg:"rgba(16,185,129,.15)",text:"#34D399",dot:"#10B981"}};
-const PRIORITY_COLORS={"高":{text:"#F87171",border:"rgba(248,113,113,.4)"},"中":{text:"#FBBF24",border:"rgba(251,191,36,.4)"},"低":{text:"#9CA3AF",border:"rgba(156,163,175,.3)"}};
-const FONT="'Noto Sans JP',sans-serif",BG="#0A0F1E",CARD="rgba(255,255,255,.03)",BORDER="rgba(255,255,255,.07)",TEXT="#E5E7EB",MUTED="#6B7280";
-const uid=()=>Math.random().toString(36).slice(2,10);
-const todayKey=()=>new Date().toISOString().slice(0,10);
-const yestKey=()=>{const d=new Date();d.setDate(d.getDate()-1);return d.toISOString().slice(0,10);};
-const monthKey=()=>new Date().toISOString().slice(0,7);
-const weekKey=()=>{const d=new Date();const day=d.getDay()||7;d.setDate(d.getDate()-day+1);return d.toISOString().slice(0,10);};
+const AREAS=["仕事","家族・恋人","プライベート","健康"];
+const AREA_COLOR={"仕事":"#3B82F6","家族・恋人":"#EC4899","プライベート":"#8B5CF6","健康":"#10B981"};
+const HOR_COLOR={"人生の目標":"#8B5CF6","5年後":"#3B82F6","1年後":"#10B981","半年後":"#F59E0B","1ヶ月後":"#F97316","1週間後":"#EF4444","今日":"#EC4899"};
+const STA_COLOR={"未着手":{bg:"#F5F5F4",t:"#78716C"},"進行中":{bg:"#DBEAFE",t:"#1D4ED8"},"完了":{bg:"#D1FAE5",t:"#065F46"}};
 
-// ── localStorage helpers ───────────────────────────────────────────────────────
-const lsGet=(key,def=null)=>{try{const v=localStorage.getItem(key);return v!=null?JSON.parse(v):def;}catch{return def;}};
-const lsSet=(key,val)=>{try{localStorage.setItem(key,JSON.stringify(val));}catch{}};
+const uid=()=>Math.random().toString(36).slice(2,9);
+const todayStr=()=>new Date().toISOString().slice(0,10);
+const yesterdayStr=()=>{const d=new Date();d.setDate(d.getDate()-1);return d.toISOString().slice(0,10);};
+const monthStr=()=>new Date().toISOString().slice(0,7);
+const weekStr=()=>{const d=new Date();const day=d.getDay()||7;d.setDate(d.getDate()-day+1);return d.toISOString().slice(0,10);};
+const fmtDate=d=>d.replace(/-/g,"/");
+const weekdays=["日","月","火","水","木","金","土"];
+const todayLabel=()=>{const d=new Date();return`${d.getMonth()+1}月${d.getDate()}日（${weekdays[d.getDay()]}）`;};
 
-const defaultGoalData={
-  nodes:{
-    "r1":{id:"r1",title:"理想の後輩（チャレンジャー）になる",timeHorizon:"1年後",status:"進行中",progress:10,priority:"高",lifeArea:"仕事",parentId:null,children:["r1a","r1b"]},
-    "r1a":{id:"r1a",title:"期日をしっかり守れる",timeHorizon:"1年後",status:"未着手",progress:0,priority:"高",lifeArea:"仕事",parentId:"r1",children:[]},
-    "r1b":{id:"r1b",title:"記録と改善の習慣を作る",timeHorizon:"1ヶ月後",status:"進行中",progress:20,priority:"高",lifeArea:"仕事",parentId:"r1",children:[]},
-  },
-  rootIds:["r1"],
-};
+function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-function nodeMatchesFilter(nodes,id,area,horizon,status){
-  const n=nodes[id];if(!n)return false;
-  const self=(area==="全て"||n.lifeArea===area)&&(horizon==="全て"||n.timeHorizon===horizon)&&(status==="全て"||n.status===status);
-  if(self)return true;
-  return(n.children||[]).some(c=>nodeMatchesFilter(nodes,c,area,horizon,status));
+// ── State ──────────────────────────────────────────────────────────────────────
+const defGoals={nodes:{r1:{id:"r1",title:"理想の後輩になる",timeHorizon:"1年後",status:"進行中",progress:10,priority:"高",lifeArea:"仕事",parentId:null,children:[]}},rootIds:["r1"]};
+const defEntry=()=>({goal:"",tasks:[{t:"",done:false,ts:""},{t:"",done:false,ts:""},{t:"",done:false,ts:""}],challenge:"",challengeResponse:""});
+
+let goals=lsGet("goals",defGoals);
+let routineEntries=lsGet("routine-entries",{});
+let monthlyGoal=lsGet("monthly-"+monthStr(),"");
+let weeklyGoal=lsGet("weekly-"+weekStr(),"");
+
+let S={tab:"routine",rv:"today",search:"",bulkOpen:false,af:"全て",hf:"全て",sf:"全て",medMins:5,medSecs:null,medRunning:false,medDone:false,medInterval:null};
+
+function getEntry(){if(!routineEntries[todayStr()])routineEntries[todayStr()]=defEntry();return routineEntries[todayStr()];}
+function saveEntries(){lsSet("routine-entries",routineEntries);}
+function saveGoals(){lsSet("goals",goals);}
+
+function nodeMatches(id){
+  const n=goals.nodes[id];if(!n)return false;
+  const ok=(S.af==="全て"||n.lifeArea===S.af)&&(S.hf==="全て"||n.timeHorizon===S.hf)&&(S.sf==="全て"||n.status===S.sf);
+  if(ok)return true;
+  return(n.children||[]).some(c=>nodeMatches(c));
 }
-function getLeafNodes(nodes){return Object.values(nodes).filter(n=>n.status!=="完了"&&(!n.children||n.children.length===0));}
-function getParentsOfLeaves(nodes){
-  const leafIds=new Set(Object.values(nodes).filter(n=>!n.children||n.children.length===0).map(n=>n.id));
-  return Object.values(nodes).filter(n=>n.status!=="完了"&&n.children?.some(c=>leafIds.has(c)));
-}
-function getGrandparentsOfLeaves(nodes){
-  const polIds=new Set(getParentsOfLeaves(nodes).map(n=>n.id));
-  return Object.values(nodes).filter(n=>n.status!=="完了"&&n.children?.some(c=>polIds.has(c)));
-}
-function parseIndentedText(text,defaultArea,defaultHorizon){
-  const lines=text.split("\n").map(l=>l.replace(/\r/,"")).filter(l=>l.trim());
-  if(!lines.length)return{nodes:{},rootIds:[]};
-  const getIndent=s=>{let i=0;for(const c of s){if(c===" ")i++;else if(c==="\t")i+=2;else break;}return i;};
-  const nodes={},rootIds=[],stack=[];
-  lines.forEach(line=>{
-    const indent=getIndent(line);
-    const title=line.replace(/^[\s\-\*•]+/,"").replace(/\t/g,"").trim();
-    if(!title)return;
-    const id=uid();
-    const node={id,title,timeHorizon:defaultHorizon,status:"未着手",progress:0,priority:"中",lifeArea:defaultArea,parentId:null,children:[]};
-    while(stack.length&&stack[stack.length-1].indent>=indent)stack.pop();
-    if(stack.length){const pid=stack[stack.length-1].id;node.parentId=pid;nodes[pid].children.push(id);}
-    else{rootIds.push(id);}
-    nodes[id]=node;stack.push({id,indent});
-  });
-  return{nodes,rootIds};
+function leaves(){return Object.values(goals.nodes).filter(n=>n.status!=="完了"&&(!n.children||!n.children.length));}
+function parentsOfLeaves(){const lids=new Set(Object.values(goals.nodes).filter(n=>!n.children||!n.children.length).map(n=>n.id));return Object.values(goals.nodes).filter(n=>n.status!=="完了"&&n.children&&n.children.some(c=>lids.has(c)));}
+function grandparents(){const pids=new Set(parentsOfLeaves().map(n=>n.id));return Object.values(goals.nodes).filter(n=>n.status!=="完了"&&n.children&&n.children.some(c=>pids.has(c)));}
+
+function parseIndented(text,area,hor){
+  const lines=text.split("\n").filter(l=>l.trim());
+  const getI=s=>{let i=0;for(const c of s){if(c===" ")i++;else if(c==="\t")i+=2;else break;}return i;};
+  const ns={},rs=[],stack=[];
+  lines.forEach(line=>{const ind=getI(line);const title=line.replace(/^[\s\-\*•]+/,"").trim();if(!title)return;const id=uid();ns[id]={id,title,timeHorizon:hor,status:"未着手",progress:0,priority:"中",lifeArea:area,parentId:null,children:[]};while(stack.length&&stack[stack.length-1].ind>=ind)stack.pop();if(stack.length){const pid=stack[stack.length-1].id;ns[id].parentId=pid;ns[pid].children.push(id);}else rs.push(id);stack.push({id,ind});});
+  return{ns,rs};
 }
 
-// ── NodeCard ──────────────────────────────────────────────────────────────────
-function NodeCard({nodeId,nodes,depth=0,onUpdate,onAdd,onDelete,areaF,horizonF,statusF}){
-  const node=nodes[nodeId];if(!node)return null;
-  if(!nodeMatchesFilter(nodes,nodeId,areaF,horizonF,statusF))return null;
-  const [exp,setExp]=useState(true);
-  const [editing,setEditing]=useState(false);
-  const [et,setEt]=useState(node.title);
-  const ref=useRef(null);
-  useEffect(()=>{if(editing&&ref.current)ref.current.focus();},[editing]);
-  const sc=STATUS_COLORS[node.status]||STATUS_COLORS["未着手"];
-  const hc=HORIZON_COLORS[node.timeHorizon]||"#9CA3AF";
-  const ac=AREA_COLORS[node.lifeArea||"仕事"]||"#60A5FA";
-  const pc=PRIORITY_COLORS[node.priority||"中"]||PRIORITY_COLORS["中"];
-  const blur=()=>{setEditing(false);if(et.trim())onUpdate(nodeId,{title:et.trim()});else setEt(node.title);};
-  return(
-    <div style={{marginLeft:`${depth*14}px`,overflow:"hidden"}}>
-      <div style={{background:CARD,border:`1px solid ${BORDER}`,borderLeft:`3px solid ${hc}`,borderRadius:"8px",padding:"8px 10px",marginBottom:"5px",overflow:"hidden"}}>
-        <div style={{display:"flex",alignItems:"center",gap:"5px",overflow:"hidden"}}>
-          {node.children.length>0?<button onClick={()=>setExp(!exp)} style={{background:"none",border:"none",cursor:"pointer",color:MUTED,fontSize:"9px",padding:"1px",transform:exp?"rotate(90deg)":"none",transition:"transform .15s",flexShrink:0}}>▶</button>:<div style={{width:"14px",flexShrink:0}}/>}
-          <div onClick={()=>{const nx=node.status==="完了"?"未着手":node.status==="未着手"?"進行中":"完了";onUpdate(nodeId,{status:nx,progress:nx==="完了"?100:node.progress});}} style={{width:"14px",height:"14px",borderRadius:"3px",border:`2px solid ${sc.dot}`,background:node.status==="完了"?sc.dot:"transparent",cursor:"pointer",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-            {node.status==="完了"&&<span style={{color:"#fff",fontSize:"8px"}}>✓</span>}
-          </div>
-          {editing?<input ref={ref} value={et} onChange={e=>setEt(e.target.value)} onBlur={blur} onKeyDown={e=>{if(e.key==="Enter")blur();if(e.key==="Escape"){setEditing(false);setEt(node.title);}}} style={{flex:1,minWidth:0,background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.2)",borderRadius:"4px",padding:"2px 6px",color:TEXT,fontSize:"13px",fontFamily:FONT}}/>
-          :<span onClick={()=>setEditing(true)} style={{flex:1,minWidth:0,fontSize:"13px",color:node.status==="完了"?MUTED:TEXT,textDecoration:node.status==="完了"?"line-through":"none",cursor:"text",lineHeight:"1.4",fontFamily:FONT,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{node.title}</span>}
-          <span style={{fontSize:"9px",padding:"1px 4px",borderRadius:"3px",border:`1px solid ${pc.border}`,color:pc.text,flexShrink:0}}>{node.priority||"中"}</span>
-          <button onClick={()=>onDelete(nodeId)} style={{background:"none",border:"none",cursor:"pointer",color:"#374151",fontSize:"13px",flexShrink:0}}>×</button>
-        </div>
-        <div style={{display:"flex",alignItems:"center",gap:"4px",marginTop:"5px",marginLeft:"19px",flexWrap:"wrap"}}>
-          <select value={node.lifeArea||"仕事"} onChange={e=>onUpdate(nodeId,{lifeArea:e.target.value})} style={{background:`${ac}22`,color:ac,border:"none",borderRadius:"3px",fontSize:"10px",padding:"2px 3px"}}>
-            {LIFE_AREAS.map(a=><option key={a} value={a}>{a}</option>)}
-          </select>
-          <select value={node.status} onChange={e=>onUpdate(nodeId,{status:e.target.value,progress:e.target.value==="完了"?100:node.progress})} style={{background:sc.bg,color:sc.text,border:"none",borderRadius:"3px",fontSize:"10px",padding:"2px 3px"}}>
-            {STATUSES.map(s=><option key={s} value={s}>{s}</option>)}
-          </select>
-          <select value={node.timeHorizon} onChange={e=>onUpdate(nodeId,{timeHorizon:e.target.value})} style={{background:`${hc}22`,color:hc,border:"none",borderRadius:"3px",fontSize:"10px",padding:"2px 3px"}}>
-            {TIME_HORIZONS.map(h=><option key={h} value={h}>{h}</option>)}
-          </select>
-          <button onClick={()=>onAdd(nodeId)} style={{background:"rgba(59,130,246,.12)",border:"1px solid rgba(59,130,246,.3)",color:"#60A5FA",borderRadius:"3px",fontSize:"10px",padding:"2px 8px",cursor:"pointer"}}>＋子</button>
-        </div>
-        <div style={{display:"flex",alignItems:"center",gap:"5px",marginTop:"3px",marginLeft:"19px"}}>
-          <div style={{flex:1,height:"2px",background:"rgba(255,255,255,.06)",borderRadius:"1px"}}>
-            <div style={{height:"100%",width:`${node.progress}%`,background:node.status==="完了"?"#10B981":"#3B82F6",borderRadius:"1px"}}/>
-          </div>
-          <span style={{fontSize:"9px",color:MUTED}}>{node.progress}%</span>
-        </div>
-      </div>
-      {exp&&(node.children||[]).map(c=><NodeCard key={c} nodeId={c} nodes={nodes} depth={depth+1} onUpdate={onUpdate} onAdd={onAdd} onDelete={onDelete} areaF={areaF} horizonF={horizonF} statusF={statusF}/>)}
-    </div>
-  );
+// ── Goal Node HTML ─────────────────────────────────────────────────────────────
+function nodeHTML(id,depth){
+  const n=goals.nodes[id];if(!n||!nodeMatches(id))return"";
+  const hc=HOR_COLOR[n.timeHorizon]||"#F59E0B";
+  const sc=STA_COLOR[n.status]||STA_COLOR["未着手"];
+  const ac=AREA_COLOR[n.lifeArea||"仕事"]||"#3B82F6";
+  const ch=(n.children||[]).map(c=>nodeHTML(c,depth+1)).join("");
+  return`<div style="margin-left:${depth*16}px">
+<div class="node-card" style="border-left:3px solid ${hc}">
+  <div style="display:flex;align-items:center;gap:6px;overflow:hidden">
+    ${n.children&&n.children.length?`<span style="color:#C7B8A8;font-size:9px;flex-shrink:0">▶</span>`:`<div style="width:10px;flex-shrink:0"></div>`}
+    <div onclick="cycleStatus('${id}')" style="width:16px;height:16px;border-radius:5px;border:2px solid ${n.status==='完了'?'#10B981':'#D6D3D1'};background:${n.status==='完了'?'#10B981':'transparent'};cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s">${n.status==='完了'?'<span style="color:#fff;font-size:9px;font-weight:800">✓</span>':""}</div>
+    <span onclick="editTitle('${id}')" style="flex:1;min-width:0;font-size:13px;font-weight:600;color:${n.status==='完了'?'#A8A29E':'#1C1917'};text-decoration:${n.status==='完了'?'line-through':'none'};cursor:text;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(n.title)}</span>
+    <span style="font-size:9px;padding:2px 6px;border-radius:10px;background:${n.priority==='高'?'#FEE2E2':n.priority==='中'?'#FEF3C7':'#F5F5F4'};color:${n.priority==='高'?'#DC2626':n.priority==='中'?'#D97706':'#78716C'};font-weight:700;flex-shrink:0">${n.priority||"中"}</span>
+    <button onclick="delNode('${id}')" class="btn-ghost">×</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:5px;margin-top:7px;margin-left:22px;flex-wrap:wrap">
+    <select onchange="updNode('${id}','lifeArea',this.value)" style="background:${ac}18;color:${ac};border:none;border-radius:6px;font-size:10px;padding:3px 5px;font-weight:700">${AREAS.map(a=>`<option${n.lifeArea===a?" selected":""}>${a}</option>`).join("")}</select>
+    <select onchange="updNode('${id}','status',this.value)" style="background:${sc.bg};color:${sc.t};border:none;border-radius:6px;font-size:10px;padding:3px 5px;font-weight:700">${STATUSES.map(s=>`<option${n.status===s?" selected":""}>${s}</option>`).join("")}</select>
+    <select onchange="updNode('${id}','timeHorizon',this.value)" style="background:${hc}18;color:${hc};border:none;border-radius:6px;font-size:10px;padding:3px 5px;font-weight:700">${HORIZONS.map(h=>`<option${n.timeHorizon===h?" selected":""}>${h}</option>`).join("")}</select>
+    <button onclick="addChild('${id}')" style="background:${hc}18;border:none;color:${hc};border-radius:6px;font-size:10px;padding:3px 10px;cursor:pointer;font-weight:700">＋子</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:6px;margin-top:5px;margin-left:22px">
+    <div class="progress-bar"><div class="progress-fill" style="width:${n.progress}%;background:${n.status==='完了'?'#10B981':hc}"></div></div>
+    <span style="font-size:9px;color:#A8A29E;font-weight:600">${n.progress}%</span>
+  </div>
+</div>
+${ch}</div>`;
 }
 
-// ── BulkImport ────────────────────────────────────────────────────────────────
-function BulkImport({onImport,onClose,defaultArea,defaultHorizon}){
-  const [text,setText]=useState("");
-  const [area,setArea]=useState(defaultArea||"仕事");
-  const [horizon,setHorizon]=useState(defaultHorizon||"1年後");
-  return(
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.7)",zIndex:200,display:"flex",alignItems:"flex-end"}}>
-      <div style={{width:"100%",background:"#111827",borderRadius:"12px 12px 0 0",padding:"16px"}}>
-        <div style={{fontSize:"13px",color:TEXT,marginBottom:"6px",fontWeight:"600"}}>📋 一括登録</div>
-        <div style={{fontSize:"11px",color:MUTED,marginBottom:"8px"}}>インデントでサブタスクになります</div>
-        <textarea value={text} onChange={e=>setText(e.target.value)} rows={8} placeholder={"目標A\n  サブ目標1\n目標B"} style={{width:"100%",background:"rgba(255,255,255,.05)",border:"1px solid rgba(255,255,255,.1)",borderRadius:"6px",padding:"8px",color:TEXT,fontSize:"12px",fontFamily:"monospace",boxSizing:"border-box",resize:"none"}}/>
-        <div style={{display:"flex",gap:"6px",marginTop:"8px",flexWrap:"wrap"}}>
-          <select value={area} onChange={e=>setArea(e.target.value)} style={{background:`${AREA_COLORS[area]}22`,color:AREA_COLORS[area],border:"none",borderRadius:"4px",fontSize:"11px",padding:"4px 6px"}}>
-            {LIFE_AREAS.map(a=><option key={a} value={a}>{a}</option>)}
-          </select>
-          <select value={horizon} onChange={e=>setHorizon(e.target.value)} style={{background:"rgba(255,255,255,.05)",border:"none",borderRadius:"4px",color:TEXT,fontSize:"11px",padding:"4px 6px"}}>
-            {TIME_HORIZONS.map(h=><option key={h} value={h}>{h}</option>)}
-          </select>
-          <div style={{flex:1}}/>
-          <button onClick={onClose} style={{background:"none",border:"1px solid rgba(255,255,255,.15)",color:MUTED,borderRadius:"4px",padding:"4px 10px",fontSize:"11px",cursor:"pointer"}}>キャンセル</button>
-          <button onClick={()=>{if(!text.trim())return;onImport(parseIndentedText(text,area,horizon));}} style={{background:"#3B82F6",color:"#fff",border:"none",borderRadius:"4px",padding:"4px 14px",fontSize:"11px",cursor:"pointer"}}>登録</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── GoalTab ───────────────────────────────────────────────────────────────────
-function GoalTab({data,setData}){
-  const [areaF,setAreaF]=useState("全て");
-  const [horizonF,setHorizonF]=useState("全て");
-  const [statusF,setStatusF]=useState("全て");
-  const [showBulk,setShowBulk]=useState(false);
-  const [quickTitle,setQuickTitle]=useState("");
-  const [quickArea,setQuickArea]=useState("仕事");
-  const [quickHorizon,setQuickHorizon]=useState("1年後");
-
-  const save=(d)=>{setData(d);lsSet("goal-data",d);};
-  const upd=useCallback((id,ch)=>save({...data,nodes:{...data.nodes,[id]:{...data.nodes[id],...ch}}}),[data]);
-  const addChild=useCallback((pid)=>{
-    const nid=uid(),p=data.nodes[pid];
-    const n={id:nid,title:"新しい目標",timeHorizon:p.timeHorizon,status:"未着手",progress:0,priority:"中",lifeArea:p.lifeArea||"仕事",parentId:pid,children:[]};
-    save({...data,nodes:{...data.nodes,[nid]:n,[pid]:{...data.nodes[pid],children:[...data.nodes[pid].children,nid]}}});
-  },[data]);
-  const del=useCallback((id)=>{
-    const node=data.nodes[id];if(!node)return;
-    const toD=new Set();const col=i=>{toD.add(i);(data.nodes[i]?.children||[]).forEach(col);};col(id);
-    const nn={...data.nodes};toD.forEach(i=>delete nn[i]);
-    if(node.parentId&&nn[node.parentId])nn[node.parentId]={...nn[node.parentId],children:nn[node.parentId].children.filter(c=>c!==id)};
-    save({...data,nodes:nn,rootIds:data.rootIds.filter(r=>r!==id)});
-  },[data]);
-  const quickAdd=()=>{
-    if(!quickTitle.trim())return;
-    const nid=uid();
-    const n={id:nid,title:quickTitle.trim(),timeHorizon:quickHorizon,status:"未着手",progress:0,priority:"高",lifeArea:quickArea,parentId:null,children:[]};
-    save({...data,nodes:{...data.nodes,[nid]:n},rootIds:[...data.rootIds,nid]});
-    setQuickTitle("");
-  };
-  const bulkImport=({nodes:nn,rootIds:nr})=>{
-    save({...data,nodes:{...data.nodes,...nn},rootIds:[...data.rootIds,...nr]});
-    setShowBulk(false);
-  };
-  const roots=(data?.rootIds||[]).filter(id=>nodeMatchesFilter(data.nodes,id,areaF,horizonF,statusF));
-  const all=data?Object.values(data.nodes):[];
+// ── Goal Tab ───────────────────────────────────────────────────────────────────
+function buildGoalTab(){
+  const all=Object.values(goals.nodes);
   const done=all.filter(n=>n.status==="完了").length;
-  const Pill=({active,color,label,onClick})=>(
-    <button onClick={onClick} style={{background:active?`${color||"rgba(255,255,255,.1)"}22`:"transparent",color:active?(color||TEXT):MUTED,border:`1px solid ${active?(color||"rgba(255,255,255,.2)"):"rgba(255,255,255,.08)"}`,borderRadius:"20px",padding:"3px 9px",fontSize:"10px",cursor:"pointer",whiteSpace:"nowrap",flexShrink:0}}>{label}</button>
-  );
-  return(
-    <div>
-      <div style={{padding:"8px 12px",borderBottom:`1px solid ${BORDER}`,display:"flex",gap:"6px",alignItems:"center",overflow:"hidden"}}>
-        <input value={quickTitle} onChange={e=>setQuickTitle(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")quickAdd();}} placeholder="目標を入力してEnter" style={{flex:1,minWidth:0,background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.1)",borderRadius:"6px",padding:"7px 8px",color:TEXT,fontSize:"12px",outline:"none"}}/>
-        <select value={quickArea} onChange={e=>setQuickArea(e.target.value)} style={{background:`${AREA_COLORS[quickArea]}22`,color:AREA_COLORS[quickArea],border:"none",borderRadius:"4px",fontSize:"10px",padding:"5px 4px"}}>
-          {LIFE_AREAS.map(a=><option key={a} value={a}>{a}</option>)}
-        </select>
-        <button onClick={quickAdd} style={{background:"#3B82F6",color:"#fff",border:"none",borderRadius:"5px",padding:"5px 12px",fontSize:"11px",cursor:"pointer",flexShrink:0}}>追加</button>
-        <button onClick={()=>setShowBulk(true)} style={{background:"rgba(255,255,255,.05)",color:MUTED,border:"1px solid rgba(255,255,255,.1)",borderRadius:"5px",padding:"5px 8px",fontSize:"11px",cursor:"pointer",flexShrink:0}}>一括</button>
-      </div>
-      <div style={{padding:"5px 12px",display:"flex",gap:"4px",borderBottom:`1px solid ${BORDER}`,overflowX:"auto",WebkitOverflowScrolling:"touch"}}>
-        <Pill active={statusF==="全て"} label="全て" onClick={()=>setStatusF("全て")}/>
-        {STATUSES.map(s=><Pill key={s} active={statusF===s} color={STATUS_COLORS[s]?.dot} label={s} onClick={()=>setStatusF(s)}/>)}
-      </div>
-      <div style={{padding:"4px 12px",display:"flex",gap:"4px",borderBottom:`1px solid ${BORDER}`,overflowX:"auto",WebkitOverflowScrolling:"touch"}}>
-        <Pill active={areaF==="全て"} label="全て" onClick={()=>setAreaF("全て")}/>
-        {LIFE_AREAS.map(a=><Pill key={a} active={areaF===a} color={AREA_COLORS[a]} label={a} onClick={()=>setAreaF(a)}/>)}
-      </div>
-      <div style={{padding:"4px 12px",display:"flex",gap:"4px",borderBottom:`1px solid ${BORDER}`,overflowX:"auto",WebkitOverflowScrolling:"touch"}}>
-        <Pill active={horizonF==="全て"} label="全て" onClick={()=>setHorizonF("全て")}/>
-        {TIME_HORIZONS.map(h=><Pill key={h} active={horizonF===h} color={HORIZON_COLORS[h]} label={h} onClick={()=>setHorizonF(h)}/>)}
-      </div>
-      <div style={{padding:"10px 12px"}}>
-        <div style={{textAlign:"right",fontSize:"10px",color:MUTED,marginBottom:"6px"}}>完了 {done}/{all.length}</div>
-        {roots.map(id=><NodeCard key={id} nodeId={id} nodes={data.nodes} depth={0} onUpdate={upd} onAdd={addChild} onDelete={del} areaF={areaF} horizonF={horizonF} statusF={statusF}/>)}
-        {roots.length===0&&<div style={{color:MUTED,textAlign:"center",padding:"30px",fontSize:"12px"}}>条件に合う目標がありません</div>}
-      </div>
-      {showBulk&&<BulkImport onImport={bulkImport} onClose={()=>setShowBulk(false)} defaultArea={quickArea} defaultHorizon={quickHorizon}/>}
-    </div>
-  );
+  const roots=goals.rootIds.filter(id=>nodeMatches(id));
+  const pill=(val,cur,type,color)=>`<button onclick="setF('${type}','${val}')" class="pill" style="${cur===val?`background:${color||'#1C1917'}18;color:${color||'#1C1917'};border-color:${color||'#1C1917'}44`:""}">${val}</button>`;
+  return`<div>
+<div class="quick-add">
+  <input id="qinp" class="input-clean" placeholder="目標を入力してEnter" onkeydown="if(event.key==='Enter')quickAdd()" style="margin:0"/>
+  <select id="qarea" style="background:var(--cream);border:1.5px solid rgba(0,0,0,.08);border-radius:8px;color:var(--text);font-size:10px;padding:5px 4px;font-weight:700">${AREAS.map(a=>`<option>${a}</option>`).join("")}</select>
+  <button onclick="quickAdd()" class="btn-primary" style="padding:8px 12px">追加</button>
+  <button onclick="S.bulkOpen=true;render()" class="btn-outline">一括</button>
+</div>
+<div class="filter-bar">${pill("全て",S.sf,"s","")}${STATUSES.map(s=>pill(s,S.sf,"s",s==="完了"?"#10B981":s==="進行中"?"#3B82F6":"#78716C")).join("")}</div>
+<div class="filter-bar">${pill("全て",S.af,"a","")}${AREAS.map(a=>pill(a,S.af,"a",AREA_COLOR[a])).join("")}</div>
+<div class="filter-bar">${pill("全て",S.hf,"h","")}${HORIZONS.map(h=>pill(h,S.hf,"h",HOR_COLOR[h])).join("")}</div>
+<div style="padding:12px 14px">
+  <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+    <span style="font-size:10px;color:var(--text-light);font-weight:600;background:var(--warm-white);padding:3px 8px;border-radius:10px;border:1px solid var(--border)">完了 ${done}/${all.length}</span>
+  </div>
+  ${roots.map(id=>nodeHTML(id,0)).join("")}
+  ${roots.length===0?'<div style="text-align:center;padding:40px;color:var(--text-light);font-size:13px">条件に合う目標がありません</div>':""}
+</div>
+${S.bulkOpen?`<div class="modal-overlay"><div class="modal-sheet">
+<div style="font-size:15px;font-weight:800;margin-bottom:4px;color:var(--text)">📋 一括登録</div>
+<div style="font-size:11px;color:var(--text-muted);margin-bottom:10px">インデントでサブタスクになります</div>
+<textarea id="bulktext" rows="7" class="textarea-clean" placeholder="目標A&#10;  サブ目標1&#10;  サブ目標2&#10;目標B"></textarea>
+<div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;align-items:center">
+  <select id="bulkarea" style="background:var(--cream);border:1.5px solid rgba(0,0,0,.08);border-radius:8px;color:var(--text);font-size:11px;padding:5px 6px">${AREAS.map(a=>`<option>${a}</option>`).join("")}</select>
+  <select id="bulkhor" style="background:var(--cream);border:1.5px solid rgba(0,0,0,.08);border-radius:8px;color:var(--text);font-size:11px;padding:5px 6px">${HORIZONS.map(h=>`<option>${h}</option>`).join("")}</select>
+  <div style="flex:1"></div>
+  <button onclick="S.bulkOpen=false;render()" class="btn-outline">キャンセル</button>
+  <button onclick="doBulk()" class="btn-primary">登録</button>
+</div></div></div>`:""}
+</div>`;
 }
 
-// ── MeditationTimer ───────────────────────────────────────────────────────────
-function MeditationTimer(){
-  const [mins,setMins]=useState(5);
-  const [secs,setSecs]=useState(null);
-  const [running,setRunning]=useState(false);
-  const [done,setDone]=useState(false);
-  const ref=useRef(null);
-  useEffect(()=>{
-    if(running&&secs!==null){ref.current=setInterval(()=>setSecs(s=>{if(s<=1){clearInterval(ref.current);setRunning(false);setDone(true);return 0;}return s-1;}),1000);}
-    return()=>clearInterval(ref.current);
-  },[running]);
-  const fmt=s=>s===null?`${mins}:00`:`${Math.floor(s/60)}:${(s%60).toString().padStart(2,"0")}`;
-  return(
-    <div style={{background:"rgba(16,185,129,.07)",border:"1px solid rgba(16,185,129,.2)",borderRadius:"10px",padding:"12px",textAlign:"center",marginBottom:"12px"}}>
-      <div style={{fontSize:"10px",color:"#34D399",marginBottom:"6px"}}>🧘 瞑想タイマー</div>
-      {!running&&secs===null&&<div style={{display:"flex",justifyContent:"center",gap:"5px",marginBottom:"6px"}}>{[3,5,10].map(m=><button key={m} onClick={()=>setMins(m)} style={{background:mins===m?"rgba(16,185,129,.25)":"rgba(255,255,255,.04)",border:`1px solid ${mins===m?"#10B981":"rgba(255,255,255,.1)"}`,color:mins===m?"#34D399":MUTED,borderRadius:"20px",padding:"2px 10px",fontSize:"11px",cursor:"pointer"}}>{m}分</button>)}</div>}
-      <div style={{fontSize:"26px",fontWeight:"700",color:done?"#34D399":running?"#60A5FA":TEXT,fontFamily:"monospace",marginBottom:"6px"}}>{done?"完了✨":fmt(secs)}</div>
-      {done?<button onClick={()=>{setDone(false);setSecs(null);}} style={{background:"rgba(16,185,129,.15)",border:"1px solid rgba(16,185,129,.3)",color:"#34D399",borderRadius:"5px",padding:"4px 12px",fontSize:"11px",cursor:"pointer"}}>もう一度</button>
-      :running?<button onClick={()=>{clearInterval(ref.current);setRunning(false);setSecs(null);}} style={{background:"rgba(248,113,113,.12)",border:"1px solid rgba(248,113,113,.3)",color:"#F87171",borderRadius:"5px",padding:"4px 12px",fontSize:"11px",cursor:"pointer"}}>停止</button>
-      :<button onClick={()=>{setSecs(mins*60);setRunning(true);setDone(false);}} style={{background:"rgba(16,185,129,.15)",border:"1px solid rgba(16,185,129,.3)",color:"#34D399",borderRadius:"5px",padding:"4px 12px",fontSize:"11px",cursor:"pointer"}}>開始</button>}
-    </div>
-  );
+// ── Routine Tab ────────────────────────────────────────────────────────────────
+function buildRoutineTab(){
+  const e=getEntry();
+  const tasks=e.tasks||[{t:"",done:false,ts:""},{t:"",done:false,ts:""},{t:"",done:false,ts:""}];
+  const yest=routineEntries[yesterdayStr()];
+  const total=Object.keys(routineEntries).length;
+  const isToday=S.rv==="today";
+  const {medMins:mm,medSecs:ms,medRunning:mr,medDone:md}=S;
+  const monthOpts=grandparents().length?grandparents():parentsOfLeaves();
+  const weekOpts=parentsOfLeaves();
+  const leafOpts=leaves();
+  const fmtMed=s=>s===null||s===undefined?mm+":00":Math.floor(s/60)+":"+(s%60).toString().padStart(2,"0");
+
+  let content="";
+  if(isToday){content=`<div style="padding:14px" class="fade-in">
+<div class="today-banner">
+  <span class="sun">🌅</span>
+  <div><div style="font-size:14px;font-weight:800">${todayLabel()}</div><div class="date-text">${total}日目のルーティン</div></div>
+</div>
+
+<div class="card card-purple">
+  <div class="section-label label-purple">📅 今月の目標（${monthStr()}）</div>
+  <select onchange="setMonthly(this.value)" class="select-clean" style="color:${monthlyGoal?'var(--text)':'var(--text-light)'}">
+    <option value="">月頭に選択...</option>
+    ${monthOpts.map(n=>`<option value="${esc(n.title)}"${monthlyGoal===n.title?' selected="selected"':""}>${esc(n.title)}</option>`).join("")}
+  </select>
+  ${monthlyGoal?`<div style="margin-top:6px;font-size:12px;color:var(--purple);font-weight:700;padding:4px 0">✦ ${esc(monthlyGoal)}</div>`:""}
+</div>
+
+<div class="card card-coral">
+  <div class="section-label label-coral">📆 今週の目標（${weekStr()}〜）</div>
+  <select onchange="setWeekly(this.value)" class="select-clean" style="color:${weeklyGoal?'var(--text)':'var(--text-light)'}">
+    <option value="">週頭に選択...</option>
+    ${weekOpts.map(n=>`<option value="${esc(n.title)}"${weeklyGoal===n.title?' selected="selected"':""}>${esc(n.title)}</option>`).join("")}
+  </select>
+  ${weeklyGoal?`<div style="margin-top:6px;font-size:12px;color:var(--coral);font-weight:700;padding:4px 0">✦ ${esc(weeklyGoal)}</div>`:""}
+</div>
+
+${yest&&yest.challenge?`<div class="card" style="border-left:3px solid var(--amber);background:var(--amber-pale)">
+  <div class="section-label label-amber">⚠️ 昨日の課題（自動表示）</div>
+  <div style="font-size:13px;color:var(--text);line-height:1.6;font-weight:500">${esc(yest.challenge)}</div>
+</div>`:""}
+
+<div class="card card-amber">
+  <div class="section-label label-amber">🎯 今日の目標</div>
+  <select onchange="doUpdateEntry('goal',this.value)" class="select-clean" style="color:${e.goal?'var(--text)':'var(--text-light)'}">
+    <option value="">今日の目標を選択...</option>
+    ${leafOpts.map(n=>`<option value="${esc(n.title)}"${e.goal===n.title?' selected="selected"':""}>${esc(n.title)}</option>`).join("")}
+  </select>
+  ${e.goal?`<div style="margin-top:6px;font-size:13px;color:var(--amber);font-weight:800;padding:4px 0">▶ ${esc(e.goal)}</div>`:""}
+</div>
+
+<div class="card card-amber" style="border-left-color:#8B5CF6">
+  <div class="section-label" style="color:#8B5CF6">📋 今日のタスク</div>
+  ${tasks.map((t,i)=>`<div style="display:flex;align-items:center;gap:9px;margin-bottom:8px">
+    <div onclick="doToggleTask(${i})" class="check-box ${t.done?'checked':''}">${t.done?'<span style="color:#fff;font-size:10px;font-weight:800">✓</span>':""}</div>
+    <input value="${esc(t.t||"")}" placeholder="タスク ${i+1}" onchange="doUpdateTask(${i},'t',this.value)" class="input-clean" style="margin:0;text-decoration:${t.done?'line-through':'none'};color:${t.done?'var(--text-light)':'var(--text)'}"/>
+    ${t.done&&t.ts?`<span style="font-size:9px;color:var(--green);font-weight:700;flex-shrink:0;white-space:nowrap">${t.ts}</span>`:""}
+  </div>`).join("")}
+</div>
+
+${yest&&yest.challenge?`<div class="card card-green">
+  <div class="section-label label-green">🔄 昨日の課題 → 今日どうするか</div>
+  <textarea placeholder="今日取る行動を書く" rows="2" onchange="doUpdateEntry('challengeResponse',this.value)" class="textarea-clean">${esc(e.challengeResponse||"")}</textarea>
+</div>`:""}
+
+<div class="med-timer">
+  <div style="font-size:10px;font-weight:800;letter-spacing:1px;color:#065F46;margin-bottom:8px">🧘 瞑想タイマー</div>
+  ${!mr&&(ms===null||ms===undefined)?`<div style="display:flex;justify-content:center;gap:6px;margin-bottom:10px">${[3,5,10].map(m=>`<button onclick="S.medMins=${m};render()" style="background:${mm===m?'#059669':'rgba(255,255,255,.6)'};border:none;color:${mm===m?'#fff':'#065F46'};border-radius:15px;padding:4px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">${m}分</button>`).join("")}</div>`:""}
+  <div class="med-time">${md?"完了 ✨":fmtMed(ms)}</div>
+  <div style="margin-top:10px">
+    ${md?`<button class="med-btn" onclick="S.medDone=false;S.medSecs=null;render()">もう一度</button>`
+    :mr?`<button class="med-btn" style="background:#DC2626;box-shadow:0 2px 8px rgba(220,38,38,.3)" onclick="clearInterval(S.medInterval);S.medRunning=false;S.medSecs=null;render()">停止</button>`
+    :`<button class="med-btn" onclick="startMed()">開始</button>`}
+  </div>
+</div>
+
+<div class="card card-red">
+  <div class="section-label label-red">⚠️ 今日の課題（夜に記録）</div>
+  <textarea placeholder="今日うまくいかなかったこと・改善したいこと" rows="2" onchange="doUpdateEntry('challenge',this.value)" class="textarea-clean">${esc(e.challenge||"")}</textarea>
+</div>
+
+<div style="text-align:center;font-size:10px;color:var(--text-light);padding:8px 0;font-weight:600">入力すると自動保存されます（右上 ✓）</div>
+</div>`;}
+  else{
+    const dates=Object.keys(routineEntries).filter(d=>d!==todayStr()).sort((a,b)=>b.localeCompare(a));
+    const filtered=S.search?dates.filter(d=>{const en=routineEntries[d];return[en.goal||"",...(en.tasks||[]).map(t=>t.t||""),en.challenge||"",en.challengeResponse||""].join(" ").toLowerCase().includes(S.search.toLowerCase())}):dates;
+    content=`<div style="padding:14px" class="fade-in">
+<input oninput="S.search=this.value;render()" value="${esc(S.search)}" placeholder="🔍 過去の記録を検索..." class="input-clean" style="margin-bottom:12px"/>
+${filtered.length===0?'<div style="text-align:center;padding:40px;color:var(--text-light);font-size:13px">記録がまだありません</div>':filtered.map(d=>{
+  const en=routineEntries[d];const ts=en.tasks||[];
+  return`<div class="history-card">
+<div class="history-date">${fmtDate(d)}</div>
+${en.goal?`<div style="font-size:12px;color:var(--amber);font-weight:700;margin-bottom:4px">🎯 ${esc(en.goal)}</div>`:""}
+${ts.filter(t=>t.t||t).map(t=>{const tx=t.t||t||"";const dn=t.done;return tx?`<div style="font-size:12px;color:${dn?"var(--green)":"var(--text)"};padding-left:6px;text-decoration:${dn?"line-through":"none"};font-weight:${dn?"600":"400"}">${dn?"✓ ":"· "}${esc(tx)}${t.ts?` <span style="font-size:10px;color:var(--text-light)">(${t.ts})</span>`:""}</div>`:""}).join("")}
+${en.challengeResponse?`<div style="font-size:11px;color:var(--green);margin-top:5px;font-weight:600">🔄 ${esc(en.challengeResponse)}</div>`:""}
+${en.challenge?`<div style="font-size:11px;color:var(--red);margin-top:2px;font-weight:600">⚠️ ${esc(en.challenge)}</div>`:""}
+</div>`;}).join("")}
+</div>`;
+  }
+
+  return`<div>
+<div style="display:flex;padding:10px 14px;gap:6px;border-bottom:1px solid var(--border);background:var(--warm-white);align-items:center">
+  <button onclick="S.rv='today';render()" style="background:${S.rv==='today'?'var(--amber-pale)':'var(--cream)'};border:1.5px solid ${S.rv==='today'?'var(--amber)':'var(--border)'};color:${S.rv==='today'?'var(--amber)':'var(--text-muted)'};border-radius:20px;padding:5px 14px;font-size:11px;font-weight:700;cursor:pointer">今日</button>
+  <button onclick="S.rv='history';render()" style="background:${S.rv==='history'?'var(--amber-pale)':'var(--cream)'};border:1.5px solid ${S.rv==='history'?'var(--amber)':'var(--border)'};color:${S.rv==='history'?'var(--amber)':'var(--text-muted)'};border-radius:20px;padding:5px 14px;font-size:11px;font-weight:700;cursor:pointer">振り返り</button>
+  <span style="margin-left:auto;font-size:10px;color:var(--text-light);font-weight:600">${total}日目</span>
+</div>
+${content}</div>`;
 }
 
-// ── RoutineTab ────────────────────────────────────────────────────────────────
-function RoutineTab({goalData}){
-  const today=todayKey(),yest=yestKey(),month=monthKey(),week=weekKey();
-  const [entries,setEntries]=useState(()=>lsGet("routine-entries",{}));
-  const [monthlyGoal,setMonthlyGoal]=useState(()=>lsGet(`monthly-${month}`,""));
-  const [weeklyGoal,setWeeklyGoal]=useState(()=>lsGet(`weekly-${week}`,""));
-  const [view,setView]=useState("today");
-  const [search,setSearch]=useState("");
-
-  const saveEntry=(date,data)=>{
-    const ne={...entries,[date]:data};
-    setEntries(ne);
-    lsSet("routine-entries",ne);
-  };
-  const cur=entries[today]||{goal:"",tasks:[{text:"",done:false,ts:null},{text:"",done:false,ts:null},{text:"",done:false,ts:null}],challenge:"",challengeResponse:""};
-  const upd=(field,val)=>saveEntry(today,{...cur,[field]:val});
-  const updTask=(i,field,val)=>{
-    const tasks=[...(cur.tasks||[{text:"",done:false,ts:null},{text:"",done:false,ts:null},{text:"",done:false,ts:null}])];
-    tasks[i]={...tasks[i],[field]:val};
-    if(field==="done"&&val)tasks[i].ts=new Date().toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"});
-    saveEntry(today,{...cur,tasks});
-  };
-  const yestEntry=entries[yest];
-  const totalDays=Object.keys(entries).length;
-  const datesDesc=Object.keys(entries).filter(d=>d!==today).sort((a,b)=>b.localeCompare(a));
-  const filtered=search?datesDesc.filter(d=>{const e=entries[d];return[e.goal,e.challenge,e.challengeResponse,...(e.tasks||[]).map(t=>t.text||t||"")].join(" ").toLowerCase().includes(search.toLowerCase());}):datesDesc;
-  const goalNodes=goalData?.nodes||{};
-  const leafOptions=getLeafNodes(goalNodes);
-  const weekOptions=getParentsOfLeaves(goalNodes);
-  const monthOptions=getGrandparentsOfLeaves(goalNodes);
-  const tasks=cur.tasks||[{text:"",done:false,ts:null},{text:"",done:false,ts:null},{text:"",done:false,ts:null}];
-
-  return(
-    <div>
-      <div style={{display:"flex",padding:"8px 12px",gap:"5px",borderBottom:`1px solid ${BORDER}`,alignItems:"center"}}>
-        {[["today","今日"],["history","振り返り"]].map(([id,label])=>(
-          <button key={id} onClick={()=>setView(id)} style={{background:view===id?"rgba(59,130,246,.15)":"transparent",border:`1px solid ${view===id?"#3B82F6":"rgba(255,255,255,.08)"}`,color:view===id?"#60A5FA":MUTED,borderRadius:"20px",padding:"3px 12px",fontSize:"11px",cursor:"pointer"}}>{label}</button>
-        ))}
-        <span style={{marginLeft:"auto",fontSize:"10px",color:MUTED}}>{totalDays}日目</span>
-      </div>
-      {view==="today"?(
-        <div style={{padding:"12px"}}>
-          <div style={{textAlign:"center",fontSize:"11px",color:MUTED,marginBottom:"10px"}}>{today.replace(/-/g,"/")} の朝ルーティン</div>
-          <div style={{background:"rgba(168,139,250,.07)",border:"1px solid rgba(168,139,250,.2)",borderRadius:"8px",padding:"10px",marginBottom:"8px"}}>
-            <div style={{fontSize:"10px",color:"#A78BFA",fontWeight:"600",marginBottom:"6px"}}>📅 今月の目標（{month}）</div>
-            <select value={monthlyGoal} onChange={e=>{setMonthlyGoal(e.target.value);lsSet(`monthly-${month}`,e.target.value);}} style={{width:"100%",background:"rgba(255,255,255,.05)",border:"1px solid rgba(168,139,250,.3)",borderRadius:"6px",padding:"7px 8px",color:monthlyGoal?TEXT:MUTED,fontSize:"13px",boxSizing:"border-box"}}>
-              <option value="">月頭に目標を選択...</option>
-              {(monthOptions.length>0?monthOptions:weekOptions).map(n=><option key={n.id} value={n.title}>{n.title}</option>)}
-            </select>
-          </div>
-          <div style={{background:"rgba(52,211,153,.07)",border:"1px solid rgba(52,211,153,.2)",borderRadius:"8px",padding:"10px",marginBottom:"10px"}}>
-            <div style={{fontSize:"10px",color:"#34D399",fontWeight:"600",marginBottom:"6px"}}>📆 今週の目標（{week}〜）</div>
-            <select value={weeklyGoal} onChange={e=>{setWeeklyGoal(e.target.value);lsSet(`weekly-${week}`,e.target.value);}} style={{width:"100%",background:"rgba(255,255,255,.05)",border:"1px solid rgba(52,211,153,.3)",borderRadius:"6px",padding:"7px 8px",color:weeklyGoal?TEXT:MUTED,fontSize:"13px",boxSizing:"border-box"}}>
-              <option value="">週頭に目標を選択...</option>
-              {weekOptions.map(n=><option key={n.id} value={n.title}>{n.title}</option>)}
-            </select>
-          </div>
-          {yestEntry?.challenge&&(
-            <div style={{background:"rgba(251,191,36,.07)",border:"1px solid rgba(251,191,36,.2)",borderRadius:"8px",padding:"10px",marginBottom:"10px"}}>
-              <div style={{fontSize:"10px",color:"#FBBF24",marginBottom:"4px",fontWeight:"600"}}>⚠️ 昨日の課題（自動表示）</div>
-              <div style={{fontSize:"13px",color:TEXT,lineHeight:"1.5"}}>{yestEntry.challenge}</div>
-            </div>
-          )}
-          <div style={{marginBottom:"10px"}}>
-            <div style={{fontSize:"10px",color:"#60A5FA",marginBottom:"4px",fontWeight:"600"}}>🎯 今日の目標</div>
-            <select value={cur.goal||""} onChange={e=>upd("goal",e.target.value)} style={{width:"100%",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.09)",borderRadius:"6px",padding:"8px 10px",color:cur.goal?TEXT:MUTED,fontSize:"13px",boxSizing:"border-box"}}>
-              <option value="">目標を選択...</option>
-              {leafOptions.map(n=><option key={n.id} value={n.title}>{n.title}</option>)}
-            </select>
-          </div>
-          <div style={{marginBottom:"10px"}}>
-            <div style={{fontSize:"10px",color:"#A78BFA",marginBottom:"4px",fontWeight:"600"}}>📋 今日のタスク（3つまで）</div>
-            {tasks.map((t,i)=>(
-              <div key={i} style={{display:"flex",alignItems:"center",gap:"7px",marginBottom:"5px"}}>
-                <div onClick={()=>updTask(i,"done",!t.done)} style={{width:"16px",height:"16px",borderRadius:"3px",border:`2px solid ${t.done?"#10B981":"rgba(255,255,255,.2)"}`,background:t.done?"#10B981":"transparent",cursor:"pointer",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                  {t.done&&<span style={{color:"#fff",fontSize:"9px"}}>✓</span>}
-                </div>
-                <input value={t.text||""} onChange={e=>updTask(i,"text",e.target.value)} placeholder={`タスク ${i+1}`} style={{flex:1,background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.09)",borderRadius:"6px",padding:"6px 8px",color:t.done?MUTED:TEXT,fontSize:"13px",outline:"none",textDecoration:t.done?"line-through":"none"}}/>
-                {t.done&&t.ts&&<span style={{fontSize:"9px",color:"#10B981",flexShrink:0,whiteSpace:"nowrap"}}>{t.ts}</span>}
-              </div>
-            ))}
-          </div>
-          {yestEntry?.challenge&&(
-            <div style={{marginBottom:"10px"}}>
-              <div style={{fontSize:"10px",color:"#34D399",marginBottom:"4px",fontWeight:"600"}}>🔄 昨日の課題 → 今日どうするか</div>
-              <textarea value={cur.challengeResponse||""} onChange={e=>upd("challengeResponse",e.target.value)} rows={2} style={{width:"100%",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.09)",borderRadius:"6px",padding:"8px",color:TEXT,fontSize:"13px",boxSizing:"border-box",resize:"none"}}/>
-            </div>
-          )}
-          <MeditationTimer/>
-          <div style={{marginBottom:"6px"}}>
-            <div style={{fontSize:"10px",color:"#F87171",marginBottom:"4px",fontWeight:"600"}}>⚠️ 今日の課題（夜に記録）</div>
-            <textarea value={cur.challenge||""} onChange={e=>upd("challenge",e.target.value)} rows={2} style={{width:"100%",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.09)",borderRadius:"6px",padding:"8px",color:TEXT,fontSize:"13px",boxSizing:"border-box",resize:"none"}}/>
-          </div>
-          <div style={{textAlign:"center",fontSize:"9px",color:"#374151",marginTop:"6px"}}>自動保存されています</div>
-        </div>
-      ):(
-        <div style={{padding:"12px"}}>
-          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 過去の記録を検索..." style={{width:"100%",background:"rgba(255,255,255,.04)",border:"1px solid rgba(255,255,255,.1)",borderRadius:"7px",padding:"7px 10px",color:TEXT,fontSize:"12px",boxSizing:"border-box",marginBottom:"10px",outline:"none"}}/>
-          {filtered.length===0?<div style={{color:MUTED,textAlign:"center",padding:"30px",fontSize:"12px"}}>記録がありません</div>
-          :filtered.map(date=>{
-            const e=entries[date];const ts=e.tasks||[];
-            return(
-              <div key={date} style={{background:CARD,border:`1px solid ${BORDER}`,borderRadius:"8px",padding:"10px",marginBottom:"8px"}}>
-                <div style={{fontSize:"10px",color:"#FBBF24",marginBottom:"5px",fontWeight:"600"}}>{date.replace(/-/g,"/")}</div>
-                {e.goal&&<div style={{fontSize:"12px",color:"#60A5FA",marginBottom:"3px"}}>🎯 {e.goal}</div>}
-                {ts.filter(t=>(t.text||t||"")).map((t,i)=>{const tx=t.text||t||"";const dn=t.done||false;const stamp=t.ts||null;return tx?<div key={i} style={{fontSize:"11px",color:dn?"#10B981":TEXT,marginBottom:"2px",paddingLeft:"8px",textDecoration:dn?"line-through":"none"}}>{dn?"✓":""} {tx}{stamp?` (${stamp})`:""}</div>:null;})}
-                {e.challengeResponse&&<div style={{fontSize:"11px",color:"#34D399",marginTop:"4px"}}>🔄 {e.challengeResponse}</div>}
-                {e.challenge&&<div style={{fontSize:"11px",color:"#F87171",marginTop:"2px"}}>⚠️ {e.challenge}</div>}
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
+// ── App ────────────────────────────────────────────────────────────────────────
+function buildApp(){
+  const isR=S.tab==="routine";
+  return`<div style="min-height:100vh;background:var(--cream)">
+<div class="header">
+  <div class="header-top">
+    <div class="header-title">${isR?"🌅 朝ルーティン":"🎯 目標管理"}</div>
+    <div class="header-date">${todayLabel()}</div>
+  </div>
+  <div class="tabs">
+    <button onclick="S.tab='routine';render()" class="tab-btn ${isR?'active':''}">🌅 朝ルーティン</button>
+    <button onclick="S.tab='goals';render()" class="tab-btn ${!isR?'active':''}">🎯 目標管理</button>
+  </div>
+</div>
+${isR?buildRoutineTab():buildGoalTab()}
+</div>`;
 }
 
-// ── App ───────────────────────────────────────────────────────────────────────
-function App(){
-  const [tab,setTab]=useState("routine");
-  const [data,setData]=useState(()=>lsGet("goal-data",defaultGoalData));
-  return(
-    <div style={{minHeight:"100vh",background:BG,color:TEXT}}>
-      <div style={{position:"sticky",top:0,zIndex:100,background:BG,borderBottom:`1px solid ${BORDER}`}}>
-        <div style={{padding:"10px 14px 0",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-          <div style={{fontSize:"15px",fontWeight:"700"}}>{tab==="routine"?"🌅 朝ルーティン":"🎯 目標管理"}</div>
-          <div style={{fontSize:"10px",color:MUTED}}>{todayKey().replace(/-/g,"/")}</div>
-        </div>
-        <div style={{display:"flex",marginTop:"6px"}}>
-          {[["routine","🌅 朝ルーティン"],["goals","🎯 目標管理"]].map(([id,label])=>(
-            <button key={id} onClick={()=>setTab(id)} style={{flex:1,padding:"8px 4px",background:"none",border:"none",borderBottom:`2px solid ${tab===id?"#3B82F6":"transparent"}`,color:tab===id?"#60A5FA":MUTED,fontSize:"12px",cursor:"pointer",fontWeight:tab===id?"600":"400"}}>{label}</button>
-          ))}
-        </div>
-      </div>
-      {tab==="routine"?<RoutineTab goalData={data}/>:<GoalTab data={data} setData={setData}/>}
-    </div>
-  );
-}
+function render(){document.getElementById("app").innerHTML=buildApp();}
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+// ── Actions ────────────────────────────────────────────────────────────────────
+window.setF=function(t,v){if(t==="a")S.af=v;else if(t==="h")S.hf=v;else S.sf=v;render();};
+window.setMonthly=function(v){monthlyGoal=v;lsSet("monthly-"+monthStr(),v);render();};
+window.setWeekly=function(v){weeklyGoal=v;lsSet("weekly-"+weekStr(),v);render();};
+window.doUpdateEntry=function(f,v){const e=getEntry();e[f]=v;routineEntries[todayStr()]=e;saveEntries();render();};
+window.doUpdateTask=function(i,f,v){const e=getEntry();if(!e.tasks)e.tasks=[{t:"",done:false,ts:""},{t:"",done:false,ts:""},{t:"",done:false,ts:""}];e.tasks[i]={...e.tasks[i],[f]:v};routineEntries[todayStr()]=e;saveEntries();};
+window.doToggleTask=function(i){const e=getEntry();if(!e.tasks)e.tasks=[{t:"",done:false,ts:""},{t:"",done:false,ts:""},{t:"",done:false,ts:""}];e.tasks[i].done=!e.tasks[i].done;if(e.tasks[i].done)e.tasks[i].ts=new Date().toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"});routineEntries[todayStr()]=e;saveEntries();render();};
+window.startMed=function(){clearInterval(S.medInterval);S.medSecs=S.medMins*60;S.medRunning=true;S.medDone=false;S.medInterval=setInterval(()=>{S.medSecs--;if(S.medSecs<=0){clearInterval(S.medInterval);S.medRunning=false;S.medDone=true;}render();},1000);render();};
+window.cycleStatus=function(id){const n=goals.nodes[id];if(!n)return;n.status=n.status==="完了"?"未着手":n.status==="未着手"?"進行中":"完了";if(n.status==="完了")n.progress=100;saveGoals();render();};
+window.editTitle=function(id){const n=goals.nodes[id];if(!n)return;const t=prompt("タイトルを編集",n.title);if(t&&t.trim()){n.title=t.trim();saveGoals();render();}};
+window.delNode=function(id){if(!confirm("削除しますか？"))return;const n=goals.nodes[id];if(!n)return;const del=new Set();const col=i=>{del.add(i);(goals.nodes[i]?.children||[]).forEach(col);};col(id);del.forEach(i=>delete goals.nodes[i]);if(n.parentId&&goals.nodes[n.parentId])goals.nodes[n.parentId].children=goals.nodes[n.parentId].children.filter(c=>c!==id);goals.rootIds=goals.rootIds.filter(r=>r!==id);saveGoals();render();};
+window.updNode=function(id,f,v){goals.nodes[id][f]=v;saveGoals();render();};
+window.addChild=function(pid){const nid=uid();const p=goals.nodes[pid];goals.nodes[nid]={id:nid,title:"新しい目標",timeHorizon:p.timeHorizon,status:"未着手",progress:0,priority:"中",lifeArea:p.lifeArea||"仕事",parentId:pid,children:[]};goals.nodes[pid].children.push(nid);saveGoals();render();};
+window.quickAdd=function(){const inp=document.getElementById("qinp");if(!inp||!inp.value.trim())return;const nid=uid();const area=document.getElementById("qarea")?.value||"仕事";goals.nodes[nid]={id:nid,title:inp.value.trim(),timeHorizon:"1年後",status:"未着手",progress:0,priority:"高",lifeArea:area,parentId:null,children:[]};goals.rootIds.push(nid);saveGoals();inp.value="";render();};
+window.doBulk=function(){const text=document.getElementById("bulktext")?.value||"";const area=document.getElementById("bulkarea")?.value||"仕事";const hor=document.getElementById("bulkhor")?.value||"1年後";if(!text.trim())return;const{ns,rs}=parseIndented(text,area,hor);Object.assign(goals.nodes,ns);goals.rootIds.push(...rs);saveGoals();S.bulkOpen=false;render();};
+
+render();
 </script>
 </body>
 </html>
