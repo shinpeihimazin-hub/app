@@ -300,10 +300,11 @@ const HOR_COLOR={"人生の目標":"#8B5CF6","5年後":"#3B82F6","1年後":"#10B
 const STA_COLOR={"未着手":{bg:"#F5F5F4",t:"#78716C"},"進行中":{bg:"#DBEAFE",t:"#1D4ED8"},"完了":{bg:"#D1FAE5",t:"#065F46"}};
 
 const uid=()=>Math.random().toString(36).slice(2,9);
-const todayStr=()=>new Date().toISOString().slice(0,10);
-const yesterdayStr=()=>{const d=new Date();d.setDate(d.getDate()-1);return d.toISOString().slice(0,10);};
-const monthStr=()=>new Date().toISOString().slice(0,7);
-const weekStr=()=>{const d=new Date();const day=d.getDay()||7;d.setDate(d.getDate()-day+1);return d.toISOString().slice(0,10);};
+const fmtDate=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const todayStr=()=>fmtDate(new Date());
+const yesterdayStr=()=>{const d=new Date();d.setDate(d.getDate()-1);return fmtDate(d);};
+const monthStr=()=>{const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;};
+const weekStr=()=>{const d=new Date();const day=d.getDay()||7;d.setDate(d.getDate()-day+1);return fmtDate(d);};
 const fmtDate=d=>d.replace(/-/g,"/");
 const weekdays=["日","月","火","水","木","金","土"];
 const todayLabel=()=>{const d=new Date();return`${d.getMonth()+1}月${d.getDate()}日（${weekdays[d.getDay()]}）`;};
@@ -319,7 +320,39 @@ let routineEntries=lsGet("routine-entries",{});
 let monthlyGoal=lsGet("monthly-"+monthStr(),"");
 let weeklyGoal=lsGet("weekly-"+weekStr(),"");
 
-let S={tab:"routine",rv:"today",search:"",bulkOpen:false,bulkEditOpen:false,af:"全て",hf:"全て",sf:"全て",medMins:5,medSecs:null,medRunning:false,medDone:false,medInterval:null,expanded:{},selected:{}};
+let S={tab:"routine",rv:"today",search:"",bulkOpen:false,editMode:false,af:"全て",hf:"全て",sf:"全て",medMins:5,medSecs:null,medRunning:false,medDone:false,medInterval:null,expanded:{},selected:{},taskView:"matrix"};
+
+// ── Tasks ──────────────────────────────────────────────────────────────────────
+let tasks=lsGet("task-list",[]);
+function saveTasks(){lsSet("task-list",tasks);}
+function syncLeafTasks(){
+  // Get all current leaf node IDs
+  const leafIds=new Set(Object.values(goals.nodes).filter(n=>!n.children||!n.children.length).map(n=>n.id));
+  // Remove tasks whose goal node no longer exists or is no longer a leaf
+  tasks=tasks.filter(t=>!t.goalNodeId||leafIds.has(t.goalNodeId));
+  // Add new leaf nodes not yet in tasks
+  const existing=new Set(tasks.filter(t=>t.goalNodeId).map(t=>t.goalNodeId));
+  leafIds.forEach(id=>{
+    if(!existing.has(id)){
+      const n=goals.nodes[id];if(!n)return;
+      tasks.push({id:uid(),title:n.title,importance:"中",deadline:null,status:"未着手",goalNodeId:id});
+    }
+  });
+  saveTasks();
+}
+function daysUntil(dateStr){
+  if(!dateStr)return null;
+  const today=new Date();today.setHours(0,0,0,0);
+  const d=new Date(dateStr);
+  return Math.ceil((d-today)/(1000*60*60*24));
+}
+function urgencyLevel(dateStr){
+  const d=daysUntil(dateStr);
+  if(d===null)return "none";
+  if(d<=3)return "high";
+  if(d<=7)return "medium";
+  return "low";
+}
 
 function calcProgress(id){
   const n=goals.nodes[id];if(!n)return 0;
@@ -373,12 +406,12 @@ function nodeHTML(id,depth){
   return`<div style="margin-left:${depth*16}px">
 <div class="node-card" style="border-left:3px solid ${hc};background:${sel?'rgba(245,158,11,.07)':'var(--warm-white)'};border:1px solid ${sel?'rgba(245,158,11,.4)':'var(--border)'}">
   <div style="display:flex;align-items:center;gap:6px;overflow:hidden">
-    <!-- Selection checkbox -->
-    <div onclick="toggleSel('${id}')" style="width:14px;height:14px;border-radius:3px;border:1.5px solid ${sel?'var(--amber)':'#D6D3D1'};background:${sel?'var(--amber)':'transparent'};cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s">${sel?'<span style="color:#fff;font-size:8px;font-weight:800">✓</span>':""}</div>
+    <!-- Selection checkbox (only in edit mode) -->
+    ${S.editMode?`<div onclick="toggleSel('${id}')" style="width:14px;height:14px;border-radius:3px;border:1.5px solid ${sel?'var(--amber)':'#D6D3D1'};background:${sel?'var(--amber)':'transparent'};cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s">${sel?'<span style="color:#fff;font-size:8px;font-weight:800">✓</span>':""}</div>`:""}
     <!-- Expand/collapse -->
     ${hasChildren?`<span onclick="toggleExp('${id}')" style="color:${exp?'var(--amber)':'#C7B8A8'};font-size:9px;flex-shrink:0;cursor:pointer;transition:transform .2s;transform:rotate(${exp?90:0}deg);display:inline-block">▶</span>`:`<div style="width:10px;flex-shrink:0"></div>`}
-    <!-- Status check -->
-    <div onclick="cycleStatus('${id}')" style="width:16px;height:16px;border-radius:5px;border:2px solid ${n.status==='完了'?'#10B981':'#D6D3D1'};background:${n.status==='完了'?'#10B981':'transparent'};cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s">${n.status==='完了'?'<span style="color:#fff;font-size:9px;font-weight:800">✓</span>':""}</div>
+    <!-- Status check - only for leaf nodes -->
+    ${!hasChildren?`<div onclick="cycleStatus('${id}')" style="width:16px;height:16px;border-radius:5px;border:2px solid ${n.status==='完了'?'#10B981':'#D6D3D1'};background:${n.status==='完了'?'#10B981':'transparent'};cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s">${n.status==='完了'?'<span style="color:#fff;font-size:9px;font-weight:800">✓</span>':""}</div>`:`<div style="width:16px;flex-shrink:0"></div>`}
     <!-- Title -->
     <span onclick="editTitle('${id}')" style="flex:1;min-width:0;font-size:13px;font-weight:600;color:${n.status==='完了'?'#A8A29E':'#1C1917'};text-decoration:${n.status==='完了'?'line-through':'none'};cursor:text;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(n.title)}</span>
     <span style="font-size:9px;padding:2px 6px;border-radius:10px;background:${n.priority==='高'?'#FEE2E2':n.priority==='中'?'#FEF3C7':'#F5F5F4'};color:${n.priority==='高'?'#DC2626':n.priority==='中'?'#D97706':'#78716C'};font-weight:700;flex-shrink:0">${n.priority||"中"}</span>
@@ -420,7 +453,8 @@ function buildGoalTab(){
 <div class="filter-bar">${pill("全て",S.af,"a","")}${AREAS.map(a=>pill(a,S.af,"a",AREA_COLOR[a])).join("")}</div>
 <div class="filter-bar">${pill("全て",S.hf,"h","")}${HORIZONS.map(h=>pill(h,S.hf,"h",HOR_COLOR[h])).join("")}</div>
 <div style="padding:12px 14px">
-  <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <button onclick="S.editMode=!S.editMode;if(!S.editMode)S.selected={};render()" style="background:${S.editMode?'var(--amber-pale)':'var(--cream)'};border:1.5px solid ${S.editMode?'var(--amber)':'var(--border)'};color:${S.editMode?'var(--amber)':'var(--text-muted)'};border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer">${S.editMode?'✕ 編集終了':'✏️ 編集'}</button>
     <span style="font-size:10px;color:var(--text-light);font-weight:600;background:var(--warm-white);padding:3px 8px;border-radius:10px;border:1px solid var(--border)">完了 ${done}/${all.length}</span>
   </div>
   ${roots.map(id=>nodeHTML(id,0)).join("")}
@@ -564,20 +598,110 @@ ${content}</div>`;
 }
 
 // ── App ────────────────────────────────────────────────────────────────────────
+
+// ── Task Tab (Eisenhower Matrix) ───────────────────────────────────────────────
+function buildTaskTab(){
+  syncLeafTasks();
+  const tv=S.taskView;
+  const active=tasks.filter(t=>t.status!=="完了");
+  const done=tasks.filter(t=>t.status==="完了");
+  function isImportant(t){return t.importance==="高"||t.importance==="中";}
+  function isUrgent(t){const u=urgencyLevel(t.deadline);return u==="high"||u==="medium";}
+  const q1=active.filter(t=>isImportant(t)&&isUrgent(t));
+  const q2=active.filter(t=>isImportant(t)&&!isUrgent(t));
+  const q3=active.filter(t=>!isImportant(t)&&isUrgent(t));
+  const q4=active.filter(t=>!isImportant(t)&&!isUrgent(t));
+  function taskCard(t){
+    const d=daysUntil(t.deadline);
+    const urgColor=d===null?"#A8A29E":d<=3?"#EF4444":d<=7?"#F97316":"#10B981";
+    const fromGoal=t.goalNodeId?"🎯 ":"";
+    return`<div style="background:white;border:1px solid rgba(0,0,0,.07);border-radius:8px;padding:7px 9px;margin-bottom:4px;box-shadow:0 1px 3px rgba(0,0,0,.04)">
+  <div style="display:flex;align-items:flex-start;gap:5px">
+    <div onclick="toggleTaskStatus('${t.id}')" style="width:13px;height:13px;border-radius:3px;border:2px solid ${t.status==="完了"?"#10B981":"#D6D3D1"};background:${t.status==="完了"?"#10B981":"transparent"};cursor:pointer;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center">${t.status==="完了"?'<span style="color:#fff;font-size:7px">✓</span>':""}</div>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:11px;font-weight:600;color:#1C1917;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${fromGoal}${esc(t.title)}</div>
+      ${t.deadline?`<div style="font-size:9px;color:${urgColor};font-weight:700;margin-top:1px">${t.deadline.replace(/-/g,"/")}${d!==null?` (残${d}日)`:""}</div>`:""}
+    </div>
+    ${!t.goalNodeId?`<button onclick="delTask('${t.id}')" style="background:none;border:none;color:#D6D3D1;font-size:12px;cursor:pointer;flex-shrink:0;line-height:1">×</button>`:""}
+  </div>
+</div>`;
+  }
+  function quadrant(label,color,tasks,hint){
+    return`<div style="background:${color};border-radius:10px;padding:8px;min-height:70px">
+  <div style="font-size:8px;font-weight:800;color:rgba(0,0,0,.5);letter-spacing:.5px;margin-bottom:2px">${label}</div>
+  <div style="font-size:8px;color:rgba(0,0,0,.3);margin-bottom:5px;font-style:italic">${hint}</div>
+  ${tasks.length===0?'<div style="font-size:10px;color:rgba(0,0,0,.2);text-align:center;padding:6px">なし</div>':tasks.map(taskCard).join("")}
+</div>`;
+  }
+  const sorted=[...active].sort((a,b)=>{if(!a.deadline&&!b.deadline)return 0;if(!a.deadline)return 1;if(!b.deadline)return -1;return a.deadline.localeCompare(b.deadline);});
+  return`<div>
+<div style="padding:10px 14px;background:white;border-bottom:1px solid rgba(0,0,0,.06)">
+  <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
+    <input id="tinp" class="input-clean" placeholder="タスクを追加..." onkeydown="if(event.key==='Enter')addTask()" style="margin:0;flex:1;min-width:0"/>
+    <button onclick="addTask()" class="btn-primary" style="padding:7px 12px;flex-shrink:0">追加</button>
+  </div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+    <label style="font-size:10px;font-weight:700;color:var(--text-muted)">重要度</label>
+    <select id="timp" style="background:var(--cream);border:1.5px solid rgba(0,0,0,.08);border-radius:6px;font-size:11px;padding:3px 6px;color:var(--text)"><option>高</option><option selected>中</option><option>低</option></select>
+    <label style="font-size:10px;font-weight:700;color:var(--text-muted)">期限</label>
+    <input id="tdate" type="date" style="background:var(--cream);border:1.5px solid rgba(0,0,0,.08);border-radius:6px;font-size:11px;padding:3px 6px;color:var(--text)"/>
+  </div>
+</div>
+<div style="display:flex;padding:8px 14px;gap:6px;border-bottom:1px solid rgba(0,0,0,.06);background:var(--cream)">
+  <button onclick="S.taskView='matrix';render()" style="background:${tv==='matrix'?'var(--amber-pale)':"white"};border:1.5px solid ${tv==='matrix'?'var(--amber)':"rgba(0,0,0,.1)"};color:${tv==='matrix'?'var(--amber)':"var(--text-muted)"};border-radius:8px;padding:4px 12px;font-size:11px;font-weight:700;cursor:pointer">🔲 マトリクス</button>
+  <button onclick="S.taskView='list';render()" style="background:${tv==='list'?'var(--amber-pale)':"white"};border:1.5px solid ${tv==='list'?'var(--amber)':"rgba(0,0,0,.1)"};color:${tv==='list'?'var(--amber)':"var(--text-muted)"};border-radius:8px;padding:4px 12px;font-size:11px;font-weight:700;cursor:pointer">📋 リスト（日付順）</button>
+</div>
+${tv==='matrix'?`
+<div style="padding:8px 14px 0;display:flex;justify-content:space-between">
+  <span style="font-size:9px;color:var(--text-light);font-weight:700">↑ 重要</span>
+  <span style="font-size:9px;color:var(--text-light);font-weight:700">緊急 →</span>
+</div>
+<div style="padding:6px 14px 14px;display:grid;grid-template-columns:1fr 1fr;gap:7px">
+  ${quadrant("重要・緊急","#FEE2E2",q1,"今すぐやる")}
+  ${quadrant("重要・非緊急","#D1FAE5",q2,"計画する")}
+  ${quadrant("非重要・緊急","#FEF3C7",q3,"委任")}
+  ${quadrant("非重要・非緊急","#F5F5F4",q4,"排除")}
+</div>`:`
+<div style="padding:12px 14px">
+  <div style="font-size:10px;font-weight:700;color:var(--text-muted);margin-bottom:8px">期限順（未設定は末尾）</div>
+  ${sorted.length===0?'<div style="text-align:center;padding:30px;color:var(--text-light);font-size:13px">タスクがありません</div>':sorted.map(t=>{
+    const d=daysUntil(t.deadline);
+    const urg=urgencyLevel(t.deadline);
+    const urgColor=urg==="high"?"#EF4444":urg==="medium"?"#F97316":urg==="low"?"#10B981":"#A8A29E";
+    const imp=t.importance==="高"?"🔴":t.importance==="中"?"🟡":"⚪";
+    return`<div style="background:white;border:1px solid rgba(0,0,0,.07);border-radius:10px;padding:10px 12px;margin-bottom:6px;box-shadow:0 1px 3px rgba(0,0,0,.04);display:flex;align-items:center;gap:8px">
+  <div onclick="toggleTaskStatus('${t.id}')" style="width:16px;height:16px;border-radius:5px;border:2px solid ${t.status==="完了"?"#10B981":"#D6D3D1"};background:${t.status==="完了"?"#10B981":"transparent"};cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center">${t.status==="完了"?'<span style="color:#fff;font-size:9px">✓</span>':""}</div>
+  <div style="flex:1;min-width:0">
+    <div style="font-size:13px;font-weight:600;color:${t.status==="完了"?"#A8A29E":"#1C1917"};text-decoration:${t.status==="完了"?"line-through":"none"};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${imp} ${esc(t.title)}</div>
+    <div style="display:flex;gap:6px;margin-top:3px;align-items:center">
+      ${t.deadline?`<span style="font-size:10px;color:${urgColor};font-weight:700">${t.deadline.replace(/-/g,"/")}${d!==null&&d<=7?` (残${d}日)`:""}</span>`:`<span style="font-size:10px;color:#D6D3D1">期限未設定</span>`}
+      <input type="date" value="${t.deadline||""}" onchange="updTask('${t.id}','deadline',this.value||null)" style="font-size:10px;background:transparent;border:none;border-bottom:1px solid #E7E5E4;color:var(--text-muted);padding:0;cursor:pointer;outline:none;font-family:inherit"/>
+    </div>
+  </div>
+  ${!t.goalNodeId?`<button onclick="delTask('${t.id}')" style="background:none;border:none;color:#D6D3D1;font-size:14px;cursor:pointer;flex-shrink:0">×</button>`:""}
+</div>`;
+  }).join("")}
+</div>`}
+${done.length>0?`<div style="padding:0 14px 14px"><div style="font-size:10px;font-weight:700;color:var(--text-light);margin-bottom:6px">完了済み (${done.length})</div>${done.slice(0,5).map(t=>`<div style="font-size:12px;color:var(--text-light);text-decoration:line-through;padding:3px 0">${esc(t.title)}</div>`).join("")}${done.length>5?`<div style="font-size:11px;color:var(--text-light)">他${done.length-5}件</div>`:""}</div>`:""}
+</div>`;
+}
+
 function buildApp(){
-  const isR=S.tab==="routine";
+  const tab=S.tab;
+  const titles={"routine":"🌅 朝ルーティン","tasks":"📋 タスク表","goals":"🎯 目標管理"};
   return`<div style="min-height:100vh;background:var(--cream)">
 <div class="header">
   <div class="header-top">
-    <div class="header-title">${isR?"🌅 朝ルーティン":"🎯 目標管理"}</div>
+    <div class="header-title">${titles[tab]||"🌅 朝ルーティン"}</div>
     <div class="header-date">${todayLabel()}</div>
   </div>
-  <div class="tabs">
-    <button onclick="S.tab='routine';render()" class="tab-btn ${isR?'active':''}">🌅 朝ルーティン</button>
-    <button onclick="S.tab='goals';render()" class="tab-btn ${!isR?'active':''}">🎯 目標管理</button>
+  <div class="tabs" style="display:flex">
+    <button onclick="S.tab='routine';render()" class="tab-btn ${tab==='routine'?'active':''}" style="font-size:11px">🌅 朝</button>
+    <button onclick="S.tab='tasks';render()" class="tab-btn ${tab==='tasks'?'active':''}" style="font-size:11px">📋 タスク</button>
+    <button onclick="S.tab='goals';render()" class="tab-btn ${tab==='goals'?'active':''}" style="font-size:11px">🎯 目標</button>
   </div>
 </div>
-${isR?buildRoutineTab():buildGoalTab()}
+${tab==="routine"?buildRoutineTab():tab==="tasks"?buildTaskTab():buildGoalTab()}
 </div>`;
 }
 
@@ -620,6 +744,19 @@ window.demoteNode=function(id){
   prev.children.push(id);
   saveGoals();render();
 };
+window.addTask=function(){
+  const inp=document.getElementById("tinp");if(!inp||!inp.value.trim())return;
+  const imp=document.getElementById("timp")?.value||"中";
+  const date=document.getElementById("tdate")?.value||null;
+  tasks.push({id:uid(),title:inp.value.trim(),importance:imp,deadline:date,status:"未着手",goalNodeId:null});
+  saveTasks();inp.value="";if(document.getElementById("tdate"))document.getElementById("tdate").value="";render();
+};
+window.toggleTaskStatus=function(id){
+  const t=tasks.find(t=>t.id===id);if(!t)return;
+  t.status=t.status==="完了"?"未着手":"完了";saveTasks();render();
+};
+window.updTask=function(id,f,v){const t=tasks.find(t=>t.id===id);if(!t)return;t[f]=v;saveTasks();render();};
+window.delTask=function(id){tasks=tasks.filter(t=>t.id!==id);saveTasks();render();};
 window.setF=function(t,v){if(t==="a")S.af=v;else if(t==="h")S.hf=v;else S.sf=v;render();};
 window.setMonthly=function(v){monthlyGoal=v;lsSet("monthly-"+monthStr(),v);render();};
 window.setWeekly=function(v){weeklyGoal=v;lsSet("weekly-"+weekStr(),v);render();};
