@@ -319,7 +319,16 @@ let routineEntries=lsGet("routine-entries",{});
 let monthlyGoal=lsGet("monthly-"+monthStr(),"");
 let weeklyGoal=lsGet("weekly-"+weekStr(),"");
 
-let S={tab:"routine",rv:"today",search:"",bulkOpen:false,af:"全て",hf:"全て",sf:"全て",medMins:5,medSecs:null,medRunning:false,medDone:false,medInterval:null};
+let S={tab:"routine",rv:"today",search:"",bulkOpen:false,bulkEditOpen:false,af:"全て",hf:"全て",sf:"全て",medMins:5,medSecs:null,medRunning:false,medDone:false,medInterval:null,expanded:{},selected:{}};
+
+function calcProgress(id){
+  const n=goals.nodes[id];if(!n)return 0;
+  const ch=n.children||[];
+  if(!ch.length)return n.progress;
+  const sum=ch.reduce((acc,cid)=>acc+calcProgress(cid),0);
+  return Math.round(sum/ch.length);
+}
+function isExpanded(id){return S.expanded[id]!==false;}// default true
 
 function getEntry(){if(!routineEntries[todayStr()])routineEntries[todayStr()]=defEntry();return routineEntries[todayStr()];}
 function saveEntries(){lsSet("routine-entries",routineEntries);}
@@ -349,12 +358,28 @@ function nodeHTML(id,depth){
   const hc=HOR_COLOR[n.timeHorizon]||"#F59E0B";
   const sc=STA_COLOR[n.status]||STA_COLOR["未着手"];
   const ac=AREA_COLOR[n.lifeArea||"仕事"]||"#3B82F6";
-  const ch=(n.children||[]).map(c=>nodeHTML(c,depth+1)).join("");
+  const hasChildren=(n.children&&n.children.length>0);
+  const exp=isExpanded(id);
+  const prog=hasChildren?calcProgress(id):n.progress;
+  const sel=!!S.selected[id];
+  const ch=exp?(n.children||[]).map(c=>nodeHTML(c,depth+1)).join(""):"";
+
+  // Promote: move to parent's level. Demote: make child of previous sibling
+  const siblings=n.parentId?(goals.nodes[n.parentId]?.children||[]):(goals.rootIds||[]);
+  const idx=siblings.indexOf(id);
+  const canPromote=!!n.parentId;
+  const canDemote=idx>0;
+
   return`<div style="margin-left:${depth*16}px">
-<div class="node-card" style="border-left:3px solid ${hc}">
+<div class="node-card" style="border-left:3px solid ${hc};background:${sel?'rgba(245,158,11,.07)':'var(--warm-white)'};border:1px solid ${sel?'rgba(245,158,11,.4)':'var(--border)'}">
   <div style="display:flex;align-items:center;gap:6px;overflow:hidden">
-    ${n.children&&n.children.length?`<span style="color:#C7B8A8;font-size:9px;flex-shrink:0">▶</span>`:`<div style="width:10px;flex-shrink:0"></div>`}
+    <!-- Selection checkbox -->
+    <div onclick="toggleSel('${id}')" style="width:14px;height:14px;border-radius:3px;border:1.5px solid ${sel?'var(--amber)':'#D6D3D1'};background:${sel?'var(--amber)':'transparent'};cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s">${sel?'<span style="color:#fff;font-size:8px;font-weight:800">✓</span>':""}</div>
+    <!-- Expand/collapse -->
+    ${hasChildren?`<span onclick="toggleExp('${id}')" style="color:${exp?'var(--amber)':'#C7B8A8'};font-size:9px;flex-shrink:0;cursor:pointer;transition:transform .2s;transform:rotate(${exp?90:0}deg);display:inline-block">▶</span>`:`<div style="width:10px;flex-shrink:0"></div>`}
+    <!-- Status check -->
     <div onclick="cycleStatus('${id}')" style="width:16px;height:16px;border-radius:5px;border:2px solid ${n.status==='完了'?'#10B981':'#D6D3D1'};background:${n.status==='完了'?'#10B981':'transparent'};cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s">${n.status==='完了'?'<span style="color:#fff;font-size:9px;font-weight:800">✓</span>':""}</div>
+    <!-- Title -->
     <span onclick="editTitle('${id}')" style="flex:1;min-width:0;font-size:13px;font-weight:600;color:${n.status==='完了'?'#A8A29E':'#1C1917'};text-decoration:${n.status==='完了'?'line-through':'none'};cursor:text;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(n.title)}</span>
     <span style="font-size:9px;padding:2px 6px;border-radius:10px;background:${n.priority==='高'?'#FEE2E2':n.priority==='中'?'#FEF3C7':'#F5F5F4'};color:${n.priority==='高'?'#DC2626':n.priority==='中'?'#D97706':'#78716C'};font-weight:700;flex-shrink:0">${n.priority||"中"}</span>
     <button onclick="delNode('${id}')" class="btn-ghost">×</button>
@@ -364,10 +389,15 @@ function nodeHTML(id,depth){
     <select onchange="updNode('${id}','status',this.value)" style="background:${sc.bg};color:${sc.t};border:none;border-radius:6px;font-size:10px;padding:3px 5px;font-weight:700">${STATUSES.map(s=>`<option${n.status===s?" selected":""}>${s}</option>`).join("")}</select>
     <select onchange="updNode('${id}','timeHorizon',this.value)" style="background:${hc}18;color:${hc};border:none;border-radius:6px;font-size:10px;padding:3px 5px;font-weight:700">${HORIZONS.map(h=>`<option${n.timeHorizon===h?" selected":""}>${h}</option>`).join("")}</select>
     <button onclick="addChild('${id}')" style="background:${hc}18;border:none;color:${hc};border-radius:6px;font-size:10px;padding:3px 10px;cursor:pointer;font-weight:700">＋子</button>
+    ${canPromote?`<button onclick="promoteNode('${id}')" title="親と同じ階層に上げる" style="background:#EDE9FE;border:none;color:#7C3AED;border-radius:6px;font-size:10px;padding:3px 8px;cursor:pointer;font-weight:700">↑昇格</button>`:""}
+    ${canDemote?`<button onclick="demoteNode('${id}')" title="一つ上の兄弟の子にする" style="background:#DBEAFE;border:none;color:#1D4ED8;border-radius:6px;font-size:10px;padding:3px 8px;cursor:pointer;font-weight:700">↓降格</button>`:""}
   </div>
   <div style="display:flex;align-items:center;gap:6px;margin-top:5px;margin-left:22px">
-    <div class="progress-bar"><div class="progress-fill" style="width:${n.progress}%;background:${n.status==='完了'?'#10B981':hc}"></div></div>
-    <span style="font-size:9px;color:#A8A29E;font-weight:600">${n.progress}%</span>
+    <div class="progress-bar"><div class="progress-fill" style="width:${prog}%;background:${n.status==='完了'?'#10B981':hc}"></div></div>
+    ${hasChildren
+      ?`<span style="font-size:9px;color:#A8A29E;font-weight:600">${prog}%（自動）</span>`
+      :`<input type="number" min="0" max="100" value="${n.progress}" onchange="updNode('${id}','progress',Math.min(100,Math.max(0,Number(this.value))))" style="width:36px;background:transparent;border:none;border-bottom:1px solid #E7E5E4;color:#A8A29E;font-size:9px;font-weight:600;text-align:right;padding:0;outline:none;font-family:inherit"/><span style="font-size:9px;color:#A8A29E;font-weight:600">%</span>`
+    }
   </div>
 </div>
 ${ch}</div>`;
@@ -396,6 +426,19 @@ function buildGoalTab(){
   ${roots.map(id=>nodeHTML(id,0)).join("")}
   ${roots.length===0?'<div style="text-align:center;padding:40px;color:var(--text-light);font-size:13px">条件に合う目標がありません</div>':""}
 </div>
+${Object.keys(S.selected).length>0?`
+<div style="position:fixed;bottom:0;left:0;right:0;background:var(--warm-white);border-top:2px solid var(--amber);padding:12px 14px;z-index:150;box-shadow:0 -4px 16px rgba(0,0,0,.1)">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+    <span style="font-size:12px;font-weight:800;color:var(--amber)">${Object.keys(S.selected).length}件選択中</span>
+    <button onclick="S.selected={};render()" class="btn-outline" style="padding:3px 8px;font-size:10px">解除</button>
+  </div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap">
+    ${STATUSES.map(s=>{const sc=STA_COLOR[s];return`<button onclick="bulkSet('status','${s}')" style="background:${sc.bg};color:${sc.t};border:none;border-radius:6px;font-size:11px;padding:5px 10px;cursor:pointer;font-weight:700">${s}</button>`;}).join("")}
+    ${AREAS.map(a=>`<button onclick="bulkSet('lifeArea','${a}')" style="background:${AREA_COLOR[a]}18;color:${AREA_COLOR[a]};border:none;border-radius:6px;font-size:11px;padding:5px 10px;cursor:pointer;font-weight:700">${a}</button>`).join("")}
+    <select onchange="bulkSet('timeHorizon',this.value)" style="background:var(--cream);border:1px solid var(--border);border-radius:6px;font-size:11px;padding:5px 6px;color:var(--text)"><option value="">時間軸を変更...</option>${HORIZONS.map(h=>`<option value="${h}">${h}</option>`).join("")}</select>
+    <select onchange="bulkSet('priority',this.value)" style="background:var(--cream);border:1px solid var(--border);border-radius:6px;font-size:11px;padding:5px 6px;color:var(--text)"><option value="">優先度を変更...</option>${["高","中","低"].map(p=>`<option value="${p}">${p}</option>`).join("")}</select>
+  </div>
+</div>`:""}
 ${S.bulkOpen?`<div class="modal-overlay"><div class="modal-sheet">
 <div style="font-size:15px;font-weight:800;margin-bottom:4px;color:var(--text)">📋 一括登録</div>
 <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px">インデントでサブタスクになります</div>
@@ -541,6 +584,42 @@ ${isR?buildRoutineTab():buildGoalTab()}
 function render(){document.getElementById("app").innerHTML=buildApp();}
 
 // ── Actions ────────────────────────────────────────────────────────────────────
+window.toggleExp=function(id){S.expanded[id]=!isExpanded(id);render();};
+window.toggleSel=function(id){if(S.selected[id])delete S.selected[id];else S.selected[id]=true;render();};
+window.bulkSet=function(field,val){if(!val)return;Object.keys(S.selected).forEach(id=>{if(goals.nodes[id])goals.nodes[id][field]=val;});saveGoals();render();};
+window.promoteNode=function(id){
+  const n=goals.nodes[id];if(!n||!n.parentId)return;
+  const parent=goals.nodes[n.parentId];if(!parent)return;
+  // Remove from parent's children
+  parent.children=parent.children.filter(c=>c!==id);
+  if(parent.parentId){
+    // Add to grandparent's children after parent
+    const gp=goals.nodes[parent.parentId];
+    const pIdx=gp.children.indexOf(n.parentId);
+    gp.children.splice(pIdx+1,0,id);
+    n.parentId=parent.parentId;
+  } else {
+    // Promote to root
+    const pIdx=goals.rootIds.indexOf(n.parentId);
+    goals.rootIds.splice(pIdx+1,0,id);
+    n.parentId=null;
+  }
+  saveGoals();render();
+};
+window.demoteNode=function(id){
+  const n=goals.nodes[id];
+  const siblings=n.parentId?(goals.nodes[n.parentId]?.children||[]):(goals.rootIds);
+  const idx=siblings.indexOf(id);
+  if(idx===0)return;
+  const prevId=siblings[idx-1];
+  const prev=goals.nodes[prevId];if(!prev)return;
+  // Remove from current level
+  siblings.splice(idx,1);
+  // Add to prev sibling's children
+  n.parentId=prevId;
+  prev.children.push(id);
+  saveGoals();render();
+};
 window.setF=function(t,v){if(t==="a")S.af=v;else if(t==="h")S.hf=v;else S.sf=v;render();};
 window.setMonthly=function(v){monthlyGoal=v;lsSet("monthly-"+monthStr(),v);render();};
 window.setWeekly=function(v){weeklyGoal=v;lsSet("weekly-"+weekStr(),v);render();};
