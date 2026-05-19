@@ -663,7 +663,7 @@ function buildTaskTab(){
     const fromGoal=t.goalNodeId?"🎯 ":"";
     const recDone=t.recurring&&lsGet("rec-"+todayStr()+"-"+t.id,false);
     const isDone=t.recurring?recDone:(t.status==="完了");
-    return`<div style="background:${recDone?"#F0FDF4":"white"};border:1px solid ${recDone?"#BBF7D0":"rgba(0,0,0,.07)"};border-radius:8px;padding:7px 9px;margin-bottom:4px;box-shadow:0 1px 3px rgba(0,0,0,.04)">
+    return`<div style="background:${recDone?"#F0FDF4":"white"};border:1px solid ${recDone?"#BBF7D0":"rgba(0,0,0,.07)"};border-radius:8px;padding:6px 7px;margin-bottom:3px;box-shadow:0 1px 3px rgba(0,0,0,.04);overflow:hidden;min-width:0">
   <div style="display:flex;align-items:flex-start;gap:5px">
     <div onclick="toggleTaskStatus('${t.id}')" style="width:13px;height:13px;border-radius:3px;border:2px solid ${isDone?"#10B981":"#D6D3D1"};background:${isDone?"#10B981":"transparent"};cursor:pointer;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center">${isDone?'<span style="color:#fff;font-size:7px">✓</span>':""}</div>
     <div style="flex:1;min-width:0">
@@ -679,10 +679,10 @@ function buildTaskTab(){
 </div>`;
   }
   function quadrant(label,color,tasks,hint){
-    return`<div style="background:${color};border-radius:10px;padding:8px;min-height:70px">
-  <div style="font-size:8px;font-weight:800;color:rgba(0,0,0,.5);letter-spacing:.5px;margin-bottom:2px">${label}</div>
-  <div style="font-size:8px;color:rgba(0,0,0,.3);margin-bottom:5px;font-style:italic">${hint}</div>
-  ${tasks.length===0?'<div style="font-size:10px;color:rgba(0,0,0,.2);text-align:center;padding:6px">なし</div>':tasks.map(taskCard).join("")}
+    return`<div style="background:${color};border-radius:10px;padding:7px;overflow:hidden;min-width:0">
+  <div style="font-size:8px;font-weight:800;color:rgba(0,0,0,.5);letter-spacing:.5px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${label}</div>
+  <div style="font-size:8px;color:rgba(0,0,0,.3);margin-bottom:4px;font-style:italic">${hint}</div>
+  ${tasks.length===0?'<div style="font-size:10px;color:rgba(0,0,0,.2);text-align:center;padding:4px">なし</div>':tasks.map(taskCard).join("")}
 </div>`;
   }
   const sorted=[...active].sort((a,b)=>{if(!a.deadline&&!b.deadline)return 0;if(!a.deadline)return 1;if(!b.deadline)return -1;return a.deadline.localeCompare(b.deadline);});
@@ -704,11 +704,11 @@ function buildTaskTab(){
   <button onclick="S.taskView='list';render()" style="background:${tv==='list'?'var(--amber-pale)':"white"};border:1.5px solid ${tv==='list'?'var(--amber)':"rgba(0,0,0,.1)"};color:${tv==='list'?'var(--amber)':"var(--text-muted)"};border-radius:8px;padding:4px 12px;font-size:11px;font-weight:700;cursor:pointer">📋 リスト（日付順）</button>
 </div>
 ${tv==='matrix'?`
-<div style="padding:8px 14px 0;display:flex;justify-content:space-between">
+<div style="padding:8px 12px 0;display:flex;justify-content:space-between">
   <span style="font-size:9px;color:var(--text-light);font-weight:700">↑ 重要</span>
   <span style="font-size:9px;color:var(--text-light);font-weight:700">緊急 →</span>
 </div>
-<div style="padding:6px 14px 14px;display:grid;grid-template-columns:1fr 1fr;gap:7px;overflow:hidden">
+<div style="padding:6px 12px 14px;display:grid;grid-template-columns:1fr 1fr;gap:6px;box-sizing:border-box;width:100%;overflow:hidden">
   ${quadrant("重要・緊急","#FEE2E2",q1,"今すぐやる")}
   ${quadrant("重要・非緊急","#D1FAE5",q2,"計画する")}
   ${quadrant("非重要・緊急","#FEF3C7",q3,"委任")}
