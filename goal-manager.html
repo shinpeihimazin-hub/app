@@ -619,7 +619,7 @@ function buildTaskTab(){
   <div style="display:flex;align-items:flex-start;gap:5px">
     <div onclick="toggleTaskStatus('${t.id}')" style="width:13px;height:13px;border-radius:3px;border:2px solid ${t.status==="完了"?"#10B981":"#D6D3D1"};background:${t.status==="完了"?"#10B981":"transparent"};cursor:pointer;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center">${t.status==="完了"?'<span style="color:#fff;font-size:7px">✓</span>':""}</div>
     <div style="flex:1;min-width:0">
-      <div style="font-size:11px;font-weight:600;color:#1C1917;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${fromGoal}${esc(t.title)}</div>
+      <div style="font-size:11px;font-weight:600;color:#1C1917;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%">${fromGoal}${esc(t.title)}</div>
       ${t.deadline?`<div style="font-size:9px;color:${urgColor};font-weight:700;margin-top:1px">${t.deadline.replace(/-/g,"/")}${d!==null?` (残${d}日)`:""}</div>`:""}
     </div>
     ${!t.goalNodeId?`<button onclick="delTask('${t.id}')" style="background:none;border:none;color:#D6D3D1;font-size:12px;cursor:pointer;flex-shrink:0;line-height:1">×</button>`:""}
@@ -635,7 +635,7 @@ function buildTaskTab(){
   }
   const sorted=[...active].sort((a,b)=>{if(!a.deadline&&!b.deadline)return 0;if(!a.deadline)return 1;if(!b.deadline)return -1;return a.deadline.localeCompare(b.deadline);});
   return`<div>
-<div style="padding:10px 14px;background:white;border-bottom:1px solid rgba(0,0,0,.06)">
+<div style="padding:10px 14px;background:white;border-bottom:1px solid rgba(0,0,0,.06);overflow:hidden">
   <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
     <input id="tinp" class="input-clean" placeholder="タスクを追加..." onkeydown="if(event.key==='Enter')addTask()" style="margin:0;flex:1;min-width:0"/>
     <button onclick="addTask()" class="btn-primary" style="padding:7px 12px;flex-shrink:0">追加</button>
@@ -656,7 +656,7 @@ ${tv==='matrix'?`
   <span style="font-size:9px;color:var(--text-light);font-weight:700">↑ 重要</span>
   <span style="font-size:9px;color:var(--text-light);font-weight:700">緊急 →</span>
 </div>
-<div style="padding:6px 14px 14px;display:grid;grid-template-columns:1fr 1fr;gap:7px">
+<div style="padding:6px 14px 14px;display:grid;grid-template-columns:1fr 1fr;gap:7px;overflow:hidden">
   ${quadrant("重要・緊急","#FEE2E2",q1,"今すぐやる")}
   ${quadrant("重要・非緊急","#D1FAE5",q2,"計画する")}
   ${quadrant("非重要・緊急","#FEF3C7",q3,"委任")}
@@ -682,7 +682,10 @@ ${tv==='matrix'?`
 </div>`;
   }).join("")}
 </div>`}
-${done.length>0?`<div style="padding:0 14px 14px"><div style="font-size:10px;font-weight:700;color:var(--text-light);margin-bottom:6px">完了済み (${done.length})</div>${done.slice(0,5).map(t=>`<div style="font-size:12px;color:var(--text-light);text-decoration:line-through;padding:3px 0">${esc(t.title)}</div>`).join("")}${done.length>5?`<div style="font-size:11px;color:var(--text-light)">他${done.length-5}件</div>`:""}</div>`:""}
+${done.length>0?`<div style="padding:0 14px 14px"><div style="font-size:10px;font-weight:700;color:var(--text-light);margin-bottom:6px">完了済み (${done.length})　<span style="font-size:9px;color:var(--text-light);font-style:italic">タップで戻せます</span></div>${done.map(t=>`<div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid rgba(0,0,0,.04)">
+  <div onclick="toggleTaskStatus('${t.id}')" style="width:14px;height:14px;border-radius:3px;background:#10B981;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center"><span style="color:#fff;font-size:8px">✓</span></div>
+  <span style="font-size:12px;color:var(--text-light);text-decoration:line-through;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(t.title)}</span>
+</div>`).join("")}</div>`:""}
 </div>`;
 }
 
@@ -753,7 +756,15 @@ window.addTask=function(){
 };
 window.toggleTaskStatus=function(id){
   const t=tasks.find(t=>t.id===id);if(!t)return;
-  t.status=t.status==="完了"?"未着手":"完了";saveTasks();render();
+  t.status=t.status==="完了"?"未着手":"完了";
+  // Sync to goal node if linked
+  if(t.goalNodeId&&goals.nodes[t.goalNodeId]){
+    goals.nodes[t.goalNodeId].status=t.status;
+    if(t.status==="完了")goals.nodes[t.goalNodeId].progress=100;
+    else if(goals.nodes[t.goalNodeId].progress===100)goals.nodes[t.goalNodeId].progress=0;
+    saveGoals();
+  }
+  saveTasks();render();
 };
 window.updTask=function(id,f,v){const t=tasks.find(t=>t.id===id);if(!t)return;t[f]=v;saveTasks();render();};
 window.delTask=function(id){tasks=tasks.filter(t=>t.id!==id);saveTasks();render();};
