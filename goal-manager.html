@@ -5,859 +5,647 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-<title>朝ルーティン & 目標管理</title>
-<meta name="apple-mobile-web-app-title" content="朝ルーティン"/>
-<link rel="apple-touch-icon" href="data:image/png;base64,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"/>
-
-<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet"/>
+<title>朝ルーティン</title>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet"/>
 <style>
-:root {
-  --cream: #FFFBF0;
-  --warm-white: #FFFFFF;
-  --amber: #F59E0B;
-  --amber-light: #FDE68A;
-  --amber-pale: #FEF3C7;
-  --coral: #F97316;
-  --coral-pale: #FFEDD5;
-  --green: #10B981;
-  --green-pale: #D1FAE5;
-  --red: #EF4444;
-  --red-pale: #FEE2E2;
-  --purple: #8B5CF6;
-  --purple-pale: #EDE9FE;
-  --blue: #3B82F6;
-  --blue-pale: #DBEAFE;
-  --text: #1C1917;
-  --text-muted: #78716C;
-  --text-light: #A8A29E;
-  --border: rgba(0,0,0,0.06);
-  --shadow: 0 2px 12px rgba(0,0,0,0.06);
-  --shadow-md: 0 4px 20px rgba(0,0,0,0.10);
-  --radius: 14px;
-  --radius-sm: 8px;
+:root{
+  --cream:#FFFBF0;--warm:#FFFFFF;--amber:#F59E0B;--amber-pale:#FEF3C7;--coral:#F97316;--coral-pale:#FFEDD5;
+  --green:#10B981;--green-pale:#D1FAE5;--red:#EF4444;--red-pale:#FEE2E2;--purple:#8B5CF6;--purple-pale:#EDE9FE;
+  --blue:#3B82F6;--blue-pale:#DBEAFE;--text:#1C1917;--muted:#78716C;--light:#A8A29E;
+  --border:rgba(0,0,0,.07);--shadow:0 2px 12px rgba(0,0,0,.06);--r:14px;--rs:8px;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-body {
-  background: var(--cream);
-  color: var(--text);
-  font-family: 'M PLUS Rounded 1c', sans-serif;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
-input, textarea, select, button { font-family: 'M PLUS Rounded 1c', sans-serif; }
-select { -webkit-appearance: auto; }
-
-/* Animations */
-@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
-.fade-in { animation: fadeIn 0.4s ease both; }
-
-/* Save indicator */
-.save-badge {
-  position: fixed; top: 12px; right: 12px;
-  background: var(--green); color: #fff;
-  font-size: 11px; font-weight: 700;
-  padding: 4px 10px; border-radius: 20px;
-  opacity: 0; transition: opacity 0.3s;
-  pointer-events: none; z-index: 999;
-  box-shadow: 0 2px 8px rgba(16,185,129,0.3);
-}
-.save-badge.show { opacity: 1; }
-
-/* Header */
-.header {
-  background: linear-gradient(135deg, #FEF3C7 0%, #FFEDD5 50%, #FDE8D8 100%);
-  padding: 16px 16px 0;
-  position: sticky; top: 0; z-index: 100;
-  border-bottom: 1px solid rgba(245,158,11,0.15);
-}
-.header-top {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 12px;
-}
-.header-title {
-  font-size: 18px; font-weight: 800; color: var(--text);
-  letter-spacing: -0.3px;
-}
-.header-date {
-  font-size: 11px; color: var(--text-muted); font-weight: 500;
-  background: rgba(255,255,255,0.6); padding: 3px 8px; border-radius: 20px;
-}
-.tabs {
-  display: flex; gap: 4px;
-}
-.tab-btn {
-  flex: 1; padding: 9px 4px;
-  background: none; border: none; border-bottom: 2.5px solid transparent;
-  font-size: 12px; font-weight: 700; cursor: pointer;
-  color: var(--text-muted); transition: all 0.2s;
-}
-.tab-btn.active {
-  color: var(--amber); border-bottom-color: var(--amber);
-}
-
-/* Cards */
-.card {
-  background: var(--warm-white);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 14px;
-  margin-bottom: 10px;
-  border: 1px solid var(--border);
-}
-.card-amber { border-left: 3px solid var(--amber); }
-.card-coral { border-left: 3px solid var(--coral); }
-.card-green { border-left: 3px solid var(--green); }
-.card-red { border-left: 3px solid var(--red); }
-.card-purple { border-left: 3px solid var(--purple); }
-
-.section-label {
-  font-size: 10px; font-weight: 800;
-  letter-spacing: 0.8px; text-transform: uppercase;
-  margin-bottom: 7px;
-}
-.label-amber { color: var(--amber); }
-.label-coral { color: var(--coral); }
-.label-green { color: var(--green); }
-.label-red { color: var(--red); }
-.label-purple { color: var(--purple); }
-.label-blue { color: var(--blue); }
-
-/* Inputs */
-.input-clean {
-  width: 100%; background: var(--cream);
-  border: 1.5px solid rgba(0,0,0,0.08);
-  border-radius: var(--radius-sm); padding: 9px 12px;
-  color: var(--text); font-size: 13px; outline: none;
-  transition: border-color 0.2s;
-}
-.input-clean:focus { border-color: var(--amber); }
-.textarea-clean {
-  width: 100%; background: var(--cream);
-  border: 1.5px solid rgba(0,0,0,0.08);
-  border-radius: var(--radius-sm); padding: 9px 12px;
-  color: var(--text); font-size: 13px; outline: none;
-  resize: none; transition: border-color 0.2s;
-}
-.textarea-clean:focus { border-color: var(--amber); }
-.select-clean {
-  width: 100%; background: var(--cream);
-  border: 1.5px solid rgba(0,0,0,0.08);
-  border-radius: var(--radius-sm); padding: 9px 12px;
-  color: var(--text); font-size: 13px; outline: none;
-}
-
-/* Buttons */
-.btn-primary {
-  background: linear-gradient(135deg, var(--amber), var(--coral));
-  color: #fff; border: none; border-radius: var(--radius-sm);
-  padding: 9px 16px; font-size: 12px; font-weight: 700;
-  cursor: pointer; box-shadow: 0 2px 8px rgba(245,158,11,0.3);
-  white-space: nowrap; flex-shrink: 0;
-}
-.btn-outline {
-  background: var(--cream); color: var(--text-muted);
-  border: 1.5px solid rgba(0,0,0,0.1); border-radius: var(--radius-sm);
-  padding: 7px 12px; font-size: 11px; font-weight: 600; cursor: pointer;
-}
-.btn-ghost {
-  background: none; border: none; cursor: pointer;
-  color: var(--text-light); font-size: 16px; padding: 2px 4px;
-  flex-shrink: 0; line-height: 1;
-}
-
-/* Pills */
-.pill {
-  border-radius: 20px; padding: 4px 10px; font-size: 10px;
-  font-weight: 700; cursor: pointer; white-space: nowrap;
-  flex-shrink: 0; border: 1.5px solid transparent;
-  background: var(--cream); color: var(--text-muted);
-  transition: all 0.15s;
-}
-
-/* Checkbox */
-.check-box {
-  width: 18px; height: 18px; border-radius: 5px;
-  border: 2px solid #D6D3D1; background: transparent;
-  cursor: pointer; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  transition: all 0.2s;
-}
-.check-box.checked {
-  background: var(--green); border-color: var(--green);
-}
-
-/* Goal node */
-.node-card {
-  background: var(--warm-white);
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  padding: 10px 12px;
-  margin-bottom: 6px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-  overflow: hidden;
-}
-
-/* Progress bar */
-.progress-bar {
-  height: 3px; background: #E7E5E4; border-radius: 2px; flex: 1;
-}
-.progress-fill {
-  height: 100%; border-radius: 2px; transition: width 0.3s;
-}
-
-/* Meditation timer */
-.med-timer {
-  background: linear-gradient(135deg, #D1FAE5, #A7F3D0);
-  border-radius: var(--radius);
-  padding: 16px;
-  text-align: center;
-  margin-bottom: 10px;
-}
-.med-time {
-  font-size: 36px; font-weight: 800; color: #065F46;
-  font-family: 'Zen Maru Gothic', monospace;
-  letter-spacing: 2px;
-}
-.med-btn {
-  background: #059669; color: #fff; border: none;
-  border-radius: 20px; padding: 8px 20px;
-  font-size: 13px; font-weight: 700; cursor: pointer;
-  font-family: 'M PLUS Rounded 1c', sans-serif;
-  box-shadow: 0 2px 8px rgba(5,150,105,0.3);
-}
-
-/* Today banner */
-.today-banner {
-  background: linear-gradient(135deg, var(--amber-pale), var(--coral-pale));
-  border-radius: var(--radius);
-  padding: 12px 14px;
-  margin-bottom: 14px;
-  display: flex; align-items: center; gap: 8px;
-}
-.today-banner .sun { font-size: 22px; }
-.today-banner .date-text { font-size: 12px; color: var(--text-muted); font-weight: 600; }
-
-/* History entry */
-.history-card {
-  background: var(--warm-white);
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  padding: 14px;
-  margin-bottom: 8px;
-  box-shadow: var(--shadow);
-}
-.history-date {
-  font-size: 11px; font-weight: 800; color: var(--amber);
-  letter-spacing: 0.5px; margin-bottom: 8px;
-}
-
-/* Bulk modal */
-.modal-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.3);
-  z-index: 200; display: flex; align-items: flex-end;
-  backdrop-filter: blur(2px);
-}
-.modal-sheet {
-  width: 100%; background: var(--warm-white);
-  border-radius: 20px 20px 0 0; padding: 20px;
-  max-height: 80vh; overflow-y: auto;
-}
-
-/* Filter bar */
-.filter-bar {
-  padding: 6px 14px; display: flex; gap: 5px;
-  overflow-x: auto; -webkit-overflow-scrolling: touch;
-  border-bottom: 1px solid var(--border);
-  background: var(--cream);
-}
-.filter-bar::-webkit-scrollbar { display: none; }
-
-/* Quick add */
-.quick-add {
-  padding: 10px 14px; display: flex; gap: 8px;
-  align-items: center; border-bottom: 1px solid var(--border);
-  background: var(--warm-white);
-}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--cream);color:var(--text);font-family:'M PLUS Rounded 1c',sans-serif;min-height:100vh;overflow-x:hidden}
+input,textarea,select,button{font-family:'M PLUS Rounded 1c',sans-serif}
+select{-webkit-appearance:auto}
+.save-badge{position:fixed;top:10px;right:12px;background:var(--green);color:#fff;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;box-shadow:0 2px 8px rgba(16,185,129,.3)}
+.save-badge.show{opacity:1}
+.header{background:linear-gradient(135deg,var(--amber-pale),var(--coral-pale));padding:14px 14px 0;position:sticky;top:0;z-index:100;border-bottom:1px solid rgba(245,158,11,.15)}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.header-title{font-size:17px;font-weight:800;color:var(--text)}
+.header-date{font-size:11px;color:var(--muted);font-weight:500;background:rgba(255,255,255,.6);padding:3px 8px;border-radius:20px}
+.tabs{display:flex;gap:4px}
+.tab-btn{flex:1;padding:8px 4px;background:none;border:none;border-bottom:2.5px solid transparent;font-size:11px;font-weight:700;cursor:pointer;color:var(--muted);transition:all .2s}
+.tab-btn.active{color:var(--amber);border-bottom-color:var(--amber)}
+.card{background:var(--warm);border-radius:var(--r);box-shadow:var(--shadow);padding:12px 14px;margin-bottom:10px;border:1px solid var(--border)}
+.card-amber{border-left:3px solid var(--amber)}.card-coral{border-left:3px solid var(--coral)}
+.card-green{border-left:3px solid var(--green)}.card-red{border-left:3px solid var(--red)}
+.card-purple{border-left:3px solid var(--purple)}.card-blue{border-left:3px solid var(--blue)}
+.lbl{font-size:9px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;margin-bottom:7px}
+.lbl-amber{color:var(--amber)}.lbl-coral{color:var(--coral)}.lbl-green{color:var(--green)}
+.lbl-red{color:var(--red)}.lbl-purple{color:var(--purple)}.lbl-blue{color:var(--blue)}
+.input{width:100%;background:var(--cream);border:1.5px solid rgba(0,0,0,.08);border-radius:var(--rs);padding:8px 10px;color:var(--text);font-size:13px;outline:none;transition:border .2s}
+.input:focus{border-color:var(--amber)}
+.textarea{width:100%;background:var(--cream);border:1.5px solid rgba(0,0,0,.08);border-radius:var(--rs);padding:8px 10px;color:var(--text);font-size:13px;outline:none;resize:none}
+.select{width:100%;background:var(--cream);border:1.5px solid rgba(0,0,0,.08);border-radius:var(--rs);padding:8px 10px;color:var(--text);font-size:13px;outline:none}
+.btn{background:linear-gradient(135deg,var(--amber),var(--coral));color:#fff;border:none;border-radius:var(--rs);padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.btn-sm{background:var(--cream);color:var(--muted);border:1.5px solid rgba(0,0,0,.1);border-radius:var(--rs);padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer}
+.pill{border-radius:20px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;border:1.5px solid transparent;background:var(--cream);color:var(--muted);transition:all .15s}
+.check{width:16px;height:16px;border-radius:4px;border:2px solid #D6D3D1;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.check.done{background:var(--green);border-color:var(--green)}
+.pbar{height:3px;background:#E7E5E4;border-radius:2px;flex:1}
+.pbar-fill{height:100%;border-radius:2px;transition:width .3s}
+.node-card{background:var(--warm);border-radius:var(--rs);border:1px solid var(--border);padding:9px 11px;margin-bottom:5px;overflow:hidden}
+.filter-bar{padding:5px 12px;display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;border-bottom:1px solid var(--border);background:var(--cream)}
+.filter-bar::-webkit-scrollbar{display:none}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;display:flex;align-items:flex-end;backdrop-filter:blur(2px)}
+.modal-sheet{width:100%;background:var(--warm);border-radius:20px 20px 0 0;padding:18px;max-height:80vh;overflow-y:auto}
+.seat-tag{font-size:9px;padding:2px 7px;border-radius:10px;font-weight:700;flex-shrink:0}
+.seat-deep{background:#EDE9FE;color:#6D28D9}
+.seat-light{background:#D1FAE5;color:#065F46}
 </style>
 </head>
 <body>
-<div class="save-badge" id="saveIndicator">保存 ✓</div>
+<div class="save-badge" id="si">保存 ✓</div>
 <div id="app"></div>
 <script>
-// ── Storage ────────────────────────────────────────────────────────────────────
+// ── Storage ──────────────────────────────────────────────────────────────────
+let _st=null;
 const lsGet=(k,d=null)=>{try{const v=localStorage.getItem(k);return v!=null?JSON.parse(v):d;}catch{return d;}};
-let saveTimer=null;
-const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));const el=document.getElementById('saveIndicator');if(el){el.classList.add('show');clearTimeout(saveTimer);saveTimer=setTimeout(()=>el.classList.remove('show'),1500);}}catch{}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));const el=document.getElementById('si');if(el){el.classList.add('show');clearTimeout(_st);_st=setTimeout(()=>el.classList.remove('show'),1500);}}catch{}};
 
-// ── Constants ──────────────────────────────────────────────────────────────────
+// ── Constants ─────────────────────────────────────────────────────────────────
 const HORIZONS=["人生の目標","5年後","1年後","半年後","1ヶ月後","1週間後","今日"];
 const STATUSES=["未着手","進行中","完了"];
 const AREAS=["仕事","家族・恋人","プライベート","健康"];
-const AREA_COLOR={"仕事":"#3B82F6","家族・恋人":"#EC4899","プライベート":"#8B5CF6","健康":"#10B981"};
-const HOR_COLOR={"人生の目標":"#8B5CF6","5年後":"#3B82F6","1年後":"#10B981","半年後":"#F59E0B","1ヶ月後":"#F97316","1週間後":"#EF4444","今日":"#EC4899"};
-const STA_COLOR={"未着手":{bg:"#F5F5F4",t:"#78716C"},"進行中":{bg:"#DBEAFE",t:"#1D4ED8"},"完了":{bg:"#D1FAE5",t:"#065F46"}};
+const AC={"仕事":"#3B82F6","家族・恋人":"#EC4899","プライベート":"#8B5CF6","健康":"#10B981"};
+const HC={"人生の目標":"#8B5CF6","5年後":"#3B82F6","1年後":"#10B981","半年後":"#F59E0B","1ヶ月後":"#F97316","1週間後":"#EF4444","今日":"#EC4899"};
+const SC={"未着手":{bg:"#F5F5F4",t:"#78716C"},"進行中":{bg:"#DBEAFE",t:"#1D4ED8"},"完了":{bg:"#D1FAE5",t:"#065F46"}};
+const DAY_SLOTS={
+  "テレワーク":[{label:"🌅 朝の集中時間",time:"8:00〜8:45",mins:45},{label:"🌙 夜の自分時間",time:"21:30〜22:15",mins:45}],
+  "出勤":[{label:"🌅 出発前",time:"7:35〜8:05",mins:30},{label:"🚃 帰りの通勤",time:"18:15〜18:45",mins:30},{label:"🌙 夜の自分時間",time:"22:30〜23:00",mins:30}],
+  "休日":[{label:"🏋️ 自分時間",time:"4時間（はるかさんと交渉）",mins:240}]
+};
 
 const uid=()=>Math.random().toString(36).slice(2,9);
 const fmtDate=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const todayStr=()=>fmtDate(new Date());
-const yesterdayStr=()=>{const d=new Date();d.setDate(d.getDate()-1);return fmtDate(d);};
+const yestStr=()=>{const d=new Date();d.setDate(d.getDate()-1);return fmtDate(d);};
 const monthStr=()=>{const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;};
 const weekStr=()=>{const d=new Date();const day=d.getDay()||7;d.setDate(d.getDate()-day+1);return fmtDate(d);};
-const fmtDisplay=d=>d.replace(/-/g,"/");
-const weekdays=["日","月","火","水","木","金","土"];
-const todayLabel=()=>{const d=new Date();return`${d.getMonth()+1}月${d.getDate()}日（${weekdays[d.getDay()]}）`;};
+const WD=["日","月","火","水","木","金","土"];
+const todayLabel=()=>{const d=new Date();return`${d.getMonth()+1}月${d.getDate()}日（${WD[d.getDay()]}）`;};
+const fmtDisp=d=>String(d||"").replace(/-/g,"/");
+const esc=s=>String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 
-function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
-
-// ── State ──────────────────────────────────────────────────────────────────────
+// ── State ─────────────────────────────────────────────────────────────────────
 const defGoals={nodes:{r1:{id:"r1",title:"理想の後輩になる",timeHorizon:"1年後",status:"進行中",progress:10,priority:"高",lifeArea:"仕事",parentId:null,children:[]}},rootIds:["r1"]};
 const defEntry=()=>({goal:"",tasks:[{t:"",done:false,ts:""},{t:"",done:false,ts:""},{t:"",done:false,ts:""}],challenge:"",challengeResponse:""});
 
 let goals=lsGet("goals",defGoals);
 let routineEntries=lsGet("routine-entries",{});
+let tasks=lsGet("task-list",[]);
 let monthlyGoal=lsGet("monthly-"+monthStr(),"");
 let weeklyGoal=lsGet("weekly-"+weekStr(),"");
 
-let S={tab:"routine",rv:"today",search:"",bulkOpen:false,editMode:false,af:"全て",hf:"全て",sf:"全て",medMins:5,medSecs:null,medRunning:false,medDone:false,medInterval:null,expanded:{},selected:{},taskView:"matrix"};
+const saveGoals=()=>lsSet("goals",goals);
+const saveEntries=()=>lsSet("routine-entries",routineEntries);
+const saveTasks=()=>lsSet("task-list",tasks);
 
-// ── Day type config ─────────────────────────────────────────────────────────
-const DAY_SLOTS={
-  "テレワーク":[
-    {label:"🌅 朝の集中時間",time:"8:00〜8:45",mins:45},
-    {label:"🌙 夜の自分時間",time:"21:30〜22:15",mins:45}
-  ],
-  "出勤":[
-    {label:"🌅 出発前",time:"7:35〜8:05",mins:30},
-    {label:"🚃 帰りの通勤",time:"18:15〜18:45",mins:30},
-    {label:"🌙 夜の自分時間",time:"22:30〜23:00",mins:30}
-  ],
-  "休日":[
-    {label:"🏋️ 自分時間",time:"4時間（はるかさんと交渉）",mins:240}
-  ]
+function getEntry(){if(!routineEntries[todayStr()])routineEntries[todayStr()]=defEntry();return routineEntries[todayStr()];}
+function getDayType(){return lsGet("daytype-"+todayStr(),"テレワーク");}
+function setDayType(v){lsSet("daytype-"+todayStr(),v);}
+function getSlotTask(i){return lsGet("slot-"+todayStr()+"-"+i,"");}
+function getSlotSeat(i){return lsGet("slotseat-"+todayStr()+"-"+i,"all");}
+function setSlotSeat(i,v){lsSet("slotseat-"+todayStr()+"-"+i,v);}
+function setSlotTask(i,v){lsSet("slot-"+todayStr()+"-"+i,v);}
+
+// ── S (UI state) ──────────────────────────────────────────────────────────────
+let S={
+  tab:"routine",rv:"today",search:"",bulkOpen:false,editMode:false,taskView:"matrix",
+  af:"全て",hf:"全て",sf:"全て",expanded:{},selected:{}
 };
 
-// ── Tasks ──────────────────────────────────────────────────────────────────────
-let tasks=lsGet("task-list",[]);
-function saveTasks(){lsSet("task-list",tasks);}
-function syncLeafTasks(){
-  // Get all current leaf node IDs
-  const leafIds=new Set(Object.values(goals.nodes).filter(n=>!n.children||!n.children.length).map(n=>n.id));
-  // Remove tasks whose goal node no longer exists or is no longer a leaf
-  tasks=tasks.filter(t=>!t.goalNodeId||leafIds.has(t.goalNodeId));
-  // Add new leaf nodes not yet in tasks
-  const existing=new Set(tasks.filter(t=>t.goalNodeId).map(t=>t.goalNodeId));
-  leafIds.forEach(id=>{
-    if(!existing.has(id)){
-      const n=goals.nodes[id];if(!n)return;
-      tasks.push({id:uid(),title:n.title,importance:"中",deadline:null,status:"未着手",goalNodeId:id});
-    }
-  });
-  saveTasks();
+// ── Goal helpers ──────────────────────────────────────────────────────────────
+function nodeMatches(id){
+  const n=goals.nodes[id];if(!n)return false;
+  const ok=(S.af==="全て"||n.lifeArea===S.af)&&(S.hf==="全て"||n.timeHorizon===S.hf)&&(S.sf==="全て"||n.status===S.sf);
+  return ok||(n.children||[]).some(c=>nodeMatches(c));
 }
-function daysUntil(dateStr){
-  if(!dateStr)return null;
-  const today=new Date();today.setHours(0,0,0,0);
-  const d=new Date(dateStr);
-  return Math.ceil((d-today)/(1000*60*60*24));
-}
-function urgencyLevel(dateStr){
-  const d=daysUntil(dateStr);
-  if(d===null)return "none";
-  if(d<=3)return "high";
-  if(d<=7)return "medium";
-  return "low";
-}
-
 function calcProgress(id){
   const n=goals.nodes[id];if(!n)return 0;
   const ch=n.children||[];
   if(!ch.length)return n.progress;
-  const sum=ch.reduce((acc,cid)=>acc+calcProgress(cid),0);
-  return Math.round(sum/ch.length);
+  return Math.round(ch.reduce((a,c)=>a+calcProgress(c),0)/ch.length);
 }
-function isExpanded(id){return S.expanded[id]!==false;}// default true
-
-function getEntry(){if(!routineEntries[todayStr()])routineEntries[todayStr()]=defEntry();return routineEntries[todayStr()];}
-function saveEntries(){lsSet("routine-entries",routineEntries);}
-function getDayType(){return lsGet("daytype-"+todayStr(),"テレワーク");}
-function setDayTypeVal(v){lsSet("daytype-"+todayStr(),v);}
-function getSlotTask(i){return lsGet("slot-"+todayStr()+"-"+i,"");}
-function setSlotTask(i,v){lsSet("slot-"+todayStr()+"-"+i,v);}
-function saveGoals(){lsSet("goals",goals);}
-
-function nodeMatches(id){
-  const n=goals.nodes[id];if(!n)return false;
-  const ok=(S.af==="全て"||n.lifeArea===S.af)&&(S.hf==="全て"||n.timeHorizon===S.hf)&&(S.sf==="全て"||n.status===S.sf);
-  if(ok)return true;
-  return(n.children||[]).some(c=>nodeMatches(c));
-}
+function isExp(id){return S.expanded[id]!==false;}
 function leaves(){return Object.values(goals.nodes).filter(n=>n.status!=="完了"&&(!n.children||!n.children.length));}
-function parentsOfLeaves(){const lids=new Set(Object.values(goals.nodes).filter(n=>!n.children||!n.children.length).map(n=>n.id));return Object.values(goals.nodes).filter(n=>n.status!=="完了"&&n.children&&n.children.some(c=>lids.has(c)));}
-function grandparents(){const pids=new Set(parentsOfLeaves().map(n=>n.id));return Object.values(goals.nodes).filter(n=>n.status!=="完了"&&n.children&&n.children.some(c=>pids.has(c)));}
+function parentsOfLeaves(){
+  const lids=new Set(Object.values(goals.nodes).filter(n=>!n.children||!n.children.length).map(n=>n.id));
+  return Object.values(goals.nodes).filter(n=>n.status!=="完了"&&n.children?.some(c=>lids.has(c)));
+}
+function grandparents(){
+  const pids=new Set(parentsOfLeaves().map(n=>n.id));
+  return Object.values(goals.nodes).filter(n=>n.status!=="完了"&&n.children?.some(c=>pids.has(c)));
+}
 
+// ── Task helpers ──────────────────────────────────────────────────────────────
+function syncLeafTasks(){
+  const leafIds=new Set(Object.values(goals.nodes).filter(n=>!n.children||!n.children.length).map(n=>n.id));
+  tasks=tasks.filter(t=>!t.goalNodeId||leafIds.has(t.goalNodeId));
+  const existing=new Set(tasks.filter(t=>t.goalNodeId).map(t=>t.goalNodeId));
+  leafIds.forEach(id=>{
+    if(!existing.has(id)){
+      const n=goals.nodes[id];if(!n)return;
+      tasks.push({id:uid(),title:n.title,importance:"中",seatType:"deep",deadline:null,status:"未着手",goalNodeId:id,recurring:false});
+    }
+  });
+  saveTasks();
+}
+function daysUntil(s){if(!s)return null;const t=new Date();t.setHours(0,0,0,0);return Math.ceil((new Date(s)-t)/86400000);}
+function urgLevel(s){const d=daysUntil(s);if(d===null)return"none";if(d<=3)return"high";if(d<=7)return"med";return"low";}
+function isImp(t){return t.importance==="高"||t.importance==="中";}
+function isUrg(t){const u=urgLevel(t.deadline);return u==="high"||u==="med";}
 function parseIndented(text,area,hor){
   const lines=text.split("\n").filter(l=>l.trim());
   const getI=s=>{let i=0;for(const c of s){if(c===" ")i++;else if(c==="\t")i+=2;else break;}return i;};
   const ns={},rs=[],stack=[];
-  lines.forEach(line=>{const ind=getI(line);const title=line.replace(/^[\s\-\*•]+/,"").trim();if(!title)return;const id=uid();ns[id]={id,title,timeHorizon:hor,status:"未着手",progress:0,priority:"中",lifeArea:area,parentId:null,children:[]};while(stack.length&&stack[stack.length-1].ind>=ind)stack.pop();if(stack.length){const pid=stack[stack.length-1].id;ns[id].parentId=pid;ns[pid].children.push(id);}else rs.push(id);stack.push({id,ind});});
+  lines.forEach(line=>{
+    const ind=getI(line);const title=line.replace(/^[\s\-\*•]+/,"").trim();if(!title)return;
+    const id=uid();
+    ns[id]={id,title,timeHorizon:hor,status:"未着手",progress:0,priority:"中",lifeArea:area,parentId:null,children:[]};
+    while(stack.length&&stack[stack.length-1].ind>=ind)stack.pop();
+    if(stack.length){const pid=stack[stack.length-1].id;ns[id].parentId=pid;ns[pid].children.push(id);}
+    else rs.push(id);
+    stack.push({id,ind});
+  });
   return{ns,rs};
 }
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function render(){document.getElementById("app").innerHTML=buildApp();}
 
 // ── Goal Node HTML ─────────────────────────────────────────────────────────────
 function nodeHTML(id,depth){
   const n=goals.nodes[id];if(!n||!nodeMatches(id))return"";
-  const hc=HOR_COLOR[n.timeHorizon]||"#F59E0B";
-  const sc=STA_COLOR[n.status]||STA_COLOR["未着手"];
-  const ac=AREA_COLOR[n.lifeArea||"仕事"]||"#3B82F6";
-  const hasChildren=(n.children&&n.children.length>0);
-  const exp=isExpanded(id);
-  const prog=hasChildren?calcProgress(id):n.progress;
+  const hc=HC[n.timeHorizon]||"#F59E0B",sc=SC[n.status]||SC["未着手"],ac=AC[n.lifeArea||"仕事"]||"#3B82F6";
+  const hasKids=!!(n.children&&n.children.length);
+  const prog=hasKids?calcProgress(id):n.progress;
   const sel=!!S.selected[id];
+  const exp=isExp(id);
   const ch=exp?(n.children||[]).map(c=>nodeHTML(c,depth+1)).join(""):"";
-
-  // Promote: move to parent's level. Demote: make child of previous sibling
-  const siblings=n.parentId?(goals.nodes[n.parentId]?.children||[]):(goals.rootIds||[]);
-  const idx=siblings.indexOf(id);
-  const canPromote=!!n.parentId;
-  const canDemote=idx>0;
-
-  return`<div style="margin-left:${depth*16}px">
-<div class="node-card" style="border-left:3px solid ${hc};background:${sel?'rgba(245,158,11,.07)':'var(--warm-white)'};border:1px solid ${sel?'rgba(245,158,11,.4)':'var(--border)'}">
-  <div style="display:flex;align-items:center;gap:6px;overflow:hidden">
-    <!-- Selection checkbox (only in edit mode) -->
-    ${S.editMode?`<div onclick="toggleSel('${id}')" style="width:14px;height:14px;border-radius:3px;border:1.5px solid ${sel?'var(--amber)':'#D6D3D1'};background:${sel?'var(--amber)':'transparent'};cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s">${sel?'<span style="color:#fff;font-size:8px;font-weight:800">✓</span>':""}</div>`:""}
-    <!-- Expand/collapse -->
-    ${hasChildren?`<span onclick="toggleExp('${id}')" style="color:${exp?'var(--amber)':'#C7B8A8'};font-size:9px;flex-shrink:0;cursor:pointer;transition:transform .2s;transform:rotate(${exp?90:0}deg);display:inline-block">▶</span>`:`<div style="width:10px;flex-shrink:0"></div>`}
-    <!-- Status check - only for leaf nodes -->
-    ${!hasChildren?`<div onclick="cycleStatus('${id}')" style="width:16px;height:16px;border-radius:5px;border:2px solid ${n.status==='完了'?'#10B981':'#D6D3D1'};background:${n.status==='完了'?'#10B981':'transparent'};cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s">${n.status==='完了'?'<span style="color:#fff;font-size:9px;font-weight:800">✓</span>':""}</div>`:`<div style="width:16px;flex-shrink:0"></div>`}
-    <!-- Title -->
-    <span onclick="editTitle('${id}')" style="flex:1;min-width:0;font-size:13px;font-weight:600;color:${n.status==='完了'?'#A8A29E':'#1C1917'};text-decoration:${n.status==='完了'?'line-through':'none'};cursor:text;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(n.title)}</span>
-    <span style="font-size:9px;padding:2px 6px;border-radius:10px;background:${n.priority==='高'?'#FEE2E2':n.priority==='中'?'#FEF3C7':'#F5F5F4'};color:${n.priority==='高'?'#DC2626':n.priority==='中'?'#D97706':'#78716C'};font-weight:700;flex-shrink:0">${n.priority||"中"}</span>
-    <button onclick="delNode('${id}')" class="btn-ghost">×</button>
+  const sib=n.parentId?(goals.nodes[n.parentId]?.children||[]):(goals.rootIds||[]);
+  const idx=sib.indexOf(id);
+  return`<div style="margin-left:${depth*15}px">
+<div class="node-card" style="border-left:3px solid ${hc};background:${sel?"rgba(245,158,11,.06)":"var(--warm)"};border:1px solid ${sel?"rgba(245,158,11,.4)":"var(--border)"}">
+  <div style="display:flex;align-items:center;gap:5px;overflow:hidden">
+    ${S.editMode?`<div onclick="toggleSel('${id}')" style="width:13px;height:13px;border-radius:3px;border:1.5px solid ${sel?"var(--amber)":"#D6D3D1"};background:${sel?"var(--amber)":"transparent"};cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center">${sel?'<span style="color:#fff;font-size:7px">✓</span>':""}</div>`:""}
+    ${hasKids?`<span onclick="S.expanded['${id}']=!isExp('${id}');render()" style="color:${exp?"var(--amber)":"#C7B8A8"};font-size:9px;flex-shrink:0;cursor:pointer;display:inline-block;transition:transform .2s;transform:rotate(${exp?90:0}deg)">▶</span>`:`<div style="width:10px;flex-shrink:0"></div>`}
+    ${!hasKids?`<div onclick="cycleStatus('${id}')" style="width:15px;height:15px;border-radius:4px;border:2px solid ${n.status==="完了"?"#10B981":"#D6D3D1"};background:${n.status==="完了"?"#10B981":"transparent"};cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center">${n.status==="完了"?'<span style="color:#fff;font-size:8px;font-weight:800">✓</span>':""}</div>`:`<div style="width:15px;flex-shrink:0"></div>`}
+    <span onclick="editTitle('${id}')" style="flex:1;min-width:0;font-size:12px;font-weight:600;color:${n.status==="完了"?"#A8A29E":"#1C1917"};text-decoration:${n.status==="完了"?"line-through":"none"};cursor:text;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(n.title)}</span>
+    <span style="font-size:8px;padding:2px 5px;border-radius:8px;background:${n.priority==="高"?"#FEE2E2":n.priority==="中"?"#FEF3C7":"#F5F5F4"};color:${n.priority==="高"?"#DC2626":n.priority==="中"?"#D97706":"#78716C"};font-weight:700;flex-shrink:0">${n.priority||"中"}</span>
+    <button onclick="delNode('${id}')" style="background:none;border:none;color:#C7B8A8;font-size:14px;cursor:pointer;flex-shrink:0;line-height:1">×</button>
   </div>
-  <div style="display:flex;align-items:center;gap:5px;margin-top:7px;margin-left:22px;flex-wrap:wrap">
-    <select onchange="updNode('${id}','lifeArea',this.value)" style="background:${ac}18;color:${ac};border:none;border-radius:6px;font-size:10px;padding:3px 5px;font-weight:700">${AREAS.map(a=>`<option${n.lifeArea===a?" selected":""}>${a}</option>`).join("")}</select>
-    <select onchange="updNode('${id}','status',this.value)" style="background:${sc.bg};color:${sc.t};border:none;border-radius:6px;font-size:10px;padding:3px 5px;font-weight:700">${STATUSES.map(s=>`<option${n.status===s?" selected":""}>${s}</option>`).join("")}</select>
-    <select onchange="updNode('${id}','timeHorizon',this.value)" style="background:${hc}18;color:${hc};border:none;border-radius:6px;font-size:10px;padding:3px 5px;font-weight:700">${HORIZONS.map(h=>`<option${n.timeHorizon===h?" selected":""}>${h}</option>`).join("")}</select>
-    <button onclick="addChild('${id}')" style="background:${hc}18;border:none;color:${hc};border-radius:6px;font-size:10px;padding:3px 10px;cursor:pointer;font-weight:700">＋子</button>
-    ${canPromote?`<button onclick="promoteNode('${id}')" title="親と同じ階層に上げる" style="background:#EDE9FE;border:none;color:#7C3AED;border-radius:6px;font-size:10px;padding:3px 8px;cursor:pointer;font-weight:700">↑昇格</button>`:""}
-    ${canDemote?`<button onclick="demoteNode('${id}')" title="一つ上の兄弟の子にする" style="background:#DBEAFE;border:none;color:#1D4ED8;border-radius:6px;font-size:10px;padding:3px 8px;cursor:pointer;font-weight:700">↓降格</button>`:""}
+  <div style="display:flex;align-items:center;gap:4px;margin-top:6px;margin-left:20px;flex-wrap:wrap">
+    <select onchange="updNode('${id}','lifeArea',this.value)" style="background:${ac}18;color:${ac};border:none;border-radius:5px;font-size:9px;padding:2px 4px;font-weight:700">${AREAS.map(a=>`<option${n.lifeArea===a?" selected":""}>${a}</option>`).join("")}</select>
+    <select onchange="updNode('${id}','status',this.value)" style="background:${sc.bg};color:${sc.t};border:none;border-radius:5px;font-size:9px;padding:2px 4px;font-weight:700">${STATUSES.map(s=>`<option${n.status===s?" selected":""}>${s}</option>`).join("")}</select>
+    <select onchange="updNode('${id}','timeHorizon',this.value)" style="background:${hc}18;color:${hc};border:none;border-radius:5px;font-size:9px;padding:2px 4px;font-weight:700">${HORIZONS.map(h=>`<option${n.timeHorizon===h?" selected":""}>${h}</option>`).join("")}</select>
+    <button onclick="addChild('${id}')" style="background:${hc}18;border:none;color:${hc};border-radius:5px;font-size:9px;padding:2px 8px;cursor:pointer;font-weight:700">＋子</button>
+    ${n.parentId?`<button onclick="promoteNode('${id}')" style="background:#EDE9FE;border:none;color:#7C3AED;border-radius:5px;font-size:9px;padding:2px 7px;cursor:pointer;font-weight:700">↑</button>`:""}
+    ${idx>0?`<button onclick="demoteNode('${id}')" style="background:#DBEAFE;border:none;color:#1D4ED8;border-radius:5px;font-size:9px;padding:2px 7px;cursor:pointer;font-weight:700">↓</button>`:""}
   </div>
-  <div style="display:flex;align-items:center;gap:6px;margin-top:5px;margin-left:22px">
-    <div class="progress-bar"><div class="progress-fill" style="width:${prog}%;background:${n.status==='完了'?'#10B981':hc}"></div></div>
-    ${hasChildren
-      ?`<span style="font-size:9px;color:#A8A29E;font-weight:600">${prog}%（自動）</span>`
-      :`<input type="number" min="0" max="100" value="${n.progress}" onchange="updNode('${id}','progress',Math.min(100,Math.max(0,Number(this.value))))" style="width:36px;background:transparent;border:none;border-bottom:1px solid #E7E5E4;color:#A8A29E;font-size:9px;font-weight:600;text-align:right;padding:0;outline:none;font-family:inherit"/><span style="font-size:9px;color:#A8A29E;font-weight:600">%</span>`
+  <div style="display:flex;align-items:center;gap:5px;margin-top:4px;margin-left:20px">
+    <div class="pbar"><div class="pbar-fill" style="width:${prog}%;background:${n.status==="完了"?"#10B981":hc}"></div></div>
+    ${hasKids
+      ?`<span style="font-size:9px;color:var(--light);font-weight:600">${prog}%（自動）</span>`
+      :`<input type="number" min="0" max="100" value="${n.progress}" onchange="updNode('${id}','progress',Math.min(100,Math.max(0,Number(this.value))))" style="width:34px;background:transparent;border:none;border-bottom:1px solid #E7E5E4;color:var(--light);font-size:9px;font-weight:600;text-align:right;padding:0;outline:none;font-family:inherit"/><span style="font-size:9px;color:var(--light)">%</span>`
     }
   </div>
 </div>
 ${ch}</div>`;
 }
 
-// ── Goal Tab ───────────────────────────────────────────────────────────────────
-function buildGoalTab(){
-  const all=Object.values(goals.nodes);
-  const done=all.filter(n=>n.status==="完了").length;
-  const roots=goals.rootIds.filter(id=>nodeMatches(id));
-  const pill=(val,cur,type,color)=>`<button onclick="setF('${type}','${val}')" class="pill" style="${cur===val?`background:${color||'#1C1917'}18;color:${color||'#1C1917'};border-color:${color||'#1C1917'}44`:""}">${val}</button>`;
-  return`<div>
-<div class="quick-add">
-  <input id="qinp" class="input-clean" placeholder="目標を入力してEnter" onkeydown="if(event.key==='Enter')quickAdd()" style="margin:0"/>
-  <select id="qarea" style="background:var(--cream);border:1.5px solid rgba(0,0,0,.08);border-radius:8px;color:var(--text);font-size:10px;padding:5px 4px;font-weight:700">${AREAS.map(a=>`<option>${a}</option>`).join("")}</select>
-  <button onclick="quickAdd()" class="btn-primary" style="padding:8px 12px">追加</button>
-  <button onclick="S.bulkOpen=true;render()" class="btn-outline">一括</button>
-</div>
-<div class="filter-bar">${pill("全て",S.sf,"s","")}${STATUSES.map(s=>pill(s,S.sf,"s",s==="完了"?"#10B981":s==="進行中"?"#3B82F6":"#78716C")).join("")}</div>
-<div class="filter-bar">${pill("全て",S.af,"a","")}${AREAS.map(a=>pill(a,S.af,"a",AREA_COLOR[a])).join("")}</div>
-<div class="filter-bar">${pill("全て",S.hf,"h","")}${HORIZONS.map(h=>pill(h,S.hf,"h",HOR_COLOR[h])).join("")}</div>
-<div style="padding:12px 14px">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-    <button onclick="S.editMode=!S.editMode;if(!S.editMode)S.selected={};render()" style="background:${S.editMode?'var(--amber-pale)':'var(--cream)'};border:1.5px solid ${S.editMode?'var(--amber)':'var(--border)'};color:${S.editMode?'var(--amber)':'var(--text-muted)'};border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer">${S.editMode?'✕ 編集終了':'✏️ 編集'}</button>
-    <span style="font-size:10px;color:var(--text-light);font-weight:600;background:var(--warm-white);padding:3px 8px;border-radius:10px;border:1px solid var(--border)">完了 ${done}/${all.length}</span>
-  </div>
-  ${roots.map(id=>nodeHTML(id,0)).join("")}
-  ${roots.length===0?'<div style="text-align:center;padding:40px;color:var(--text-light);font-size:13px">条件に合う目標がありません</div>':""}
-</div>
-${Object.keys(S.selected).length>0?`
-<div style="position:fixed;bottom:0;left:0;right:0;background:var(--warm-white);border-top:2px solid var(--amber);padding:12px 14px;z-index:150;box-shadow:0 -4px 16px rgba(0,0,0,.1)">
-  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-    <span style="font-size:12px;font-weight:800;color:var(--amber)">${Object.keys(S.selected).length}件選択中</span>
-    <button onclick="S.selected={};render()" class="btn-outline" style="padding:3px 8px;font-size:10px">解除</button>
-  </div>
-  <div style="display:flex;gap:6px;flex-wrap:wrap">
-    ${STATUSES.map(s=>{const sc=STA_COLOR[s];return`<button onclick="bulkSet('status','${s}')" style="background:${sc.bg};color:${sc.t};border:none;border-radius:6px;font-size:11px;padding:5px 10px;cursor:pointer;font-weight:700">${s}</button>`;}).join("")}
-    ${AREAS.map(a=>`<button onclick="bulkSet('lifeArea','${a}')" style="background:${AREA_COLOR[a]}18;color:${AREA_COLOR[a]};border:none;border-radius:6px;font-size:11px;padding:5px 10px;cursor:pointer;font-weight:700">${a}</button>`).join("")}
-    <select onchange="bulkSet('timeHorizon',this.value)" style="background:var(--cream);border:1px solid var(--border);border-radius:6px;font-size:11px;padding:5px 6px;color:var(--text)"><option value="">時間軸を変更...</option>${HORIZONS.map(h=>`<option value="${h}">${h}</option>`).join("")}</select>
-    <select onchange="bulkSet('priority',this.value)" style="background:var(--cream);border:1px solid var(--border);border-radius:6px;font-size:11px;padding:5px 6px;color:var(--text)"><option value="">優先度を変更...</option>${["高","中","低"].map(p=>`<option value="${p}">${p}</option>`).join("")}</select>
-  </div>
-</div>`:""}
-${S.bulkOpen?`<div class="modal-overlay"><div class="modal-sheet">
-<div style="font-size:15px;font-weight:800;margin-bottom:4px;color:var(--text)">📋 一括登録</div>
-<div style="font-size:11px;color:var(--text-muted);margin-bottom:10px">インデントでサブタスクになります</div>
-<textarea id="bulktext" rows="7" class="textarea-clean" placeholder="目標A&#10;  サブ目標1&#10;  サブ目標2&#10;目標B"></textarea>
-<div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;align-items:center">
-  <select id="bulkarea" style="background:var(--cream);border:1.5px solid rgba(0,0,0,.08);border-radius:8px;color:var(--text);font-size:11px;padding:5px 6px">${AREAS.map(a=>`<option>${a}</option>`).join("")}</select>
-  <select id="bulkhor" style="background:var(--cream);border:1.5px solid rgba(0,0,0,.08);border-radius:8px;color:var(--text);font-size:11px;padding:5px 6px">${HORIZONS.map(h=>`<option>${h}</option>`).join("")}</select>
-  <div style="flex:1"></div>
-  <button onclick="S.bulkOpen=false;render()" class="btn-outline">キャンセル</button>
-  <button onclick="doBulk()" class="btn-primary">登録</button>
-</div></div></div>`:""}
-</div>`;
-}
-
-// ── Routine Tab ────────────────────────────────────────────────────────────────
-function buildRoutineTab(){
-  const e=getEntry();
-  const tasks=e.tasks||[{t:"",done:false,ts:""},{t:"",done:false,ts:""},{t:"",done:false,ts:""}];
-  const yest=routineEntries[yesterdayStr()];
-  const total=Object.keys(routineEntries).length;
-  const isToday=S.rv==="today";
-  const {medMins:mm,medSecs:ms,medRunning:mr,medDone:md}=S;
-  const monthOpts=grandparents().length?grandparents():parentsOfLeaves();
-  const weekOpts=parentsOfLeaves();
-  const leafOpts=leaves();
-  const fmtMed=s=>s===null||s===undefined?mm+":00":Math.floor(s/60)+":"+(s%60).toString().padStart(2,"0");
-
-  let content="";
-  if(isToday){content=`<div style="padding:14px" class="fade-in">
-<div class="today-banner">
-  <span class="sun">🌅</span>
-  <div><div style="font-size:14px;font-weight:800">${todayLabel()}</div><div class="date-text">${total}日目のルーティン</div></div>
-</div>
-
-<div class="card card-purple">
-  <div class="section-label label-purple">📅 今月の目標（${monthStr()}）</div>
-  <select onchange="setMonthly(this.value)" class="select-clean" style="color:${monthlyGoal?'var(--text)':'var(--text-light)'}">
-    <option value="">月頭に選択...</option>
-    ${monthOpts.map(n=>`<option value="${esc(n.title)}"${monthlyGoal===n.title?' selected="selected"':""}>${esc(n.title)}</option>`).join("")}
-  </select>
-  ${monthlyGoal?`<div style="margin-top:6px;font-size:12px;color:var(--purple);font-weight:700;padding:4px 0">✦ ${esc(monthlyGoal)}</div>`:""}
-</div>
-
-<div class="card card-coral">
-  <div class="section-label label-coral">📆 今週の目標（${weekStr()}〜）</div>
-  <select onchange="setWeekly(this.value)" class="select-clean" style="color:${weeklyGoal?'var(--text)':'var(--text-light)'}">
-    <option value="">週頭に選択...</option>
-    ${weekOpts.map(n=>`<option value="${esc(n.title)}"${weeklyGoal===n.title?' selected="selected"':""}>${esc(n.title)}</option>`).join("")}
-  </select>
-  ${weeklyGoal?`<div style="margin-top:6px;font-size:12px;color:var(--coral);font-weight:700;padding:4px 0">✦ ${esc(weeklyGoal)}</div>`:""}
-</div>
-
-${yest&&yest.challenge?`<div class="card" style="border-left:3px solid var(--amber);background:var(--amber-pale)">
-  <div class="section-label label-amber">⚠️ 昨日の課題（自動表示）</div>
-  <div style="font-size:13px;color:var(--text);line-height:1.6;font-weight:500">${esc(yest.challenge)}</div>
-</div>`:""}
-
-<div class="card card-amber">
-  <div class="section-label label-amber">🎯 今日の目標</div>
-  <select onchange="doUpdateEntry('goal',this.value)" class="select-clean" style="color:${e.goal?'var(--text)':'var(--text-light)'}">
-    <option value="">今日の目標を選択...</option>
-    ${leafOpts.map(n=>`<option value="${esc(n.title)}"${e.goal===n.title?' selected="selected"':""}>${esc(n.title)}</option>`).join("")}
-  </select>
-  ${e.goal?`<div style="margin-top:6px;font-size:13px;color:var(--amber);font-weight:800;padding:4px 0">▶ ${esc(e.goal)}</div>`:""}
-</div>
-
-<!-- Day type selector -->
-<div class="card" style="border-left:3px solid var(--amber);margin-bottom:10px">
-  <div class="section-label label-amber" style="margin-bottom:7px">📅 今日は？</div>
-  <div style="display:flex;gap:6px">
-    ${["テレワーク","出勤","休日"].map(d=>`<button onclick="window.setDayTypeAction('${d}')" style="flex:1;background:${getDayType()===d?'var(--amber)':'var(--cream)'};border:1.5px solid ${getDayType()===d?'var(--amber)':'rgba(0,0,0,.1)'};color:${getDayType()===d?'white':'var(--text-muted)'};border-radius:8px;padding:7px 4px;font-size:11px;font-weight:700;cursor:pointer;transition:all .2s">${d}</button>`).join("")}
-  </div>
-</div>
-
-<!-- Time slots for today -->
-<div style="margin-bottom:10px">
-  <div class="section-label" style="color:var(--coral);margin-bottom:7px">⏰ 今日の時間枠</div>
-  ${(DAY_SLOTS[getDayType()]||[]).map((slot,i)=>{
-    const stv=getSlotTask(i);
-    const allLeaves=[...leaves(),...tasks.filter(t=>!t.goalNodeId)];
-    return`<div class="card" style="border-left:3px solid var(--coral);padding:10px 12px;margin-bottom:6px">
-  <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
-    <span style="font-size:11px;font-weight:800;color:var(--coral)">${slot.label}</span>
-    <span style="font-size:10px;color:var(--text-light);background:var(--coral-pale);padding:2px 7px;border-radius:10px;font-weight:600">${slot.time}</span>
-  </div>
-  <select onchange="window.setSlotTaskAction(${i},this.value)" style="width:100%;background:var(--cream);border:1.5px solid rgba(0,0,0,.08);border-radius:8px;padding:8px;color:${stv?'var(--text)':'var(--text-light)'};font-size:12px;box-sizing:border-box">
-    <option value="">この時間にやることを選択...</option>
-    <optgroup label="🎯 目標タスク">${leaves().map(n=>`<option value="${esc(n.title)}"${stv===n.title?' selected="selected"':""}>${esc(n.title)}</option>`).join("")}</optgroup>
-    <optgroup label="📋 タスク表">${tasks.filter(t=>!t.goalNodeId&&t.status!=="完了").map(t=>`<option value="${esc(t.title)}"${stv===t.title?' selected="selected"':""}>${esc(t.title)}</option>`).join("")}</optgroup>
-  </select>
-  ${stv?`<div style="margin-top:5px;font-size:12px;color:var(--coral);font-weight:700">▶ ${esc(stv)}</div>`:""}
-</div>`;
-  }).join("")}
-</div>
-
-<div class="card card-amber" style="border-left-color:#8B5CF6">
-  <div class="section-label" style="color:#8B5CF6">📋 今日のタスク</div>
-  ${tasks.map((t,i)=>`<div style="display:flex;align-items:center;gap:9px;margin-bottom:8px">
-    <div onclick="doToggleTask(${i})" class="check-box ${t.done?'checked':''}">${t.done?'<span style="color:#fff;font-size:10px;font-weight:800">✓</span>':""}</div>
-    <input value="${esc(t.t||"")}" placeholder="タスク ${i+1}" onchange="doUpdateTask(${i},'t',this.value)" class="input-clean" style="margin:0;text-decoration:${t.done?'line-through':'none'};color:${t.done?'var(--text-light)':'var(--text)'}"/>
-    ${t.done&&t.ts?`<span style="font-size:9px;color:var(--green);font-weight:700;flex-shrink:0;white-space:nowrap">${t.ts}</span>`:""}
-  </div>`).join("")}
-</div>
-
-${yest&&yest.challenge?`<div class="card card-green">
-  <div class="section-label label-green">🔄 昨日の課題 → 今日どうするか</div>
-  <textarea placeholder="今日取る行動を書く" rows="2" onchange="doUpdateEntry('challengeResponse',this.value)" class="textarea-clean">${esc(e.challengeResponse||"")}</textarea>
-</div>`:""}
-
-<div class="card card-red">
-  <div class="section-label label-red">⚠️ 今日の課題（夜に記録）</div>
-  <textarea placeholder="今日うまくいかなかったこと・改善したいこと" rows="2" onchange="doUpdateEntry('challenge',this.value)" class="textarea-clean">${esc(e.challenge||"")}</textarea>
-</div>
-
-<div style="text-align:center;font-size:10px;color:var(--text-light);padding:8px 0;font-weight:600">入力すると自動保存されます（右上 ✓）</div>
-</div>`;}
-  else{
-    const dates=Object.keys(routineEntries).filter(d=>d!==todayStr()).sort((a,b)=>b.localeCompare(a));
-    const filtered=S.search?dates.filter(d=>{const en=routineEntries[d];return[en.goal||"",...(en.tasks||[]).map(t=>t.t||""),en.challenge||"",en.challengeResponse||""].join(" ").toLowerCase().includes(S.search.toLowerCase())}):dates;
-    content=`<div style="padding:14px" class="fade-in">
-<input oninput="S.search=this.value;render()" value="${esc(S.search)}" placeholder="🔍 過去の記録を検索..." class="input-clean" style="margin-bottom:12px"/>
-${filtered.length===0?'<div style="text-align:center;padding:40px;color:var(--text-light);font-size:13px">記録がまだありません</div>':filtered.map(d=>{
-  const en=routineEntries[d];const ts=en.tasks||[];
-  return`<div class="history-card">
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-  <div class="history-date" style="margin-bottom:0">${fmtDisplay(d)}</div>
-  ${lsGet("daytype-"+d,"")?('<span style="font-size:9px;background:var(--amber-pale);color:var(--amber);padding:2px 7px;border-radius:10px;font-weight:700">'+lsGet("daytype-"+d,"")+'</span>'):""}
-</div>
-${en.goal?`<div style="font-size:12px;color:var(--amber);font-weight:700;margin-bottom:3px">🎯 ${esc(en.goal)}</div>`:""}
-${(DAY_SLOTS[lsGet("daytype-"+d,"テレワーク")]||[]).map((slot,i)=>{const sv=lsGet("slot-"+d+"-"+i,"");return sv?`<div style="font-size:11px;color:var(--coral);margin-bottom:2px;font-weight:600">⏰ ${slot.label}：${esc(sv)}</div>`:"";}).join("")}
-${(ts||[]).map(t=>{
-  const tx=t&&typeof t==="object"?(t.t||""):(typeof t==="string"?t:"");
-  const dn=t&&t.done||false;
-  const stamp=t&&t.ts||"";
-  return tx?`<div style="font-size:12px;color:${dn?"var(--green)":"var(--text)"};padding-left:6px;text-decoration:${dn?"line-through":"none"};font-weight:${dn?"600":"400"}">${dn?"✓ ":"· "}${esc(tx)}${stamp?` <span style="font-size:10px;color:var(--text-light)">(${stamp})</span>`:""}</div>`:""}).join("")}
-${en.challengeResponse?`<div style="font-size:11px;color:var(--green);margin-top:5px;font-weight:600">🔄 ${esc(en.challengeResponse)}</div>`:""}
-${en.challenge?`<div style="font-size:11px;color:var(--red);margin-top:2px;font-weight:600">⚠️ ${esc(en.challenge)}</div>`:""}
-</div>`;}).join("")}
-</div>`;
-  }
-
-  return`<div>
-<div style="display:flex;padding:10px 14px;gap:6px;border-bottom:1px solid var(--border);background:var(--warm-white);align-items:center">
-  <button onclick="S.rv='today';render()" style="background:${S.rv==='today'?'var(--amber-pale)':'var(--cream)'};border:1.5px solid ${S.rv==='today'?'var(--amber)':'var(--border)'};color:${S.rv==='today'?'var(--amber)':'var(--text-muted)'};border-radius:20px;padding:5px 14px;font-size:11px;font-weight:700;cursor:pointer">今日</button>
-  <button onclick="S.rv='history';render()" style="background:${S.rv==='history'?'var(--amber-pale)':'var(--cream)'};border:1.5px solid ${S.rv==='history'?'var(--amber)':'var(--border)'};color:${S.rv==='history'?'var(--amber)':'var(--text-muted)'};border-radius:20px;padding:5px 14px;font-size:11px;font-weight:700;cursor:pointer">振り返り</button>
-  <span style="margin-left:auto;font-size:10px;color:var(--text-light);font-weight:600">${total}日目</span>
-</div>
-${content}</div>`;
-}
-
-// ── App ────────────────────────────────────────────────────────────────────────
-
-// ── Task Tab (Eisenhower Matrix) ───────────────────────────────────────────────
-function buildTaskTab(){
-  syncLeafTasks();
-  const tv=S.taskView;
-  const active=tasks.filter(t=>t.recurring||t.status!=="完了");
-  const done=tasks.filter(t=>t.status==="完了");
-  function isImportant(t){return t.importance==="高"||t.importance==="中";}
-  function isUrgent(t){const u=urgencyLevel(t.deadline);return u==="high"||u==="medium";}
-  const q1=active.filter(t=>isImportant(t)&&isUrgent(t));
-  const q2=active.filter(t=>isImportant(t)&&!isUrgent(t));
-  const q3=active.filter(t=>!isImportant(t)&&isUrgent(t));
-  const q4=active.filter(t=>!isImportant(t)&&!isUrgent(t));
-  function taskCard(t){
-    const d=daysUntil(t.deadline);
-    const urgColor=d===null?"#A8A29E":d<=3?"#EF4444":d<=7?"#F97316":"#10B981";
-    const fromGoal=t.goalNodeId?"🎯 ":"";
-    const recDone=t.recurring&&lsGet("rec-"+todayStr()+"-"+t.id,false);
-    const isDone=t.recurring?recDone:(t.status==="完了");
-    return`<div style="background:${recDone?"#F0FDF4":"white"};border:1px solid ${recDone?"#BBF7D0":"rgba(0,0,0,.07)"};border-radius:8px;padding:6px 7px;margin-bottom:3px;box-shadow:0 1px 3px rgba(0,0,0,.04);overflow:hidden;min-width:0">
-  <div style="display:flex;align-items:flex-start;gap:5px">
-    <div onclick="toggleTaskStatus('${t.id}')" style="width:13px;height:13px;border-radius:3px;border:2px solid ${isDone?"#10B981":"#D6D3D1"};background:${isDone?"#10B981":"transparent"};cursor:pointer;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center">${isDone?'<span style="color:#fff;font-size:7px">✓</span>':""}</div>
+// ── Task Card HTML ─────────────────────────────────────────────────────────────
+function taskCard(t,mini=true){
+  const d=daysUntil(t.deadline);
+  const urgColor=d===null?"#A8A29E":d<=3?"#EF4444":d<=7?"#F97316":"#10B981";
+  const recDone=t.recurring&&lsGet("rec-"+todayStr()+"-"+t.id,false);
+  const isDone=t.recurring?recDone:(t.status==="完了");
+  const fromGoal=t.goalNodeId?"🎯 ":"";
+  const seatLabel=t.seatType==="light"?'<span class="seat-tag seat-light">片手間</span>':'<span class="seat-tag seat-deep">腰を据えて</span>';
+  if(mini){
+    return`<div style="background:${recDone?"#F0FDF4":"white"};border:1px solid ${recDone?"#BBF7D0":"rgba(0,0,0,.06)"};border-radius:7px;padding:6px 8px;margin-bottom:3px;overflow:hidden">
+  <div style="display:flex;align-items:center;gap:5px">
+    <div onclick="toggleTaskStatus('${t.id}')" style="width:12px;height:12px;border-radius:3px;border:2px solid ${isDone?"#10B981":"#D6D3D1"};background:${isDone?"#10B981":"transparent"};cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center">${isDone?'<span style="color:#fff;font-size:7px">✓</span>':""}</div>
     <div style="flex:1;min-width:0">
-      <div style="display:flex;align-items:center;gap:3px;overflow:hidden">
-        <span style="font-size:11px;font-weight:600;color:${isDone?"#9CA3AF":"#1C1917"};text-decoration:${isDone?"line-through":"none"};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0">${fromGoal}${esc(t.title)}</span>
-        ${t.recurring?`<span style="font-size:9px;flex-shrink:0">🔄</span>`:""}
-      </div>
-      ${recDone?`<div style="font-size:9px;color:#10B981;font-weight:700;margin-top:1px">今日完了 ✓ 明日リセット</div>`:""}
-      ${t.deadline&&!recDone?`<div style="font-size:9px;color:${urgColor};font-weight:700;margin-top:1px">${t.deadline.replace(/-/g,"/")}${d!==null?` (残${d}日)`:""}</div>`:""}
+      <div style="font-size:11px;font-weight:600;color:${isDone?"#9CA3AF":"#1C1917"};text-decoration:${isDone?"line-through":"none"};line-height:1.3;word-break:break-all">${fromGoal}${esc(t.title)}</div>
+      ${recDone?'<div style="font-size:9px;color:#10B981;font-weight:700">今日完了 ✓</div>':""}
+      ${d!==null&&!recDone?`<div style="font-size:9px;color:${urgColor};font-weight:700">残${d}日</div>`:""}
     </div>
     ${!t.goalNodeId?`<button onclick="delTask('${t.id}')" style="background:none;border:none;color:#D6D3D1;font-size:12px;cursor:pointer;flex-shrink:0;line-height:1">×</button>`:""}
   </div>
 </div>`;
   }
-  function quadrant(label,color,tasks,hint){
-    return`<div style="background:${color};border-radius:10px;padding:7px;overflow:hidden;min-width:0">
-  <div style="font-size:8px;font-weight:800;color:rgba(0,0,0,.5);letter-spacing:.5px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${label}</div>
-  <div style="font-size:8px;color:rgba(0,0,0,.3);margin-bottom:4px;font-style:italic">${hint}</div>
-  ${tasks.length===0?'<div style="font-size:10px;color:rgba(0,0,0,.2);text-align:center;padding:4px">なし</div>':tasks.map(taskCard).join("")}
+  // List view
+  return`<div style="background:${recDone?"#F0FDF4":"white"};border:1px solid ${recDone?"#BBF7D0":"rgba(0,0,0,.07)"};border-radius:10px;padding:10px 12px;margin-bottom:6px;display:flex;align-items:center;gap:8px">
+  <div onclick="toggleTaskStatus('${t.id}')" style="width:16px;height:16px;border-radius:4px;border:2px solid ${isDone?"#10B981":"#D6D3D1"};background:${isDone?"#10B981":"transparent"};cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center">${isDone?'<span style="color:#fff;font-size:9px">✓</span>':""}</div>
+  <div style="flex:1;min-width:0">
+    <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
+      <span style="font-size:12px;font-weight:600;color:${isDone?"#A8A29E":"#1C1917"};text-decoration:${isDone?"line-through":"none"}">${fromGoal}${esc(t.title)}</span>
+      ${seatLabel}
+      ${t.recurring?'<span style="font-size:9px">🔄</span>':""}
+    </div>
+    <div style="display:flex;gap:6px;margin-top:3px;align-items:center;flex-wrap:wrap">
+      ${t.deadline?`<span style="font-size:10px;color:${urgColor};font-weight:700">${fmtDisp(t.deadline)}${d!==null?` (残${d}日)`:""}</span>`:`<span style="font-size:10px;color:#D6D3D1">期限未設定</span>`}
+      <input type="date" value="${t.deadline||""}" onchange="updTask('${t.id}','deadline',this.value||null)" style="font-size:10px;background:transparent;border:none;border-bottom:1px solid #E7E5E4;color:var(--muted);padding:0;cursor:pointer;outline:none;font-family:inherit"/>
+    </div>
+    ${recDone?'<div style="font-size:9px;color:#10B981;font-weight:700;margin-top:2px">今日完了 ✓ 明日リセット</div>':""}
+  </div>
+  <div style="display:flex;flex-direction:column;gap:3px;align-items:flex-end">
+    <button onclick="toggleSeat('${t.id}')" style="background:${t.seatType==='light'?"#D1FAE5":"#EDE9FE"};border:none;color:${t.seatType==='light'?"#065F46":"#6D28D9"};border-radius:6px;padding:2px 7px;font-size:9px;font-weight:700;cursor:pointer">${t.seatType==="light"?"片手間":"腰据え"}</button>
+    <button onclick="toggleRecurring('${t.id}')" style="background:${t.recurring?"#EDE9FE":"transparent"};border:1px solid ${t.recurring?"#7C3AED":"#D6D3D1"};color:${t.recurring?"#7C3AED":"#D6D3D1"};border-radius:6px;padding:2px 6px;font-size:9px;cursor:pointer;font-weight:700">🔄</button>
+    ${!t.goalNodeId?`<button onclick="delTask('${t.id}')" style="background:none;border:none;color:#D6D3D1;font-size:13px;cursor:pointer;line-height:1">×</button>`:""}
+  </div>
 </div>`;
-  }
+}
+
+// ── Quadrant ──────────────────────────────────────────────────────────────────
+function quadrant(label,color,items,hint){
+  return`<div style="background:${color};border-radius:10px;padding:7px;overflow:hidden;min-width:0">
+  <div style="font-size:8px;font-weight:800;color:rgba(0,0,0,.5);margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${label}</div>
+  <div style="font-size:8px;color:rgba(0,0,0,.3);margin-bottom:4px;font-style:italic">${hint}</div>
+  ${items.length===0?'<div style="font-size:10px;color:rgba(0,0,0,.2);text-align:center;padding:4px">なし</div>':items.map(t=>taskCard(t,true)).join("")}
+</div>`;
+}
+
+// ── Task Tab ──────────────────────────────────────────────────────────────────
+function buildTaskTab(){
+  syncLeafTasks();
+  const tv=S.taskView;
+  const active=tasks.filter(t=>t.recurring||t.status!=="完了");
+  const done=tasks.filter(t=>!t.recurring&&t.status==="完了");
+  const q1=active.filter(t=>isImp(t)&&isUrg(t));
+  const q2=active.filter(t=>isImp(t)&&!isUrg(t));
+  const q3=active.filter(t=>!isImp(t)&&isUrg(t));
+  const q4=active.filter(t=>!isImp(t)&&!isUrg(t));
   const sorted=[...active].sort((a,b)=>{if(!a.deadline&&!b.deadline)return 0;if(!a.deadline)return 1;if(!b.deadline)return -1;return a.deadline.localeCompare(b.deadline);});
   return`<div>
-<div style="padding:10px 14px;background:white;border-bottom:1px solid rgba(0,0,0,.06);overflow:hidden">
-  <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px">
-    <input id="tinp" class="input-clean" placeholder="タスクを追加..." onkeydown="if(event.key==='Enter')addTask()" style="margin:0;flex:1;min-width:0"/>
-    <button onclick="addTask()" class="btn-primary" style="padding:7px 12px;flex-shrink:0">追加</button>
+<div style="padding:10px 14px;background:white;border-bottom:1px solid var(--border);overflow:hidden">
+  <div style="display:flex;gap:6px;align-items:center;margin-bottom:7px">
+    <input id="tinp" class="input" placeholder="タスクを追加..." onkeydown="if(event.key==='Enter')addTask()" style="margin:0;flex:1;min-width:0"/>
+    <button onclick="addTask()" class="btn" style="padding:7px 12px">追加</button>
   </div>
   <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
-    <label style="font-size:10px;font-weight:700;color:var(--text-muted)">重要度</label>
+    <label style="font-size:10px;font-weight:700;color:var(--muted)">重要度</label>
     <select id="timp" style="background:var(--cream);border:1.5px solid rgba(0,0,0,.08);border-radius:6px;font-size:11px;padding:3px 6px;color:var(--text)"><option>高</option><option selected>中</option><option>低</option></select>
-    <label style="font-size:10px;font-weight:700;color:var(--text-muted)">期限</label>
+    <label style="font-size:10px;font-weight:700;color:var(--muted)">種類</label>
+    <select id="tseat" style="background:var(--cream);border:1.5px solid rgba(0,0,0,.08);border-radius:6px;font-size:11px;padding:3px 6px;color:var(--text)">
+      <option value="deep">🪑 腰を据えて</option>
+      <option value="light">✌️ 片手間</option>
+    </select>
+    <label style="font-size:10px;font-weight:700;color:var(--muted)">期限</label>
     <input id="tdate" type="date" style="background:var(--cream);border:1.5px solid rgba(0,0,0,.08);border-radius:6px;font-size:11px;padding:3px 6px;color:var(--text)"/>
   </div>
 </div>
-<div style="display:flex;padding:8px 14px;gap:6px;border-bottom:1px solid rgba(0,0,0,.06);background:var(--cream)">
-  <button onclick="S.taskView='matrix';render()" style="background:${tv==='matrix'?'var(--amber-pale)':"white"};border:1.5px solid ${tv==='matrix'?'var(--amber)':"rgba(0,0,0,.1)"};color:${tv==='matrix'?'var(--amber)':"var(--text-muted)"};border-radius:8px;padding:4px 12px;font-size:11px;font-weight:700;cursor:pointer">🔲 マトリクス</button>
-  <button onclick="S.taskView='list';render()" style="background:${tv==='list'?'var(--amber-pale)':"white"};border:1.5px solid ${tv==='list'?'var(--amber)':"rgba(0,0,0,.1)"};color:${tv==='list'?'var(--amber)':"var(--text-muted)"};border-radius:8px;padding:4px 12px;font-size:11px;font-weight:700;cursor:pointer">📋 リスト（日付順）</button>
+<div style="display:flex;padding:7px 14px;gap:6px;border-bottom:1px solid var(--border);background:var(--cream)">
+  <button onclick="S.taskView='matrix';render()" style="background:${tv==='matrix'?'var(--amber-pale)':'white'};border:1.5px solid ${tv==='matrix'?'var(--amber)':'rgba(0,0,0,.1)'};color:${tv==='matrix'?'var(--amber)':'var(--muted)'};border-radius:8px;padding:4px 12px;font-size:11px;font-weight:700;cursor:pointer">🔲 マトリクス</button>
+  <button onclick="S.taskView='list';render()" style="background:${tv==='list'?'var(--amber-pale)':'white'};border:1.5px solid ${tv==='list'?'var(--amber)':'rgba(0,0,0,.1)'};color:${tv==='list'?'var(--amber)':'var(--muted)'};border-radius:8px;padding:4px 12px;font-size:11px;font-weight:700;cursor:pointer">📋 リスト（日付順）</button>
 </div>
 ${tv==='matrix'?`
-<div style="padding:8px 12px 0;display:flex;justify-content:space-between">
-  <span style="font-size:9px;color:var(--text-light);font-weight:700">↑ 重要</span>
-  <span style="font-size:9px;color:var(--text-light);font-weight:700">緊急 →</span>
+<div style="padding:7px 12px 0;display:flex;justify-content:space-between">
+  <span style="font-size:9px;color:var(--light);font-weight:700">↑ 重要</span>
+  <span style="font-size:9px;color:var(--light);font-weight:700">緊急 →</span>
 </div>
-<div style="padding:6px 12px 14px;display:grid;grid-template-columns:1fr 1fr;gap:6px;box-sizing:border-box;width:100%;overflow:hidden">
+<div style="padding:5px 12px 14px;display:grid;grid-template-columns:1fr 1fr;gap:6px;box-sizing:border-box;width:100%;overflow:hidden">
   ${quadrant("重要・緊急","#FEE2E2",q1,"今すぐやる")}
   ${quadrant("重要・非緊急","#D1FAE5",q2,"計画する")}
   ${quadrant("非重要・緊急","#FEF3C7",q3,"委任")}
   ${quadrant("非重要・非緊急","#F5F5F4",q4,"排除")}
 </div>`:`
 <div style="padding:12px 14px">
-  <div style="font-size:10px;font-weight:700;color:var(--text-muted);margin-bottom:8px">期限順（未設定は末尾）</div>
-  ${sorted.length===0?'<div style="text-align:center;padding:30px;color:var(--text-light);font-size:13px">タスクがありません</div>':sorted.map(t=>{
-    const d=daysUntil(t.deadline);
-    const urg=urgencyLevel(t.deadline);
-    const urgColor=urg==="high"?"#EF4444":urg==="medium"?"#F97316":urg==="low"?"#10B981":"#A8A29E";
-    const imp=t.importance==="高"?"🔴":t.importance==="中"?"🟡":"⚪";
-    return`<div style="background:white;border:1px solid rgba(0,0,0,.07);border-radius:10px;padding:10px 12px;margin-bottom:6px;box-shadow:0 1px 3px rgba(0,0,0,.04);display:flex;align-items:center;gap:8px">
-  <div onclick="toggleTaskStatus('${t.id}')" style="width:16px;height:16px;border-radius:5px;border:2px solid ${t.status==="完了"?"#10B981":"#D6D3D1"};background:${t.status==="完了"?"#10B981":"transparent"};cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center">${t.status==="完了"?'<span style="color:#fff;font-size:9px">✓</span>':""}</div>
-  <div style="flex:1;min-width:0">
-    <div style="font-size:13px;font-weight:600;color:${t.status==="完了"?"#A8A29E":"#1C1917"};text-decoration:${t.status==="完了"?"line-through":"none"};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${imp} ${esc(t.title)}</div>
-    <div style="display:flex;gap:6px;margin-top:3px;align-items:center">
-      ${t.deadline?`<span style="font-size:10px;color:${urgColor};font-weight:700">${t.deadline.replace(/-/g,"/")}${d!==null&&d<=7?` (残${d}日)`:""}</span>`:`<span style="font-size:10px;color:#D6D3D1">期限未設定</span>`}
-      <input type="date" value="${t.deadline||""}" onchange="updTask('${t.id}','deadline',this.value||null)" style="font-size:10px;background:transparent;border:none;border-bottom:1px solid #E7E5E4;color:var(--text-muted);padding:0;cursor:pointer;outline:none;font-family:inherit"/>
-    </div>
-  </div>
-  <div style="display:flex;flex-direction:column;gap:3px;align-items:flex-end;flex-shrink:0">
-    <button onclick="toggleRecurring('${t.id}')" title="繰り返しタスクに設定" style="background:${t.recurring?"#EDE9FE":"transparent"};border:1px solid ${t.recurring?"#7C3AED":"#D6D3D1"};color:${t.recurring?"#7C3AED":"#D6D3D1"};border-radius:8px;padding:2px 6px;font-size:9px;cursor:pointer;font-weight:700">🔄</button>
-    ${!t.goalNodeId?`<button onclick="delTask('${t.id}')" style="background:none;border:none;color:#D6D3D1;font-size:14px;cursor:pointer;line-height:1">×</button>`:""}
-  </div>
-</div>`;
-  }).join("")}
+  <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:8px">期限順（未設定は末尾）</div>
+  ${sorted.length===0?'<div style="text-align:center;padding:30px;color:var(--light);font-size:13px">タスクがありません</div>':sorted.map(t=>taskCard(t,false)).join("")}
 </div>`}
-${done.length>0?`<div style="padding:0 14px 14px"><div style="font-size:10px;font-weight:700;color:var(--text-light);margin-bottom:6px">完了済み (${done.length})　<span style="font-size:9px;color:var(--text-light);font-style:italic">タップで戻せます</span></div>${done.map(t=>`<div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid rgba(0,0,0,.04)">
-  <div onclick="toggleTaskStatus('${t.id}')" style="width:14px;height:14px;border-radius:3px;background:#10B981;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center"><span style="color:#fff;font-size:8px">✓</span></div>
-  <span style="font-size:12px;color:var(--text-light);text-decoration:line-through;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(t.title)}</span>
-</div>`).join("")}</div>`:""}
+${done.length>0?`<div style="padding:0 14px 14px">
+  <div style="font-size:10px;font-weight:700;color:var(--light);margin-bottom:6px">完了済み (${done.length}) <span style="font-style:italic;font-size:9px">タップで戻せます</span></div>
+  ${done.map(t=>`<div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid rgba(0,0,0,.04)">
+    <div onclick="toggleTaskStatus('${t.id}')" style="width:13px;height:13px;border-radius:3px;background:#10B981;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center"><span style="color:#fff;font-size:7px">✓</span></div>
+    <span style="font-size:11px;color:var(--light);text-decoration:line-through;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(t.title)}</span>
+  </div>`).join("")}
+</div>`:""}
+${S.bulkOpen?`<div class="modal-overlay"><div class="modal-sheet">
+<div style="font-size:14px;font-weight:800;margin-bottom:4px">📋 一括登録</div>
+<div style="font-size:11px;color:var(--muted);margin-bottom:10px">インデントでサブタスクになります</div>
+<textarea id="bulktext" rows="7" class="textarea" placeholder="目標A&#10;  サブ目標1&#10;目標B"></textarea>
+<div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;align-items:center">
+  <select id="bulkarea" style="background:var(--cream);border:1.5px solid rgba(0,0,0,.08);border-radius:8px;color:var(--text);font-size:11px;padding:5px 6px">${AREAS.map(a=>`<option>${a}</option>`).join("")}</select>
+  <select id="bulkhor" style="background:var(--cream);border:1.5px solid rgba(0,0,0,.08);border-radius:8px;color:var(--text);font-size:11px;padding:5px 6px">${HORIZONS.map(h=>`<option>${h}</option>`).join("")}</select>
+  <div style="flex:1"></div>
+  <button onclick="S.bulkOpen=false;render()" class="btn-sm">キャンセル</button>
+  <button onclick="doBulk()" class="btn">登録</button>
+</div></div></div>`:""}
 </div>`;
 }
 
+// ── Goal Tab ──────────────────────────────────────────────────────────────────
+function buildGoalTab(){
+  const all=Object.values(goals.nodes);
+  const done=all.filter(n=>n.status==="完了").length;
+  const roots=goals.rootIds.filter(id=>nodeMatches(id));
+  const pill=(val,cur,type,color)=>`<button onclick="setF('${type}','${val}')" class="pill" style="${cur===val?`background:${color||"#1C1917"}18;color:${color||"#1C1917"};border-color:${color||"#1C1917"}44`:""}">${val}</button>`;
+  return`<div>
+<div style="padding:8px 12px;border-bottom:1px solid var(--border);display:flex;gap:6px;align-items:center;overflow:hidden">
+  <input id="qinp" class="input" placeholder="目標を入力してEnter" onkeydown="if(event.key==='Enter')quickAdd()" style="margin:0;flex:1;min-width:0"/>
+  <select id="qarea" style="background:var(--cream);border:1.5px solid rgba(0,0,0,.08);border-radius:8px;color:var(--text);font-size:10px;padding:5px 4px;font-weight:700">${AREAS.map(a=>`<option>${a}</option>`).join("")}</select>
+  <button onclick="quickAdd()" class="btn" style="padding:7px 10px">追加</button>
+  <button onclick="S.bulkOpen=true;render()" class="btn-sm">一括</button>
+</div>
+<div class="filter-bar">${pill("全て",S.sf,"s","")}${STATUSES.map(s=>pill(s,S.sf,"s",SC[s]?.t)).join("")}</div>
+<div class="filter-bar">${pill("全て",S.af,"a","")}${AREAS.map(a=>pill(a,S.af,"a",AC[a])).join("")}</div>
+<div class="filter-bar">${pill("全て",S.hf,"h","")}${HORIZONS.map(h=>pill(h,S.hf,"h",HC[h])).join("")}</div>
+<div style="padding:10px 12px">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <button onclick="S.editMode=!S.editMode;if(!S.editMode)S.selected={};render()" style="background:${S.editMode?"var(--amber-pale)":"var(--cream)"};border:1.5px solid ${S.editMode?"var(--amber)":"var(--border)"};color:${S.editMode?"var(--amber)":"var(--muted)"};border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer">${S.editMode?"✕ 編集終了":"✏️ 編集"}</button>
+    <span style="font-size:10px;color:var(--light);font-weight:600;background:var(--warm);padding:3px 8px;border-radius:10px;border:1px solid var(--border)">完了 ${done}/${all.length}</span>
+  </div>
+  ${roots.map(id=>nodeHTML(id,0)).join("")}
+  ${roots.length===0?'<div style="text-align:center;padding:40px;color:var(--light);font-size:13px">条件に合う目標がありません</div>':""}
+</div>
+${S.editMode&&Object.keys(S.selected).length>0?`
+<div style="position:fixed;bottom:0;left:0;right:0;background:var(--warm);border-top:2px solid var(--amber);padding:12px 14px;z-index:150;box-shadow:0 -4px 16px rgba(0,0,0,.1)">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+    <span style="font-size:12px;font-weight:800;color:var(--amber)">${Object.keys(S.selected).length}件選択中</span>
+    <button onclick="S.selected={};render()" class="btn-sm" style="padding:3px 8px;font-size:10px">解除</button>
+  </div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap">
+    ${STATUSES.map(s=>`<button onclick="bulkSet('status','${s}')" style="background:${SC[s].bg};color:${SC[s].t};border:none;border-radius:6px;font-size:11px;padding:5px 10px;cursor:pointer;font-weight:700">${s}</button>`).join("")}
+    ${AREAS.map(a=>`<button onclick="bulkSet('lifeArea','${a}')" style="background:${AC[a]}18;color:${AC[a]};border:none;border-radius:6px;font-size:11px;padding:5px 10px;cursor:pointer;font-weight:700">${a}</button>`).join("")}
+    <select onchange="bulkSet('timeHorizon',this.value)" style="background:var(--cream);border:1px solid var(--border);border-radius:6px;font-size:11px;padding:5px"><option value="">時間軸...</option>${HORIZONS.map(h=>`<option>${h}</option>`).join("")}</select>
+    <select onchange="bulkSet('priority',this.value)" style="background:var(--cream);border:1px solid var(--border);border-radius:6px;font-size:11px;padding:5px"><option value="">優先度...</option>${["高","中","低"].map(p=>`<option>${p}</option>`).join("")}</select>
+  </div>
+</div>`:""}
+</div>`;
+}
+
+// ── Routine Tab ───────────────────────────────────────────────────────────────
+function buildRoutineTab(){
+  const e=getEntry();
+  const tasks3=e.tasks||[{t:"",done:false,ts:""},{t:"",done:false,ts:""},{t:"",done:false,ts:""}];
+  const yest=routineEntries[yestStr()];
+  const total=Object.keys(routineEntries).length;
+  const isToday=S.rv==="today";
+  const monthOpts=grandparents().length?grandparents():parentsOfLeaves();
+  const weekOpts=parentsOfLeaves();
+  const leafOpts=leaves();
+  const dayType=getDayType();
+  const slots=DAY_SLOTS[dayType]||[];
+
+  // Helper to filter task options by seat type
+  function slotOptions(seatFilter){
+    const filteredLeaves=seatFilter==="all"?leafOpts:leafOpts.filter(n=>{const t=tasks.find(t=>t.goalNodeId===n.id);return !t||t.seatType===seatFilter;});
+    const filteredManual=seatFilter==="all"?tasks.filter(t=>!t.goalNodeId&&t.status!=="完了"):tasks.filter(t=>!t.goalNodeId&&t.status!=="完了"&&t.seatType===seatFilter);
+    return{filteredLeaves,filteredManual};
+  }
+
+  let content="";
+  if(isToday){
+    content=`<div style="padding:14px">
+<div style="background:linear-gradient(135deg,var(--amber-pale),var(--coral-pale));border-radius:12px;padding:11px 13px;margin-bottom:12px;display:flex;align-items:center;gap:8px">
+  <span style="font-size:20px">🌅</span>
+  <div><div style="font-size:14px;font-weight:800">${todayLabel()}</div><div style="font-size:11px;color:var(--muted);font-weight:500">${total}日目のルーティン</div></div>
+</div>
+
+<!-- 月次・週次・今日の目標 -->
+<div class="card card-purple">
+  <div class="lbl lbl-purple">📅 今月の目標（${monthStr()}）</div>
+  <select onchange="setMonthly(this.value)" class="select" style="color:${monthlyGoal?'var(--text)':'var(--light)'}">
+    <option value="">月頭に選択...</option>
+    ${monthOpts.map(n=>`<option value="${esc(n.title)}"${monthlyGoal===n.title?' selected="selected"':""}>${esc(n.title)}</option>`).join("")}
+  </select>
+  ${monthlyGoal?`<div style="margin-top:5px;font-size:12px;color:var(--purple);font-weight:700">✦ ${esc(monthlyGoal)}</div>`:""}
+</div>
+
+<div class="card card-coral">
+  <div class="lbl lbl-coral">📆 今週の目標（${weekStr()}〜）</div>
+  <select onchange="setWeekly(this.value)" class="select" style="color:${weeklyGoal?'var(--text)':'var(--light)'}">
+    <option value="">週頭に選択...</option>
+    ${weekOpts.map(n=>`<option value="${esc(n.title)}"${weeklyGoal===n.title?' selected="selected"':""}>${esc(n.title)}</option>`).join("")}
+  </select>
+  ${weeklyGoal?`<div style="margin-top:5px;font-size:12px;color:var(--coral);font-weight:700">✦ ${esc(weeklyGoal)}</div>`:""}
+</div>
+
+<!-- 報連相トリガー -->
+<div style="background:linear-gradient(135deg,#FFF7ED,#FFEDD5);border:1.5px solid #FB923C;border-radius:10px;padding:10px 12px;margin-bottom:10px">
+  <div style="font-size:9px;font-weight:800;color:#EA580C;letter-spacing:.8px;margin-bottom:6px">⚡ 報・連・相トリガー</div>
+  <div style="display:flex;flex-direction:column;gap:3px">
+    <div style="font-size:11px;font-weight:700">① タスクが終わった <span style="color:#EA580C">→ 即報告</span></div>
+    <div style="font-size:11px;font-weight:700">② 15分止まった <span style="color:#EA580C">→ 即相談</span></div>
+    <div style="font-size:11px;font-weight:700">③ 迷ったら <span style="color:#EA580C">→ 即報告 or 即相談</span></div>
+  </div>
+</div>
+
+<div class="card card-amber">
+  <div class="lbl lbl-amber">🎯 今日の目標</div>
+  <select onchange="doUpdateEntry('goal',this.value)" class="select" style="color:${e.goal?'var(--text)':'var(--light)'}">
+    <option value="">今日の目標を選択...</option>
+    ${leafOpts.map(n=>`<option value="${esc(n.title)}"${e.goal===n.title?' selected="selected"':""}>${esc(n.title)}</option>`).join("")}
+  </select>
+  ${e.goal?`<div style="margin-top:5px;font-size:13px;color:var(--amber);font-weight:800">▶ ${esc(e.goal)}</div>`:""}
+</div>
+
+<!-- 今日は何の日 -->
+<div class="card" style="border-left:3px solid var(--amber);margin-bottom:10px">
+  <div class="lbl lbl-amber">📅 今日は？</div>
+  <div style="display:flex;gap:6px">
+    ${["テレワーク","出勤","休日"].map(d=>`<button onclick="setDayTypeAction('${d}')" style="flex:1;background:${dayType===d?'var(--amber)':'var(--cream)'};border:1.5px solid ${dayType===d?'var(--amber)':'rgba(0,0,0,.1)'};color:${dayType===d?'white':'var(--muted)'};border-radius:8px;padding:7px 4px;font-size:11px;font-weight:700;cursor:pointer">${d}</button>`).join("")}
+  </div>
+</div>
+
+<!-- 時間枠 -->
+<div style="margin-bottom:12px">
+  <div class="lbl lbl-coral" style="margin-bottom:7px">⏰ 今日の時間枠</div>
+  ${slots.map((slot,i)=>{
+    const stv=getSlotTask(i);
+    const seatFilter=getSlotSeat(i);
+    const {filteredLeaves,filteredManual}=slotOptions(seatFilter);
+    return`<div class="card" style="border-left:3px solid var(--coral);padding:10px 12px;margin-bottom:8px">
+  <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+    <span style="font-size:11px;font-weight:800;color:var(--coral)">${slot.label}</span>
+    <span style="font-size:10px;color:var(--light);background:var(--coral-pale);padding:2px 7px;border-radius:10px;font-weight:600">${slot.time}</span>
+  </div>
+  <!-- Seat filter -->
+  <div style="display:flex;gap:5px;margin-bottom:7px">
+    ${[["all","全て","#78716C"],["deep","🪑 腰を据えて","#6D28D9"],["light","✌️ 片手間","#065F46"]].map(([val,label,col])=>`<button onclick="setSeatFilter(${i},'${val}')" style="flex:1;background:${seatFilter===val?col+'18':'var(--cream)'};border:1.5px solid ${seatFilter===val?col:'rgba(0,0,0,.1)'};color:${seatFilter===val?col:'var(--muted)'};border-radius:7px;padding:4px 4px;font-size:10px;font-weight:700;cursor:pointer">${label}</button>`).join("")}
+  </div>
+  <select onchange="setSlotTaskAction(${i},this.value)" class="select" style="color:${stv?'var(--text)':'var(--light)'}">
+    <option value="">この時間にやることを選択...</option>
+    ${filteredLeaves.length>0?`<optgroup label="🎯 目標タスク">${filteredLeaves.map(n=>`<option value="${esc(n.title)}"${stv===n.title?' selected="selected"':""}>${esc(n.title)}</option>`).join("")}</optgroup>`:""}
+    ${filteredManual.length>0?`<optgroup label="📋 追加タスク">${filteredManual.map(t=>`<option value="${esc(t.title)}"${stv===t.title?' selected="selected"':""}>${esc(t.title)}</option>`).join("")}</optgroup>`:""}
+  </select>
+  ${stv?`<div style="margin-top:5px;font-size:12px;color:var(--coral);font-weight:700">▶ ${esc(stv)}</div>`:""}
+</div>`;
+  }).join("")}
+</div>
+
+${yest?.challenge?`<div class="card" style="border-left:3px solid var(--amber);background:var(--amber-pale)">
+  <div class="lbl lbl-amber">⚠️ 昨日の課題（自動表示）</div>
+  <div style="font-size:13px;color:var(--text);line-height:1.5;font-weight:500">${esc(yest.challenge)}</div>
+</div>`:""}
+
+<div class="card" style="border-left:3px solid #A78BFA">
+  <div class="lbl" style="color:#7C3AED">📋 今日のタスク</div>
+  ${tasks3.map((t,i)=>`<div style="display:flex;align-items:center;gap:7px;margin-bottom:6px">
+    <div onclick="doToggleTask(${i})" class="check ${t.done?'done':''}">${t.done?'<span style="color:#fff;font-size:9px;font-weight:800">✓</span>':""}</div>
+    <input value="${esc(t.t||"")}" placeholder="タスク ${i+1}" onchange="doUpdateTask(${i},'t',this.value)" class="input" style="margin:0;text-decoration:${t.done?'line-through':'none'};color:${t.done?'var(--light)':'var(--text)'}"/>
+    ${t.done&&t.ts?`<span style="font-size:9px;color:var(--green);font-weight:700;flex-shrink:0">${t.ts}</span>`:""}
+  </div>`).join("")}
+</div>
+
+${yest?.challenge?`<div class="card card-green">
+  <div class="lbl lbl-green">🔄 昨日の課題 → 今日どうするか</div>
+  <textarea class="textarea" rows="2" onchange="doUpdateEntry('challengeResponse',this.value)">${esc(e.challengeResponse||"")}</textarea>
+</div>`:""}
+
+<div class="card card-red">
+  <div class="lbl lbl-red">⚠️ 今日の課題（夜に記録）</div>
+  <textarea class="textarea" rows="2" placeholder="今日うまくいかなかったこと・改善" onchange="doUpdateEntry('challenge',this.value)">${esc(e.challenge||"")}</textarea>
+</div>
+
+<div style="text-align:center;font-size:10px;color:var(--light);padding:6px 0;font-weight:600">入力すると自動保存されます（右上 ✓）</div>
+</div>`;
+  } else {
+    const dates=Object.keys(routineEntries).filter(d=>d!==todayStr()).sort((a,b)=>b.localeCompare(a));
+    const filtered=S.search?dates.filter(d=>{const en=routineEntries[d];return[en.goal||"",...(en.tasks||[]).map(t=>typeof t==="object"?t.t||"":t||""),en.challenge||"",en.challengeResponse||""].join(" ").toLowerCase().includes(S.search.toLowerCase())}):dates;
+    content=`<div style="padding:14px">
+<input oninput="S.search=this.value;render()" value="${esc(S.search)}" placeholder="🔍 過去の記録を検索..." class="input" style="margin-bottom:12px"/>
+${filtered.length===0?'<div style="text-align:center;padding:40px;color:var(--light);font-size:13px">記録がありません</div>':filtered.map(d=>{
+  const en=routineEntries[d];const ts=en.tasks||[];
+  const dayT=lsGet("daytype-"+d,"");
+  return`<div style="background:var(--warm);border-radius:var(--r);border:1px solid var(--border);padding:12px;margin-bottom:8px;box-shadow:var(--shadow)">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+    <div style="font-size:11px;font-weight:800;color:var(--amber)">${fmtDisp(d)}</div>
+    ${dayT?`<span style="font-size:9px;background:var(--amber-pale);color:var(--amber);padding:2px 7px;border-radius:10px;font-weight:700">${dayT}</span>`:""}
+  </div>
+  ${en.goal?`<div style="font-size:12px;color:var(--amber);font-weight:700;margin-bottom:4px">🎯 ${esc(en.goal)}</div>`:""}
+  ${(DAY_SLOTS[dayT]||[]).map((_,i)=>{const sv=lsGet("slot-"+d+"-"+i,"");return sv?`<div style="font-size:11px;color:var(--coral);margin-bottom:2px;font-weight:600">⏰ ${_?.label||""}：${esc(sv)}</div>`:""}).join("")}
+  ${ts.map(t=>{const tx=t&&typeof t==="object"?(t.t||""):(typeof t==="string"?t:"");const dn=t?.done||false;const stamp=t?.ts||"";return tx?`<div style="font-size:12px;color:${dn?"var(--green)":"var(--text)"};padding-left:6px;text-decoration:${dn?"line-through":"none"}">${dn?"✓ ":"· "}${esc(tx)}${stamp?` <span style="font-size:10px;color:var(--light)">(${stamp})</span>`:""}</div>`:""}).join("")}
+  ${en.challengeResponse?`<div style="font-size:11px;color:var(--green);margin-top:4px;font-weight:600">🔄 ${esc(en.challengeResponse)}</div>`:""}
+  ${en.challenge?`<div style="font-size:11px;color:var(--red);margin-top:2px;font-weight:600">⚠️ ${esc(en.challenge)}</div>`:""}
+</div>`;}).join("")}
+</div>`;
+  }
+  return`<div>
+<div style="display:flex;padding:8px 14px;gap:6px;border-bottom:1px solid var(--border);background:var(--warm);align-items:center">
+  <button onclick="S.rv='today';render()" style="background:${S.rv==='today'?'var(--amber-pale)':'var(--cream)'};border:1.5px solid ${S.rv==='today'?'var(--amber)':'var(--border)'};color:${S.rv==='today'?'var(--amber)':'var(--muted)'};border-radius:20px;padding:5px 14px;font-size:11px;font-weight:700;cursor:pointer">今日</button>
+  <button onclick="S.rv='history';render()" style="background:${S.rv==='history'?'var(--amber-pale)':'var(--cream)'};border:1.5px solid ${S.rv==='history'?'var(--amber)':'var(--border)'};color:${S.rv==='history'?'var(--amber)':'var(--muted)'};border-radius:20px;padding:5px 14px;font-size:11px;font-weight:700;cursor:pointer">振り返り</button>
+  <span style="margin-left:auto;font-size:10px;color:var(--light);font-weight:600">${total}日目</span>
+</div>
+${content}</div>`;
+}
+
+// ── App ───────────────────────────────────────────────────────────────────────
 function buildApp(){
   const tab=S.tab;
-  const titles={"routine":"🌅 朝ルーティン","tasks":"📋 タスク表","goals":"🎯 目標管理"};
+  const titles={routine:"🌅 朝ルーティン",tasks:"📋 タスク表",goals:"🎯 目標管理"};
   return`<div style="min-height:100vh;background:var(--cream)">
 <div class="header">
   <div class="header-top">
     <div class="header-title">${titles[tab]||"🌅 朝ルーティン"}</div>
     <div class="header-date">${todayLabel()}</div>
   </div>
-  <div class="tabs" style="display:flex">
-    <button onclick="S.tab='routine';render()" class="tab-btn ${tab==='routine'?'active':''}" style="font-size:11px">🌅 朝</button>
-    <button onclick="S.tab='tasks';render()" class="tab-btn ${tab==='tasks'?'active':''}" style="font-size:11px">📋 タスク</button>
-    <button onclick="S.tab='goals';render()" class="tab-btn ${tab==='goals'?'active':''}" style="font-size:11px">🎯 目標</button>
+  <div class="tabs">
+    <button onclick="S.tab='routine';render()" class="tab-btn ${tab==='routine'?'active':''}">🌅 朝</button>
+    <button onclick="S.tab='tasks';render()" class="tab-btn ${tab==='tasks'?'active':''}">📋 タスク</button>
+    <button onclick="S.tab='goals';render()" class="tab-btn ${tab==='goals'?'active':''}">🎯 目標</button>
   </div>
 </div>
 ${tab==="routine"?buildRoutineTab():tab==="tasks"?buildTaskTab():buildGoalTab()}
 </div>`;
 }
 
-function render(){document.getElementById("app").innerHTML=buildApp();}
-
-// ── Actions ────────────────────────────────────────────────────────────────────
-window.toggleExp=function(id){S.expanded[id]=!isExpanded(id);render();};
-window.toggleSel=function(id){if(S.selected[id])delete S.selected[id];else S.selected[id]=true;render();};
-window.bulkSet=function(field,val){if(!val)return;Object.keys(S.selected).forEach(id=>{if(goals.nodes[id])goals.nodes[id][field]=val;});saveGoals();render();};
-window.promoteNode=function(id){
-  const n=goals.nodes[id];if(!n||!n.parentId)return;
-  const parent=goals.nodes[n.parentId];if(!parent)return;
-  // Remove from parent's children
-  parent.children=parent.children.filter(c=>c!==id);
-  if(parent.parentId){
-    // Add to grandparent's children after parent
-    const gp=goals.nodes[parent.parentId];
-    const pIdx=gp.children.indexOf(n.parentId);
-    gp.children.splice(pIdx+1,0,id);
-    n.parentId=parent.parentId;
-  } else {
-    // Promote to root
-    const pIdx=goals.rootIds.indexOf(n.parentId);
-    goals.rootIds.splice(pIdx+1,0,id);
-    n.parentId=null;
-  }
-  saveGoals();render();
+// ── Actions ───────────────────────────────────────────────────────────────────
+window.setF=function(t,v){if(t==="a")S.af=v;else if(t==="h")S.hf=v;else S.sf=v;render();};
+window.setMonthly=function(v){monthlyGoal=v;lsSet("monthly-"+monthStr(),v);render();};
+window.setWeekly=function(v){weeklyGoal=v;lsSet("weekly-"+weekStr(),v);render();};
+window.setDayTypeAction=function(v){setDayType(v);render();};
+window.setSlotTaskAction=function(i,v){setSlotTask(i,v);render();};
+window.setSeatFilter=function(i,v){setSlotSeat(i,v);render();};
+window.doUpdateEntry=function(f,v){const e=getEntry();e[f]=v;routineEntries[todayStr()]=e;saveEntries();render();};
+window.doToggleTask=function(i){
+  const e=getEntry();
+  const ts=e.tasks||[{t:"",done:false,ts:""},{t:"",done:false,ts:""},{t:"",done:false,ts:""}];
+  ts[i].done=!ts[i].done;
+  if(ts[i].done)ts[i].ts=new Date().toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"});
+  e.tasks=ts;routineEntries[todayStr()]=e;saveEntries();render();
 };
-window.demoteNode=function(id){
-  const n=goals.nodes[id];
-  const siblings=n.parentId?(goals.nodes[n.parentId]?.children||[]):(goals.rootIds);
-  const idx=siblings.indexOf(id);
-  if(idx===0)return;
-  const prevId=siblings[idx-1];
-  const prev=goals.nodes[prevId];if(!prev)return;
-  // Remove from current level
-  siblings.splice(idx,1);
-  // Add to prev sibling's children
-  n.parentId=prevId;
-  prev.children.push(id);
-  saveGoals();render();
+window.doUpdateTask=function(i,f,v){
+  const e=getEntry();
+  if(!e.tasks)e.tasks=[{t:"",done:false,ts:""},{t:"",done:false,ts:""},{t:"",done:false,ts:""}];
+  e.tasks[i]={...e.tasks[i],[f]:v};
+  routineEntries[todayStr()]=e;saveEntries();
 };
 window.addTask=function(){
   const inp=document.getElementById("tinp");if(!inp||!inp.value.trim())return;
   const imp=document.getElementById("timp")?.value||"中";
+  const seat=document.getElementById("tseat")?.value||"deep";
   const date=document.getElementById("tdate")?.value||null;
-  tasks.push({id:uid(),title:inp.value.trim(),importance:imp,deadline:date,status:"未着手",goalNodeId:null});
+  tasks.push({id:uid(),title:inp.value.trim(),importance:imp,seatType:seat,deadline:date,status:"未着手",goalNodeId:null,recurring:false});
   saveTasks();inp.value="";if(document.getElementById("tdate"))document.getElementById("tdate").value="";render();
 };
 window.toggleTaskStatus=function(id){
   const t=tasks.find(t=>t.id===id);if(!t)return;
   if(t.recurring){
-    // Recurring: toggle today's completion, don't change permanent status
-    const key="rec-"+todayStr()+"-"+id;
-    const done=lsGet(key,false);
-    lsSet(key,!done);
-    // Sync to goal if needed
-    if(t.goalNodeId&&goals.nodes[t.goalNodeId]){
-      goals.nodes[t.goalNodeId].status=!done?"完了":"進行中";
-      if(!done)goals.nodes[t.goalNodeId].progress=100;
-      else goals.nodes[t.goalNodeId].progress=50;
-      saveGoals();
-    }
+    const key="rec-"+todayStr()+"-"+id;const done=lsGet(key,false);lsSet(key,!done);
+    if(t.goalNodeId&&goals.nodes[t.goalNodeId]){goals.nodes[t.goalNodeId].status=!done?"完了":"進行中";if(!done)goals.nodes[t.goalNodeId].progress=100;else goals.nodes[t.goalNodeId].progress=50;saveGoals();}
   } else {
     t.status=t.status==="完了"?"未着手":"完了";
-    if(t.goalNodeId&&goals.nodes[t.goalNodeId]){
-      goals.nodes[t.goalNodeId].status=t.status;
-      if(t.status==="完了")goals.nodes[t.goalNodeId].progress=100;
-      else if(goals.nodes[t.goalNodeId].progress===100)goals.nodes[t.goalNodeId].progress=0;
-      saveGoals();
-    }
+    if(t.goalNodeId&&goals.nodes[t.goalNodeId]){goals.nodes[t.goalNodeId].status=t.status;if(t.status==="完了")goals.nodes[t.goalNodeId].progress=100;else if(goals.nodes[t.goalNodeId].progress===100)goals.nodes[t.goalNodeId].progress=0;saveGoals();}
   }
   saveTasks();render();
 };
-window.toggleRecurring=function(id){
-  const t=tasks.find(t=>t.id===id);if(!t)return;
-  t.recurring=!t.recurring;
-  if(t.recurring)t.status="未着手"; // reset if setting to recurring
-  saveTasks();render();
-};
+window.toggleRecurring=function(id){const t=tasks.find(t=>t.id===id);if(!t)return;t.recurring=!t.recurring;if(t.recurring)t.status="未着手";saveTasks();render();};
+window.toggleSeat=function(id){const t=tasks.find(t=>t.id===id);if(!t)return;t.seatType=t.seatType==="light"?"deep":"light";saveTasks();render();};
 window.updTask=function(id,f,v){const t=tasks.find(t=>t.id===id);if(!t)return;t[f]=v;saveTasks();render();};
 window.delTask=function(id){tasks=tasks.filter(t=>t.id!==id);saveTasks();render();};
-window.setDayTypeAction=function(v){setDayTypeVal(v);render();};
-window.setSlotTaskAction=function(i,v){setSlotTask(i,v);render();};
-window.setF=function(t,v){if(t==="a")S.af=v;else if(t==="h")S.hf=v;else S.sf=v;render();};
-window.setMonthly=function(v){monthlyGoal=v;lsSet("monthly-"+monthStr(),v);render();};
-window.setWeekly=function(v){weeklyGoal=v;lsSet("weekly-"+weekStr(),v);render();};
-window.doUpdateEntry=function(f,v){const e=getEntry();e[f]=v;routineEntries[todayStr()]=e;saveEntries();render();};
-window.doUpdateTask=function(i,f,v){const e=getEntry();if(!e.tasks)e.tasks=[{t:"",done:false,ts:""},{t:"",done:false,ts:""},{t:"",done:false,ts:""}];e.tasks[i]={...e.tasks[i],[f]:v};routineEntries[todayStr()]=e;saveEntries();};
-window.doToggleTask=function(i){const e=getEntry();if(!e.tasks)e.tasks=[{t:"",done:false,ts:""},{t:"",done:false,ts:""},{t:"",done:false,ts:""}];e.tasks[i].done=!e.tasks[i].done;if(e.tasks[i].done)e.tasks[i].ts=new Date().toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"});routineEntries[todayStr()]=e;saveEntries();render();};
-window.startMed=function(){clearInterval(S.medInterval);S.medSecs=S.medMins*60;S.medRunning=true;S.medDone=false;S.medInterval=setInterval(()=>{S.medSecs--;if(S.medSecs<=0){clearInterval(S.medInterval);S.medRunning=false;S.medDone=true;}render();},1000);render();};
-window.cycleStatus=function(id){const n=goals.nodes[id];if(!n)return;n.status=n.status==="完了"?"未着手":n.status==="未着手"?"進行中":"完了";if(n.status==="完了")n.progress=100;saveGoals();render();};
+window.cycleStatus=function(id){const n=goals.nodes[id];if(!n||n.children?.length)return;n.status=n.status==="完了"?"未着手":n.status==="未着手"?"進行中":"完了";if(n.status==="完了")n.progress=100;saveGoals();render();};
 window.editTitle=function(id){const n=goals.nodes[id];if(!n)return;const t=prompt("タイトルを編集",n.title);if(t&&t.trim()){n.title=t.trim();saveGoals();render();}};
-window.delNode=function(id){if(!confirm("削除しますか？"))return;const n=goals.nodes[id];if(!n)return;const del=new Set();const col=i=>{del.add(i);(goals.nodes[i]?.children||[]).forEach(col);};col(id);del.forEach(i=>delete goals.nodes[i]);if(n.parentId&&goals.nodes[n.parentId])goals.nodes[n.parentId].children=goals.nodes[n.parentId].children.filter(c=>c!==id);goals.rootIds=goals.rootIds.filter(r=>r!==id);saveGoals();render();};
+window.delNode=function(id){
+  if(!confirm("削除しますか？"))return;
+  const n=goals.nodes[id];if(!n)return;
+  const del=new Set();const col=i=>{del.add(i);(goals.nodes[i]?.children||[]).forEach(col);};col(id);
+  del.forEach(i=>delete goals.nodes[i]);
+  if(n.parentId&&goals.nodes[n.parentId])goals.nodes[n.parentId].children=goals.nodes[n.parentId].children.filter(c=>c!==id);
+  goals.rootIds=goals.rootIds.filter(r=>r!==id);
+  saveGoals();render();
+};
 window.updNode=function(id,f,v){goals.nodes[id][f]=v;saveGoals();render();};
-window.addChild=function(pid){const nid=uid();const p=goals.nodes[pid];goals.nodes[nid]={id:nid,title:"新しい目標",timeHorizon:p.timeHorizon,status:"未着手",progress:0,priority:"中",lifeArea:p.lifeArea||"仕事",parentId:pid,children:[]};goals.nodes[pid].children.push(nid);saveGoals();render();};
-window.quickAdd=function(){const inp=document.getElementById("qinp");if(!inp||!inp.value.trim())return;const nid=uid();const area=document.getElementById("qarea")?.value||"仕事";goals.nodes[nid]={id:nid,title:inp.value.trim(),timeHorizon:"1年後",status:"未着手",progress:0,priority:"高",lifeArea:area,parentId:null,children:[]};goals.rootIds.push(nid);saveGoals();inp.value="";render();};
-window.doBulk=function(){const text=document.getElementById("bulktext")?.value||"";const area=document.getElementById("bulkarea")?.value||"仕事";const hor=document.getElementById("bulkhor")?.value||"1年後";if(!text.trim())return;const{ns,rs}=parseIndented(text,area,hor);Object.assign(goals.nodes,ns);goals.rootIds.push(...rs);saveGoals();S.bulkOpen=false;render();};
+window.addChild=function(pid){
+  const nid=uid();const p=goals.nodes[pid];
+  goals.nodes[nid]={id:nid,title:"新しい目標",timeHorizon:p.timeHorizon,status:"未着手",progress:0,priority:"中",lifeArea:p.lifeArea||"仕事",parentId:pid,children:[]};
+  goals.nodes[pid].children.push(nid);saveGoals();render();
+};
+window.quickAdd=function(){
+  const inp=document.getElementById("qinp");if(!inp||!inp.value.trim())return;
+  const nid=uid();const area=document.getElementById("qarea")?.value||"仕事";
+  goals.nodes[nid]={id:nid,title:inp.value.trim(),timeHorizon:"1年後",status:"未着手",progress:0,priority:"高",lifeArea:area,parentId:null,children:[]};
+  goals.rootIds.push(nid);saveGoals();inp.value="";render();
+};
+window.doBulk=function(){
+  const text=document.getElementById("bulktext")?.value||"";
+  const area=document.getElementById("bulkarea")?.value||"仕事";
+  const hor=document.getElementById("bulkhor")?.value||"1年後";
+  if(!text.trim())return;
+  const{ns,rs}=parseIndented(text,area,hor);
+  Object.assign(goals.nodes,ns);goals.rootIds.push(...rs);
+  saveGoals();S.bulkOpen=false;render();
+};
+window.toggleSel=function(id){if(S.selected[id])delete S.selected[id];else S.selected[id]=true;render();};
+window.bulkSet=function(f,v){if(!v)return;Object.keys(S.selected).forEach(id=>{if(goals.nodes[id])goals.nodes[id][f]=v;});saveGoals();render();};
+window.promoteNode=function(id){
+  const n=goals.nodes[id];if(!n||!n.parentId)return;
+  const p=goals.nodes[n.parentId];if(!p)return;
+  p.children=p.children.filter(c=>c!==id);
+  if(p.parentId){const gp=goals.nodes[p.parentId];const pi=gp.children.indexOf(n.parentId);gp.children.splice(pi+1,0,id);n.parentId=p.parentId;}
+  else{const pi=goals.rootIds.indexOf(n.parentId);goals.rootIds.splice(pi+1,0,id);n.parentId=null;}
+  saveGoals();render();
+};
+window.demoteNode=function(id){
+  const n=goals.nodes[id];const sib=n.parentId?(goals.nodes[n.parentId]?.children||[]):(goals.rootIds);
+  const idx=sib.indexOf(id);if(idx===0)return;
+  const prev=goals.nodes[sib[idx-1]];if(!prev)return;
+  sib.splice(idx,1);n.parentId=prev.id;prev.children.push(id);
+  saveGoals();render();
+};
 
 render();
 </script>
