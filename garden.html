@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#10241c">
+<title>そだつ庭</title>
+<style>
+  /* ── 気楽さ最優先。重い装飾もロードも無し。1ファイル、起動即遊べる。 ── */
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%}
+  body{
+    font-family:-apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic UI",system-ui,sans-serif;
+    background:radial-gradient(120% 80% at 50% 0%,#163528 0%,#10241c 55%,#0c1a14 100%);
+    color:#e7f0ea;min-height:100%;
+    padding:max(16px,env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom));
+    display:flex;flex-direction:column;align-items:center;gap:16px;
+  }
+  .wrap{width:100%;max-width:460px;display:flex;flex-direction:column;gap:16px}
+
+  /* 挨拶（責めない・おかえり） */
+  .greet{font-size:15px;color:#9fc4b3;line-height:1.5;min-height:1.2em}
+  .greet b{color:#e7f0ea;font-weight:600}
+
+  /* 庭 */
+  .garden{
+    position:relative;background:linear-gradient(#1c4634,#143527);
+    border:1px solid #2c5d47;border-radius:22px;padding:16px;
+    min-height:190px;display:flex;flex-wrap:wrap;align-content:flex-end;
+    gap:2px 0;justify-content:center;overflow:hidden;
+  }
+  .garden::after{content:"";position:absolute;left:0;right:0;bottom:0;height:34px;
+    background:linear-gradient(transparent,#0e2519);pointer-events:none}
+  .plant{font-size:26px;line-height:1;filter:drop-shadow(0 2px 1px rgba(0,0,0,.25));
+    transition:transform .2s;animation:pop .5s backwards}
+  .plant.rest{opacity:.42;font-size:20px}
+  .plant.today{animation:bloom 1s backwards}
+  .empty{color:#7fae99;font-size:14px;text-align:center;align-self:center;line-height:1.7;padding:24px 8px}
+  @keyframes pop{from{transform:scale(0) translateY(6px);opacity:0}to{transform:scale(1)}}
+  @keyframes bloom{0%{transform:scale(0)}55%{transform:scale(1.35)}100%{transform:scale(1)}}
+
+  /* 数字（積み重ねの可視化） */
+  .stats{display:flex;gap:8px}
+  .stat{flex:1;background:#15302410;border:1px solid #2c5d47;background:#143527;
+    border-radius:16px;padding:10px 6px;text-align:center}
+  .stat .n{font-size:24px;font-weight:700;color:#bff0d4}
+  .stat .l{font-size:11px;color:#8fb8a4;margin-top:2px}
+
+  /* 今日の1手カード */
+  .card{background:#143527;border:1px solid #2c5d47;border-radius:22px;padding:18px}
+  .q{font-size:18px;font-weight:600;margin:0 0 14px;line-height:1.4}
+  .step-text{font-size:13px;color:#9fc4b3;margin:-8px 0 14px;line-height:1.5}
+  .row{display:flex;gap:10px}
+  .btn{flex:1;border:0;border-radius:16px;padding:16px;font-size:16px;font-weight:600;
+    cursor:pointer;transition:transform .1s,filter .15s;font-family:inherit}
+  .btn:active{transform:scale(.96)}
+  .btn.yes{background:linear-gradient(#37b876,#2a9d62);color:#06150d}
+  .btn.no{background:#1d4231;color:#cfe7da;border:1px solid #2c5d47}
+
+  /* 理由チップ（5択・責めない） */
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .chip{background:#1d4231;border:1px solid #2c5d47;color:#cfe7da;border-radius:999px;
+    padding:9px 14px;font-size:14px;cursor:pointer;font-family:inherit;transition:.12s}
+  .chip:active{transform:scale(.95)}
+  .chip.on{background:#37b876;color:#06150d;border-color:#37b876}
+
+  /* 気づき一行（任意） */
+  .note{margin-top:14px}
+  .note input{width:100%;background:#0f2619;border:1px solid #2c5d47;color:#e7f0ea;
+    border-radius:14px;padding:13px 14px;font-size:15px;font-family:inherit;outline:none}
+  .note input:focus{border-color:#37b876}
+  .note .hint{font-size:11px;color:#7fae99;margin:6px 2px 0}
+
+  .soft{font-size:14px;color:#a9d2bd;line-height:1.6;margin:4px 2px 0}
+  .changemind{background:none;border:0;color:#7fae99;font-size:13px;text-decoration:underline;
+    cursor:pointer;font-family:inherit;padding:8px 0 0;margin-top:6px}
+
+  /* 演出：舞い上がる絵文字 */
+  .fly{position:fixed;font-size:28px;pointer-events:none;z-index:50;animation:fly 1.5s ease-out forwards}
+  @keyframes fly{0%{transform:translateY(0) scale(.6);opacity:0}
+    20%{opacity:1}100%{transform:translateY(-160px) scale(1.2) rotate(20deg);opacity:0}}
+
+  .foot{text-align:center;font-size:11px;color:#5e8772;line-height:1.6}
+  .foot a{color:#7fae99}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="greet" id="greet"></div>
+  <div class="garden" id="garden"></div>
+  <div class="stats">
+    <div class="stat"><div class="n" id="s-streak">0</div><div class="l">れんぞく日数</div></div>
+    <div class="stat"><div class="n" id="s-total">0</div><div class="l">そだてた数</div></div>
+    <div class="stat"><div class="n" id="s-week">0</div><div class="l">今週</div></div>
+  </div>
+  <div class="card" id="card"></div>
+  <div class="foot">
+    1日30秒でいい。閉じても、また開けばいい。<br>
+    <a href="goal-manager.html">→ 本体（目標マネージャ）へ</a>
+  </div>
+</div>
+
+<script>
+/* ───────────────────────────────────────────────────────────────
+   そだつ庭 — game-reflection-handoff.md §5 の最小プロト
+   ・現行アプリと同じ localStorage（first-steps / reflections）を読み書き
+   ・気楽さ最優先 / 責めない / 枯れない / 復帰コストゼロ
+   ─────────────────────────────────────────────────────────────── */
+
+// ── 既存アプリと同じヘルパ（互換のため挙動を合わせる） ──
+const lsGet=(k,d=null)=>{try{const v=localStorage.getItem(k);return v!=null?JSON.parse(v):d;}catch{return d;}};
+const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch{}};
+const fmtDate=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const todayStr=()=>fmtDate(new Date());
+const FAIL_REASONS=["疲れてた","重すぎた","忘れてた","時間がなかった","気が乗らなかった"];
+
+// ── データ（参照は都度読み直す＝本体タブで編集しても反映） ──
+let firstSteps={}, reflections={};
+function load(){ firstSteps=lsGet("first-steps",{})||{}; reflections=lsGet("reflections",{})||{}; }
+
+function getFS(date){ return firstSteps[date]||null; }
+function setDone(date,val){
+  const prev=firstSteps[date]||{text:"",goalNodeId:null,done:false,doneTs:""};
+  prev.done=val;
+  prev.doneTs=val?new Date().toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"}):"";
+  firstSteps[date]={...prev};
+  lsSet("first-steps",firstSteps);
+}
+function getRefl(date){ return reflections[date]||{reason:"",note:""}; }
+function setReason(date,r){ const x=getRefl(date); x.reason=(x.reason===r?"":r); reflections[date]=x; lsSet("reflections",reflections); }
+function setNote(date,n){ const x=getRefl(date); x.note=n; reflections[date]=x; lsSet("reflections",reflections); }
+
+// ── 庭の中身を作る（done=咲く / reflしただけ=待機。どちらも“痕跡”） ──
+const BLOOMS=["🌸","🌷","🌻","🌼","🌺","🪻","🌹","💐"];
+const TREES =["🌲","🌳","🌴"];
+function emojiFor(date,idx,milestone){
+  if(milestone) return TREES[idx%TREES.length];
+  // 日付から決定的に選ぶ（同じ日はいつも同じ花）
+  let h=0; for(const c of date) h=(h*31+c.charCodeAt(0))>>>0;
+  return BLOOMS[h%BLOOMS.length];
+}
+
+function allDates(){
+  return [...new Set([...Object.keys(firstSteps),...Object.keys(reflections)])].sort();
+}
+function doneDates(){ return Object.keys(firstSteps).filter(d=>firstSteps[d]?.done).sort(); }
+
+function currentStreak(){
+  // 今日 or 昨日 を起点に、done が連続している日数
+  const set=new Set(doneDates());
+  let n=0; const d=new Date();
+  if(!set.has(fmtDate(d))) d.setDate(d.getDate()-1); // 今日まだでも昨日まで続いていれば維持
+  while(set.has(fmtDate(d))){ n++; d.setDate(d.getDate()-1); }
+  return n;
+}
+function thisWeekCount(){
+  let n=0; for(let i=0;i<7;i++){const d=new Date();d.setDate(d.getDate()-i);if(firstSteps[fmtDate(d)]?.done)n++;}
+  return n;
+}
+function lastActiveDate(){ const a=allDates(); return a.length?a[a.length-1]:null; }
+function daysBetween(a,b){ return Math.round((new Date(b)-new Date(a))/86400000); }
+
+// ── 演出（舞い上がる絵文字。軽い・短い） ──
+function burst(emojis){
+  emojis.forEach((e,i)=>{
+    const el=document.createElement("div");
+    el.className="fly"; el.textContent=e;
+    el.style.left=(30+Math.random()*40)+"%";
+    el.style.bottom="40%";
+    el.style.animationDelay=(i*0.08)+"s";
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(),1700);
+  });
+}
+
+// ── 描画 ──
+function render(){
+  load();
+  const today=todayStr();
+  const fs=getFS(today);
+  const refl=getRefl(today);
+
+  // 挨拶（時間帯＋おかえり。責めない）
+  const h=new Date().getHours();
+  const hi = h<5?"おやすみ前かな":h<11?"おはよう":h<18?"こんにちは":"こんばんは";
+  const last=lastActiveDate();
+  let greet=`<b>${hi}。</b>`;
+  if(last && last<today){
+    const gap=daysBetween(last,today);
+    if(gap>=2) greet+=` ${gap}日ぶりだね。おかえり 🌿 ゆっくりでいい。`;
+    else greet+=` 今日もちょっとだけ庭を見よう。`;
+  }else if(!last){
+    greet+=` はじめまして。ここはあなたの庭です。`;
+  }else{
+    greet+=` 今日もおつかれさま。`;
+  }
+  document.getElementById("greet").innerHTML=greet;
+
+  // 庭：過去の done=花/木、refl だけの日=待機の芽
+  const garden=document.getElementById("garden");
+  garden.innerHTML="";
+  const dates=allDates();
+  if(dates.length===0){
+    garden.innerHTML=`<div class="empty">まだ何もない、まっさらな庭。<br>下の「できた？」から、最初のひとつを。</div>`;
+  }else{
+    let doneIdx=0;
+    dates.forEach(d=>{
+      const done=firstSteps[d]?.done;
+      const span=document.createElement("span");
+      span.className="plant";
+      if(done){
+        const milestone=((doneIdx+1)%7===0); // 7個ごとに木が育つ＝節目
+        span.textContent=emojiFor(d,doneIdx,milestone);
+        if(milestone) span.style.fontSize="32px";
+        doneIdx++;
+        if(d===today) span.classList.add("today");
+      }else{
+        // できなかった/まだ の日も、来た痕跡として残す（枯れない・責めない）
+        span.className="plant rest";
+        span.textContent="🌱";
+      }
+      span.title=d;
+      span.style.animationDelay=(Math.min(dates.indexOf(d),20)*0.03)+"s";
+      garden.appendChild(span);
+    });
+  }
+
+  // 数字
+  document.getElementById("s-streak").textContent=currentStreak();
+  document.getElementById("s-total").textContent=doneDates().length;
+  document.getElementById("s-week").textContent=thisWeekCount();
+
+  // 今日の1手カード
+  const card=document.getElementById("card");
+  if(fs && fs.done){
+    // 完了済み：もう急かさない。気づきだけ任意で。
+    card.innerHTML=`
+      <p class="q">今日のぶん、咲いたよ 🌸</p>
+      ${fs.text?`<div class="step-text">「${esc(fs.text)}」${fs.doneTs?" ・ "+esc(fs.doneTs):""}</div>`:""}
+      <p class="soft">これで十分。あとは閉じてOK。</p>
+      ${noteInputHTML(refl.note)}
+      <button class="changemind" id="undo">やっぱり、まだだったかも</button>`;
+    wireNote();
+    document.getElementById("undo").onclick=()=>{ setDone(today,false); render(); };
+  }else if(refl.reason){
+    // 今日は「まだ」を選んだ状態：責めず、いつでも切り替えられる
+    card.innerHTML=`
+      <p class="q">そういう日もある 🍃</p>
+      <p class="soft">「${esc(refl.reason)}」だったんだね。庭は枯れないから大丈夫。<br>来ただけで、ちゃんと芽は残ってるよ。</p>
+      <div class="chips" id="chips"></div>
+      ${noteInputHTML(refl.note)}
+      <button class="btn yes" id="late" style="margin-top:14px">やっぱり、できた！</button>`;
+    renderChips(refl.reason);
+    wireNote();
+    document.getElementById("late").onclick=()=>{ setDone(today,true); burst(["🌸","✨","🌷"]); render(); };
+  }else{
+    // 未回答：いちばん軽い入口
+    const stepText=fs && fs.text;
+    card.innerHTML=`
+      <p class="q">今日の一歩、できた？</p>
+      ${stepText?`<div class="step-text">「${esc(stepText)}」</div>`:""}
+      <div class="row">
+        <button class="btn yes" id="yes">できた 🌱</button>
+        <button class="btn no"  id="no">まだ</button>
+      </div>`;
+    document.getElementById("yes").onclick=()=>{
+      setDone(today,true);
+      const ms=((doneDates().length)%7===0);
+      burst(ms?["🌳","✨","🎉"]:["🌸","✨","🌷"]);
+      render();
+    };
+    document.getElementById("no").onclick=()=>{
+      // 理由をタップする画面へ（責めない）
+      card.innerHTML=`
+        <p class="q">大丈夫。どんな日だった？</p>
+        <div class="chips" id="chips"></div>
+        <p class="soft" style="margin-top:14px">選ばずに閉じてもOK。</p>
+        ${noteInputHTML(getRefl(today).note)}`;
+      renderChips("");
+      wireNote();
+    };
+  }
+}
+
+function renderChips(active){
+  const box=document.getElementById("chips"); if(!box)return;
+  box.innerHTML="";
+  FAIL_REASONS.forEach(r=>{
+    const c=document.createElement("button");
+    c.className="chip"+(r===active?" on":"");
+    c.textContent=r;
+    c.onclick=()=>{ setReason(todayStr(),r); render(); };
+    box.appendChild(c);
+  });
+}
+
+function noteInputHTML(val){
+  return `<div class="note">
+    <input id="noteIn" type="text" maxlength="60" placeholder="今日の気づき（任意・一行）"
+      value="${esc(val||"")}">
+    <div class="hint">書くと、ちいさなボーナスが舞う 🦋（書かなくてもOK）</div>
+  </div>`;
+}
+function wireNote(){
+  const inp=document.getElementById("noteIn"); if(!inp)return;
+  let had=!!inp.value.trim();
+  inp.addEventListener("change",()=>{
+    const v=inp.value.trim();
+    setNote(todayStr(),v);
+    if(v && !had){ burst(["🦋","✨"]); }   // 新しく書いたときだけ演出
+    had=!!v;
+  });
+}
+
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+
+render();
+// 他タブ（本体アプリ）で更新されたら反映
+window.addEventListener("focus",render);
+window.addEventListener("storage",render);
+</script>
+</body>
+</html>
