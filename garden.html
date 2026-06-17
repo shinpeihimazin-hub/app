@@ -2,322 +2,484 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#10241c">
-<title>そだつ庭</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#0e1320">
+<title>ひとあし クエスト</title>
 <style>
-  /* ── 気楽さ最優先。重い装飾もロードも無し。1ファイル、起動即遊べる。 ── */
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
   html,body{margin:0;height:100%}
   body{
     font-family:-apple-system,"Hiragino Kaku Gothic ProN","Yu Gothic UI",system-ui,sans-serif;
-    background:radial-gradient(120% 80% at 50% 0%,#163528 0%,#10241c 55%,#0c1a14 100%);
-    color:#e7f0ea;min-height:100%;
-    padding:max(16px,env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom));
-    display:flex;flex-direction:column;align-items:center;gap:16px;
+    background:radial-gradient(130% 90% at 50% -10%,#1b2540 0%,#0e1320 55%,#080b14 100%);
+    color:#e8edf7;min-height:100%;
+    padding:max(10px,env(safe-area-inset-top)) 12px calc(14px + env(safe-area-inset-bottom));
+    display:flex;flex-direction:column;align-items:center;gap:10px;overflow-x:hidden;
   }
-  .wrap{width:100%;max-width:460px;display:flex;flex-direction:column;gap:16px}
+  .wrap{width:100%;max-width:440px;display:flex;flex-direction:column;gap:10px}
 
-  /* 挨拶（責めない・おかえり） */
-  .greet{font-size:15px;color:#9fc4b3;line-height:1.5;min-height:1.2em}
-  .greet b{color:#e7f0ea;font-weight:600}
+  /* 上部ステータス（進んでいく実感＝レベル/最高到達/撃破） */
+  .hud{display:flex;gap:8px}
+  .hud .cell{flex:1;background:#161e33;border:1px solid #2a3654;border-radius:12px;padding:7px 4px;text-align:center}
+  .hud .n{font-size:18px;font-weight:800;color:#bcd3ff}
+  .hud .l{font-size:10px;color:#8294bd;margin-top:1px}
 
-  /* 庭 */
-  .garden{
-    position:relative;background:linear-gradient(#1c4634,#143527);
-    border:1px solid #2c5d47;border-radius:22px;padding:16px;
-    min-height:190px;display:flex;flex-wrap:wrap;align-content:flex-end;
-    gap:2px 0;justify-content:center;overflow:hidden;
-  }
-  .garden::after{content:"";position:absolute;left:0;right:0;bottom:0;height:34px;
-    background:linear-gradient(transparent,#0e2519);pointer-events:none}
-  .plant{font-size:26px;line-height:1;filter:drop-shadow(0 2px 1px rgba(0,0,0,.25));
-    transition:transform .2s;animation:pop .5s backwards}
-  .plant.rest{opacity:.42;font-size:20px}
-  .plant.today{animation:bloom 1s backwards}
-  .empty{color:#7fae99;font-size:14px;text-align:center;align-self:center;line-height:1.7;padding:24px 8px}
-  @keyframes pop{from{transform:scale(0) translateY(6px);opacity:0}to{transform:scale(1)}}
-  @keyframes bloom{0%{transform:scale(0)}55%{transform:scale(1.35)}100%{transform:scale(1)}}
+  /* 今日の一歩バナー（ふり返りを忍ばせる・非ブロッキング） */
+  .banner{background:linear-gradient(#1c2742,#172037);border:1px solid #33436b;border-radius:14px;
+    padding:11px 13px;font-size:14px}
+  .banner .q{font-weight:700;margin:0 0 8px}
+  .banner .sub{font-size:12px;color:#9fb0d6;margin:-4px 0 8px;line-height:1.5}
+  .banner.done{border-color:#3a6b4d;background:linear-gradient(#16301f,#142a1c)}
+  .row{display:flex;gap:8px;flex-wrap:wrap}
+  .mini{border:0;border-radius:11px;padding:10px 14px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:transform .1s}
+  .mini:active{transform:scale(.95)}
+  .mini.go{background:linear-gradient(#46c96f,#2ea158);color:#04130a;flex:1}
+  .mini.skip{background:#222d49;color:#cdd9f2;border:1px solid #33436b;flex:1}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+  .chip{background:#222d49;border:1px solid #33436b;color:#cdd9f2;border-radius:999px;padding:7px 12px;font-size:13px;cursor:pointer;font-family:inherit}
+  .chip.on{background:#5b8cff;color:#04122e;border-color:#5b8cff}
+  .note{margin-top:9px}
+  .note input{width:100%;background:#0d1426;border:1px solid #33436b;color:#e8edf7;border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;outline:none}
+  .note input:focus{border-color:#5b8cff}
+  .fold{background:none;border:0;color:#8294bd;font-size:12px;cursor:pointer;font-family:inherit;padding:6px 0 0;text-decoration:underline}
+  .buffline{font-size:12px;color:#9fe0b6;margin-top:7px;line-height:1.5}
 
-  /* 数字（積み重ねの可視化） */
-  .stats{display:flex;gap:8px}
-  .stat{flex:1;background:#15302410;border:1px solid #2c5d47;background:#143527;
-    border-radius:16px;padding:10px 6px;text-align:center}
-  .stat .n{font-size:24px;font-weight:700;color:#bff0d4}
-  .stat .l{font-size:11px;color:#8fb8a4;margin-top:2px}
+  /* 敵 */
+  .enemy{background:#161e33;border:1px solid #2a3654;border-radius:14px;padding:12px;text-align:center;position:relative;overflow:hidden}
+  .enemy .floor{font-size:11px;color:#8294bd;letter-spacing:.05em}
+  .enemy .face{font-size:46px;line-height:1;margin:2px 0 6px;transition:transform .12s}
+  .enemy.hurt .face{animation:shake .25s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+  .enemy .name{font-size:13px;font-weight:700}
+  .enemy .weak{font-size:11px;color:#ffd27a;margin-top:2px}
+  .charge{font-size:11px;color:#ff9a8c;margin-top:3px;font-weight:700}
+  .bar{height:9px;background:#0c1426;border-radius:6px;overflow:hidden;margin-top:7px;border:1px solid #2a3654}
+  .bar > i{display:block;height:100%;border-radius:6px;transition:width .35s ease}
+  .ehp > i{background:linear-gradient(90deg,#ff6a5a,#ff3d6a)}
 
-  /* 今日の1手カード */
-  .card{background:#143527;border:1px solid #2c5d47;border-radius:22px;padding:18px}
-  .q{font-size:18px;font-weight:600;margin:0 0 14px;line-height:1.4}
-  .step-text{font-size:13px;color:#9fc4b3;margin:-8px 0 14px;line-height:1.5}
-  .row{display:flex;gap:10px}
-  .btn{flex:1;border:0;border-radius:16px;padding:16px;font-size:16px;font-weight:600;
-    cursor:pointer;transition:transform .1s,filter .15s;font-family:inherit}
-  .btn:active{transform:scale(.96)}
-  .btn.yes{background:linear-gradient(#37b876,#2a9d62);color:#06150d}
-  .btn.no{background:#1d4231;color:#cfe7da;border:1px solid #2c5d47}
+  /* プレイヤーHP */
+  .me{display:flex;align-items:center;gap:10px;background:#161e33;border:1px solid #2a3654;border-radius:12px;padding:8px 12px}
+  .me .av{font-size:24px}
+  .me .col{flex:1}
+  .me .lab{font-size:11px;color:#8294bd;display:flex;justify-content:space-between}
+  .php > i{background:linear-gradient(90deg,#46c96f,#7ee08f)}
 
-  /* 理由チップ（5択・責めない） */
-  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
-  .chip{background:#1d4231;border:1px solid #2c5d47;color:#cfe7da;border-radius:999px;
-    padding:9px 14px;font-size:14px;cursor:pointer;font-family:inherit;transition:.12s}
-  .chip:active{transform:scale(.95)}
-  .chip.on{background:#37b876;color:#06150d;border-color:#37b876}
+  /* 盤面 */
+  .boardwrap{position:relative}
+  .board{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
+  .orb{aspect-ratio:1;border:0;border-radius:50%;font-size:21px;cursor:pointer;display:flex;
+    align-items:center;justify-content:center;font-family:inherit;color:#0a0f1c;font-weight:800;
+    box-shadow:inset 0 -3px 6px rgba(0,0,0,.28),inset 0 2px 4px rgba(255,255,255,.35);
+    transition:transform .09s;animation:drop .22s backwards}
+  .orb:active{transform:scale(.9)}
+  .orb.clearing{animation:clr .16s forwards}
+  @keyframes drop{from{transform:translateY(-14px) scale(.6);opacity:0}to{transform:none;opacity:1}}
+  @keyframes clr{to{transform:scale(0);opacity:0}}
 
-  /* 気づき一行（任意） */
-  .note{margin-top:14px}
-  .note input{width:100%;background:#0f2619;border:1px solid #2c5d47;color:#e7f0ea;
-    border-radius:14px;padding:13px 14px;font-size:15px;font-family:inherit;outline:none}
-  .note input:focus{border-color:#37b876}
-  .note .hint{font-size:11px;color:#7fae99;margin:6px 2px 0}
+  .ctrl{display:flex;gap:8px;align-items:center}
+  .skill{flex:1;border:0;border-radius:13px;padding:13px;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;
+    background:linear-gradient(#ffd23a,#ffac2e);color:#3a2400;transition:transform .1s,filter .2s}
+  .skill:active{transform:scale(.97)}
+  .skill:disabled{filter:grayscale(.8) brightness(.6);cursor:default}
 
-  .soft{font-size:14px;color:#a9d2bd;line-height:1.6;margin:4px 2px 0}
-  .changemind{background:none;border:0;color:#7fae99;font-size:13px;text-decoration:underline;
-    cursor:pointer;font-family:inherit;padding:8px 0 0;margin-top:6px}
+  /* 演出 */
+  .pop{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);font-size:30px;font-weight:900;
+    pointer-events:none;z-index:30;text-shadow:0 2px 8px rgba(0,0,0,.5);animation:popa .8s ease-out forwards;color:#ffe27a}
+  @keyframes popa{0%{transform:translate(-50%,-50%) scale(.4);opacity:0}25%{opacity:1;transform:translate(-50%,-70%) scale(1.1)}100%{opacity:0;transform:translate(-50%,-140%) scale(1)}}
 
-  /* 演出：舞い上がる絵文字 */
-  .fly{position:fixed;font-size:28px;pointer-events:none;z-index:50;animation:fly 1.5s ease-out forwards}
-  @keyframes fly{0%{transform:translateY(0) scale(.6);opacity:0}
-    20%{opacity:1}100%{transform:translateY(-160px) scale(1.2) rotate(20deg);opacity:0}}
+  /* オーバーレイ（撃破・敗北） */
+  .ov{position:fixed;inset:0;background:rgba(8,11,20,.86);display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:16px;z-index:60;padding:24px;text-align:center;animation:fade .25s}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .ov h2{margin:0;font-size:26px}
+  .ov p{margin:0;color:#aebcde;font-size:14px;line-height:1.6}
+  .ov .big{font-size:54px}
+  .ov button{border:0;border-radius:14px;padding:14px 26px;font-size:16px;font-weight:800;font-family:inherit;cursor:pointer;
+    background:linear-gradient(#5b8cff,#3d6ae0);color:#fff}
 
-  .foot{text-align:center;font-size:11px;color:#5e8772;line-height:1.6}
-  .foot a{color:#7fae99}
+  .foot{text-align:center;font-size:11px;color:#5c6c92;line-height:1.6}
+  .foot a{color:#7e93c4}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="greet" id="greet"></div>
-  <div class="garden" id="garden"></div>
-  <div class="stats">
-    <div class="stat"><div class="n" id="s-streak">0</div><div class="l">れんぞく日数</div></div>
-    <div class="stat"><div class="n" id="s-total">0</div><div class="l">そだてた数</div></div>
-    <div class="stat"><div class="n" id="s-week">0</div><div class="l">今週</div></div>
+  <div class="hud">
+    <div class="cell"><div class="n" id="hud-lv">1</div><div class="l">レベル</div></div>
+    <div class="cell"><div class="n" id="hud-floor">1</div><div class="l">いまの階</div></div>
+    <div class="cell"><div class="n" id="hud-max">1</div><div class="l">最高到達</div></div>
+    <div class="cell"><div class="n" id="hud-kill">0</div><div class="l">撃破</div></div>
   </div>
-  <div class="card" id="card"></div>
+
+  <div class="banner" id="banner"></div>
+
+  <div class="enemy" id="enemy">
+    <div class="floor" id="e-floor"></div>
+    <div class="face" id="e-face">👾</div>
+    <div class="name" id="e-name"></div>
+    <div class="weak" id="e-weak"></div>
+    <div class="charge" id="e-charge"></div>
+    <div class="bar ehp"><i id="e-hp"></i></div>
+  </div>
+
+  <div class="me">
+    <div class="av">🧗</div>
+    <div class="col">
+      <div class="lab"><span>あなた</span><span id="p-hpnum"></span></div>
+      <div class="bar php"><i id="p-hp"></i></div>
+    </div>
+  </div>
+
+  <div class="boardwrap">
+    <div class="board" id="board"></div>
+    <div id="poplayer"></div>
+  </div>
+
+  <div class="ctrl">
+    <button class="skill" id="skill">⚡ ひらめき <span id="skill-n"></span></button>
+  </div>
+
   <div class="foot">
-    1日30秒でいい。閉じても、また開けばいい。<br>
-    <a href="goal-manager.html">→ 本体（目標マネージャ）へ</a>
+    つなげて消す → 進む。1回2〜3分、いつ閉じてもOK。<br>
+    今日の一歩を「できた」にすると、今日のあなたが強くなる。
+    　<a href="goal-manager.html">→ 本体へ</a>
   </div>
 </div>
 
 <script>
 /* ───────────────────────────────────────────────────────────────
-   そだつ庭 — game-reflection-handoff.md §5 の最小プロト
-   ・現行アプリと同じ localStorage（first-steps / reflections）を読み書き
-   ・気楽さ最優先 / 責めない / 枯れない / 復帰コストゼロ
+   ひとあし クエスト — game-reflection-handoff.md §5 改良プロト
+   ・パズル×バトルでフロアを上る＝「進んでいく」ゲーム性
+   ・現実の「今日の一歩(done/理由/気づき)」が、その回の自分を強化する
+     ＝§2「ふり返りを忍ばせる」/ §4 first-steps・reflections 連動
+   ・§3：責めない・枯らさない・制限に依存しない・気楽さ最優先
    ─────────────────────────────────────────────────────────────── */
 
-// ── 既存アプリと同じヘルパ（互換のため挙動を合わせる） ──
+// ── 既存アプリ互換ヘルパ ──
 const lsGet=(k,d=null)=>{try{const v=localStorage.getItem(k);return v!=null?JSON.parse(v):d;}catch{return d;}};
 const lsSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch{}};
 const fmtDate=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const todayStr=()=>fmtDate(new Date());
 const FAIL_REASONS=["疲れてた","重すぎた","忘れてた","時間がなかった","気が乗らなかった"];
+const $=id=>document.getElementById(id);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
-// ── データ（参照は都度読み直す＝本体タブで編集しても反映） ──
+// ── §4 共有データ：first-steps / reflections を読み書き ──
 let firstSteps={}, reflections={};
-function load(){ firstSteps=lsGet("first-steps",{})||{}; reflections=lsGet("reflections",{})||{}; }
-
-function getFS(date){ return firstSteps[date]||null; }
-function setDone(date,val){
-  const prev=firstSteps[date]||{text:"",goalNodeId:null,done:false,doneTs:""};
+function loadShared(){ firstSteps=lsGet("first-steps",{})||{}; reflections=lsGet("reflections",{})||{}; }
+function getFS(d){ return firstSteps[d]||null; }
+function setDone(d,val){
+  const prev=firstSteps[d]||{text:"",goalNodeId:null,done:false,doneTs:""};
   prev.done=val;
   prev.doneTs=val?new Date().toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"}):"";
-  firstSteps[date]={...prev};
-  lsSet("first-steps",firstSteps);
+  firstSteps[d]={...prev}; lsSet("first-steps",firstSteps);
 }
-function getRefl(date){ return reflections[date]||{reason:"",note:""}; }
-function setReason(date,r){ const x=getRefl(date); x.reason=(x.reason===r?"":r); reflections[date]=x; lsSet("reflections",reflections); }
-function setNote(date,n){ const x=getRefl(date); x.note=n; reflections[date]=x; lsSet("reflections",reflections); }
+function getRefl(d){ return reflections[d]||{reason:"",note:""}; }
+function setReason(d,r){ const x=getRefl(d); x.reason=(x.reason===r?"":r); reflections[d]=x; lsSet("reflections",reflections); }
+function setNote(d,n){ const x=getRefl(d); x.note=n; reflections[d]=x; lsSet("reflections",reflections); }
 
-// ── 庭の中身を作る（done=咲く / reflしただけ=待機。どちらも“痕跡”） ──
-const BLOOMS=["🌸","🌷","🌻","🌼","🌺","🪻","🌹","💐"];
-const TREES =["🌲","🌳","🌴"];
-function emojiFor(date,idx,milestone){
-  if(milestone) return TREES[idx%TREES.length];
-  // 日付から決定的に選ぶ（同じ日はいつも同じ花）
-  let h=0; for(const c of date) h=(h*31+c.charCodeAt(0))>>>0;
-  return BLOOMS[h%BLOOMS.length];
+// ── ゲームのメタ進行（別キー。積み重ねの記録） ──
+let META=lsGet("hitoashi-game",{ kills:0, maxFloor:1 });
+function saveMeta(){ lsSet("hitoashi-game",META); }
+function level(){ return 1+Math.floor(META.kills/5); }
+
+// ── 属性 ──
+const ELEMS=[
+  {k:"fire", sym:"🔥", color:"#ff5d4d", strong:"wood"},
+  {k:"water",sym:"💧", color:"#3aa3ff", strong:"fire"},
+  {k:"wood", sym:"🌿", color:"#46c96f", strong:"water"},
+  {k:"light",sym:"⚡", color:"#ffd23a", strong:"dark"},
+  {k:"dark", sym:"🌙", color:"#a86bff", strong:"light"},
+];
+const ROWS=5, COLS=6, MINP=3;
+
+// ── 敵テンプレ ──
+const FACES=["👾","🦇","🕷️","🐗","👹","🐉","🦂","🧟","🐺","👻","🦅","🐲"];
+function makeEnemy(floor){
+  const elem=Math.floor(Math.random()*5);
+  // 弱点 = この属性に強い属性（プレイヤーがそれで殴ると1.5倍）
+  let weak=0; for(let i=0;i<5;i++) if(ELEMS[i].strong===ELEMS[elem].k) weak=i;
+  const hp=Math.round(50+floor*20+floor*floor*1.4);
+  return {
+    floor, elem, weak,
+    face:FACES[(floor-1)%FACES.length],
+    name:`${ELEMS[elem].sym}のぬし Lv${floor}`,
+    maxhp:hp, hp,
+    atk:Math.round(7+floor*2.4),
+    interval:Math.max(2,4-Math.floor(floor/6)),
+    charge:Math.max(2,4-Math.floor(floor/6)),
+  };
 }
 
-function allDates(){
-  return [...new Set([...Object.keys(firstSteps),...Object.keys(reflections)])].sort();
+// ── 実行時状態 ──
+let G=null;          // {floor, board[], enemy, php, maxhp, atk, skill, busy, banner:{open}}
+function buffs(){
+  const t=todayStr(); const fs=getFS(t); const r=getRefl(t);
+  return { done: !!(fs&&fs.done), rested: !!(r.reason), note: !!(r.note&&r.note.trim()) };
 }
-function doneDates(){ return Object.keys(firstSteps).filter(d=>firstSteps[d]?.done).sort(); }
+function calcMaxHP(){ const b=buffs(); return Math.round((100+(level()-1)*15)*(b.done?1.25:1)); }
+function calcATK(){ const b=buffs(); return 5+(level()-1) + (b.done?1:0); }
+function startSkill(){ const b=buffs(); return 1 + (b.done?1:0) + (b.note?1:0); }
 
-function currentStreak(){
-  // 今日 or 昨日 を起点に、done が連続している日数
-  const set=new Set(doneDates());
-  let n=0; const d=new Date();
-  if(!set.has(fmtDate(d))) d.setDate(d.getDate()-1); // 今日まだでも昨日まで続いていれば維持
-  while(set.has(fmtDate(d))){ n++; d.setDate(d.getDate()-1); }
-  return n;
+function newRun(resumeFloor){
+  const floor=resumeFloor||1;
+  G={ floor, enemy:makeEnemy(floor), maxhp:calcMaxHP(), php:calcMaxHP(),
+      atk:calcATK(), skill:startSkill(), busy:false, board:freshBoard() };
 }
-function thisWeekCount(){
-  let n=0; for(let i=0;i<7;i++){const d=new Date();d.setDate(d.getDate()-i);if(firstSteps[fmtDate(d)]?.done)n++;}
-  return n;
+function freshBoard(){
+  const b=new Array(ROWS*COLS);
+  for(let i=0;i<b.length;i++) b[i]=Math.floor(Math.random()*5);
+  // 開幕にいきなり巨大連結ができすぎないよう軽くほぐす（気楽だが大味すぎない）
+  return b;
 }
-function lastActiveDate(){ const a=allDates(); return a.length?a[a.length-1]:null; }
-function daysBetween(a,b){ return Math.round((new Date(b)-new Date(a))/86400000); }
 
-// ── 演出（舞い上がる絵文字。軽い・短い） ──
-function burst(emojis){
-  emojis.forEach((e,i)=>{
-    const el=document.createElement("div");
-    el.className="fly"; el.textContent=e;
-    el.style.left=(30+Math.random()*40)+"%";
-    el.style.bottom="40%";
-    el.style.animationDelay=(i*0.08)+"s";
-    document.body.appendChild(el);
-    setTimeout(()=>el.remove(),1700);
-  });
+// ── 盤面ロジック ──
+const idx=(r,c)=>r*COLS+c;
+function neighbors(i){ const r=(i/COLS)|0,c=i%COLS,o=[];
+  if(r>0)o.push(i-COLS); if(r<ROWS-1)o.push(i+COLS); if(c>0)o.push(i-1); if(c<COLS-1)o.push(i+1); return o; }
+function flood(b,start){
+  const e=b[start]; if(e==null) return [];
+  const seen=new Set([start]), st=[start], out=[];
+  while(st.length){ const i=st.pop(); out.push(i);
+    for(const n of neighbors(i)) if(!seen.has(n)&&b[n]===e){ seen.add(n); st.push(n); } }
+  return out;
+}
+function allGroups(b){ // 連結3+の全セル
+  const seen=new Set(), res=[];
+  for(let i=0;i<b.length;i++){ if(b[i]==null||seen.has(i))continue;
+    const g=flood(b,i); g.forEach(x=>seen.add(x)); if(g.length>=MINP) res.push(...g); }
+  return res;
+}
+function collapse(b){ // 重力＋補充
+  for(let c=0;c<COLS;c++){ const col=[];
+    for(let r=ROWS-1;r>=0;r--){ const v=b[idx(r,c)]; if(v!=null)col.push(v); }
+    for(let r=ROWS-1;r>=0;r--){ b[idx(r,c)] = col.length? col.shift() : Math.floor(Math.random()*5); }
+  }
+}
+
+// ── ダメージ計算 ──
+function comboMult(combo){ return 1+0.3*(combo-1); }
+function elemMult(e){ const ev=ELEMS[e], en=G.enemy;
+  if(ev.strong===ELEMS[en.elem].k) return 1.6;          // 弱点を突いた
+  if(ELEMS[en.elem].strong===ev.k) return 0.65;         // 返り討ち属性
+  return 1;
+}
+function dealFromTally(tally,combo){
+  let dmg=0; for(let e=0;e<5;e++) dmg += tally[e]*G.atk*elemMult(e);
+  return Math.round(dmg*comboMult(combo));
+}
+
+// ── タップ処理（連鎖あり＝爽快） ──
+async function tapOrb(i){
+  if(!G||G.busy) return;
+  const group=flood(G.board,i);
+  if(group.length<MINP){ // 小さすぎ：軽い拒否反応のみ、ペナルティなし
+    const el=document.querySelectorAll(".orb")[i]; if(el){el.style.transform="scale(.85)";setTimeout(()=>el.style.transform="",110);} return;
+  }
+  G.busy=true;
+  let combo=0, tally=[0,0,0,0,0];
+  let toClear=group;
+  while(toClear.length){
+    combo++;
+    // 消える演出
+    const cells=document.querySelectorAll(".orb");
+    toClear.forEach(x=>{ tally[G.board[x]]++; if(cells[x])cells[x].classList.add("clearing"); });
+    await sleep(150);
+    toClear.forEach(x=>{ G.board[x]=null; });
+    collapse(G.board);
+    renderBoard();
+    if(combo>=12) break;            // 安全弁
+    toClear=allGroups(G.board);
+    if(toClear.length) await sleep(120);
+  }
+  const dmg=dealFromTally(tally,combo);
+  if(combo>=2) showPop(`${combo} れんさ！`);
+  await hitEnemy(dmg);
+  await afterMove();
+  G.busy=false;
+}
+
+// ── ひらめき（必殺）：いちばん多い属性を全消し ──
+async function useSkill(){
+  if(!G||G.busy||G.skill<=0) return;
+  G.busy=true; G.skill--;
+  // 最多属性
+  const cnt=[0,0,0,0,0]; G.board.forEach(v=>{if(v!=null)cnt[v]++;});
+  let best=0; for(let e=1;e<5;e++) if(cnt[e]>cnt[best])best=e;
+  const cells=document.querySelectorAll(".orb");
+  const tally=[0,0,0,0,0];
+  G.board.forEach((v,x)=>{ if(v===best){ tally[v]++; if(cells[x])cells[x].classList.add("clearing"); } });
+  showPop("⚡ ひらめき！");
+  await sleep(220);
+  G.board.forEach((v,x)=>{ if(v===best)G.board[x]=null; });
+  collapse(G.board); renderBoard();
+  const dmg=Math.round(dealFromTally(tally,1)*2.2);  // 必殺は強い
+  await hitEnemy(dmg);
+  await afterMove();
+  G.busy=false;
+}
+
+async function hitEnemy(dmg){
+  G.enemy.hp=Math.max(0,G.enemy.hp-dmg);
+  const en=$("enemy"); en.classList.add("hurt"); setTimeout(()=>en.classList.remove("hurt"),260);
+  renderEnemy();
+  await sleep(180);
+}
+
+async function afterMove(){
+  if(G.enemy.hp<=0){ await onWin(); return; }
+  // 敵のチャージ→攻撃
+  G.enemy.charge--;
+  if(G.enemy.charge<=0){
+    G.enemy.charge=G.enemy.interval;
+    let dmg=G.enemy.atk;
+    G.php=Math.max(0,G.php-dmg);
+    showPop(`-${dmg}`, "#ff7a7a");
+    renderPlayer();
+    await sleep(220);
+    if(G.php<=0){ onLose(); return; }
+  }
+  renderEnemy();
+}
+
+async function onWin(){
+  META.kills++; if(G.floor+1>META.maxFloor)META.maxFloor=G.floor+1; saveMeta();
+  showPop("げきは！🎉");
+  await sleep(450);
+  // 次の階へ。少し回復（責めない・続けやすい）
+  const b=buffs();
+  let heal=Math.round(G.maxhp*0.15) + (b.rested?Math.round(G.maxhp*0.08):0);
+  G.php=Math.min(G.maxhp,G.php+heal);
+  G.floor++;
+  G.maxhp=calcMaxHP(); G.atk=calcATK();           // レベルアップ反映
+  if(G.floor%5===0) G.skill++;                     // 5階ごとに必殺補充
+  G.enemy=makeEnemy(G.floor);
+  G.board=freshBoard();
+  renderAll();
+}
+
+function onLose(){
+  // §3③：責めない。進行（最高到達・撃破・レベル）は残る。すぐ再挑戦できる。
+  overlay(`<div class="big">🌙</div>
+    <h2>ここまで。</h2>
+    <p>また明日でも、今すぐでもいい。<br>
+    最高到達 <b>${META.maxFloor}階</b> ・ 累計撃破 <b>${META.kills}</b> は消えないよ。</p>
+    <button id="ov-btn">▶ もう一度ふもとから</button>`, ()=>{ newRun(1); renderAll(); });
 }
 
 // ── 描画 ──
-function render(){
-  load();
-  const today=todayStr();
-  const fs=getFS(today);
-  const refl=getRefl(today);
-
-  // 挨拶（時間帯＋おかえり。責めない）
-  const h=new Date().getHours();
-  const hi = h<5?"おやすみ前かな":h<11?"おはよう":h<18?"こんにちは":"こんばんは";
-  const last=lastActiveDate();
-  let greet=`<b>${hi}。</b>`;
-  if(last && last<today){
-    const gap=daysBetween(last,today);
-    if(gap>=2) greet+=` ${gap}日ぶりだね。おかえり 🌿 ゆっくりでいい。`;
-    else greet+=` 今日もちょっとだけ庭を見よう。`;
-  }else if(!last){
-    greet+=` はじめまして。ここはあなたの庭です。`;
-  }else{
-    greet+=` 今日もおつかれさま。`;
-  }
-  document.getElementById("greet").innerHTML=greet;
-
-  // 庭：過去の done=花/木、refl だけの日=待機の芽
-  const garden=document.getElementById("garden");
-  garden.innerHTML="";
-  const dates=allDates();
-  if(dates.length===0){
-    garden.innerHTML=`<div class="empty">まだ何もない、まっさらな庭。<br>下の「できた？」から、最初のひとつを。</div>`;
-  }else{
-    let doneIdx=0;
-    dates.forEach(d=>{
-      const done=firstSteps[d]?.done;
-      const span=document.createElement("span");
-      span.className="plant";
-      if(done){
-        const milestone=((doneIdx+1)%7===0); // 7個ごとに木が育つ＝節目
-        span.textContent=emojiFor(d,doneIdx,milestone);
-        if(milestone) span.style.fontSize="32px";
-        doneIdx++;
-        if(d===today) span.classList.add("today");
-      }else{
-        // できなかった/まだ の日も、来た痕跡として残す（枯れない・責めない）
-        span.className="plant rest";
-        span.textContent="🌱";
-      }
-      span.title=d;
-      span.style.animationDelay=(Math.min(dates.indexOf(d),20)*0.03)+"s";
-      garden.appendChild(span);
-    });
-  }
-
-  // 数字
-  document.getElementById("s-streak").textContent=currentStreak();
-  document.getElementById("s-total").textContent=doneDates().length;
-  document.getElementById("s-week").textContent=thisWeekCount();
-
-  // 今日の1手カード
-  const card=document.getElementById("card");
-  if(fs && fs.done){
-    // 完了済み：もう急かさない。気づきだけ任意で。
-    card.innerHTML=`
-      <p class="q">今日のぶん、咲いたよ 🌸</p>
-      ${fs.text?`<div class="step-text">「${esc(fs.text)}」${fs.doneTs?" ・ "+esc(fs.doneTs):""}</div>`:""}
-      <p class="soft">これで十分。あとは閉じてOK。</p>
-      ${noteInputHTML(refl.note)}
-      <button class="changemind" id="undo">やっぱり、まだだったかも</button>`;
-    wireNote();
-    document.getElementById("undo").onclick=()=>{ setDone(today,false); render(); };
-  }else if(refl.reason){
-    // 今日は「まだ」を選んだ状態：責めず、いつでも切り替えられる
-    card.innerHTML=`
-      <p class="q">そういう日もある 🍃</p>
-      <p class="soft">「${esc(refl.reason)}」だったんだね。庭は枯れないから大丈夫。<br>来ただけで、ちゃんと芽は残ってるよ。</p>
-      <div class="chips" id="chips"></div>
-      ${noteInputHTML(refl.note)}
-      <button class="btn yes" id="late" style="margin-top:14px">やっぱり、できた！</button>`;
-    renderChips(refl.reason);
-    wireNote();
-    document.getElementById("late").onclick=()=>{ setDone(today,true); burst(["🌸","✨","🌷"]); render(); };
-  }else{
-    // 未回答：いちばん軽い入口
-    const stepText=fs && fs.text;
-    card.innerHTML=`
-      <p class="q">今日の一歩、できた？</p>
-      ${stepText?`<div class="step-text">「${esc(stepText)}」</div>`:""}
-      <div class="row">
-        <button class="btn yes" id="yes">できた 🌱</button>
-        <button class="btn no"  id="no">まだ</button>
-      </div>`;
-    document.getElementById("yes").onclick=()=>{
-      setDone(today,true);
-      const ms=((doneDates().length)%7===0);
-      burst(ms?["🌳","✨","🎉"]:["🌸","✨","🌷"]);
-      render();
-    };
-    document.getElementById("no").onclick=()=>{
-      // 理由をタップする画面へ（責めない）
-      card.innerHTML=`
-        <p class="q">大丈夫。どんな日だった？</p>
-        <div class="chips" id="chips"></div>
-        <p class="soft" style="margin-top:14px">選ばずに閉じてもOK。</p>
-        ${noteInputHTML(getRefl(today).note)}`;
-      renderChips("");
-      wireNote();
-    };
-  }
+function renderHUD(){
+  $("hud-lv").textContent=level();
+  $("hud-floor").textContent=G?G.floor:1;
+  $("hud-max").textContent=META.maxFloor;
+  $("hud-kill").textContent=META.kills;
 }
-
-function renderChips(active){
-  const box=document.getElementById("chips"); if(!box)return;
-  box.innerHTML="";
-  FAIL_REASONS.forEach(r=>{
-    const c=document.createElement("button");
-    c.className="chip"+(r===active?" on":"");
-    c.textContent=r;
-    c.onclick=()=>{ setReason(todayStr(),r); render(); };
-    box.appendChild(c);
+function renderEnemy(){
+  const en=G.enemy;
+  $("e-floor").textContent=`${en.floor}階`;
+  $("e-face").textContent=en.face;
+  $("e-name").textContent=en.name;
+  $("e-weak").textContent=`弱点：${ELEMS[en.weak].sym}（1.6倍）`;
+  $("e-charge").textContent=`こうげきまで あと ${en.charge} 手`;
+  $("e-hp").style.width=(100*en.hp/en.maxhp)+"%";
+}
+function renderPlayer(){
+  $("p-hp").style.width=(100*G.php/G.maxhp)+"%";
+  $("p-hpnum").textContent=`${G.php}/${G.maxhp}`;
+}
+function renderBoard(){
+  const wrap=$("board");
+  // 差分更新せず全描画（30セルなので軽い）
+  wrap.innerHTML="";
+  G.board.forEach((v,i)=>{
+    const b=document.createElement("button");
+    b.className="orb"; b.style.background=ELEMS[v].color; b.textContent=ELEMS[v].sym;
+    b.style.animationDelay=((i%COLS)*0.012)+"s";
+    b.onclick=()=>tapOrb(i);
+    wrap.appendChild(b);
   });
 }
+function renderSkill(){
+  $("skill-n").textContent="×"+G.skill;
+  $("skill").disabled = G.skill<=0;
+}
+function renderAll(){ renderHUD(); renderEnemy(); renderPlayer(); renderBoard(); renderSkill(); renderBanner(); }
 
-function noteInputHTML(val){
-  return `<div class="note">
-    <input id="noteIn" type="text" maxlength="60" placeholder="今日の気づき（任意・一行）"
-      value="${esc(val||"")}">
-    <div class="hint">書くと、ちいさなボーナスが舞う 🦋（書かなくてもOK）</div>
-  </div>`;
+function showPop(txt,color){
+  const p=document.createElement("div"); p.className="pop"; p.textContent=txt;
+  if(color)p.style.color=color;
+  $("poplayer").appendChild(p); setTimeout(()=>p.remove(),850);
+}
+
+// ── 今日の一歩バナー（ふり返りを忍ばせる） ──
+let bannerMode=null; // null=未, 'reason'=理由選択中
+function renderBanner(){
+  loadShared();
+  const t=todayStr(); const fs=getFS(t); const r=getRefl(t);
+  const bn=$("banner");
+  const stepText=fs&&fs.text?`<div class="sub">きょうの一歩：「${esc(fs.text)}」</div>`:"";
+  if(fs&&fs.done){
+    bn.className="banner done";
+    bn.innerHTML=`<p class="q">🔥 今日の一歩、完了ずみ</p>${stepText}
+      <div class="buffline">今日のあなた：HP増量＋ひらめき＋1${r.note?" ・ 気づきボーナス":""}</div>
+      ${noteHTML(r.note)}`;
+    wireNote();
+    return;
+  }
+  if(bannerMode==='reason' || r.reason){
+    bn.className="banner";
+    bn.innerHTML=`<p class="q">大丈夫。どんな日だった？</p>
+      <div class="sub">選んでも選ばなくてもOK。責めないよ。${r.reason?`<br>→「${esc(r.reason)}」：ひと休みの加護（毎階かいふく）`:""}</div>
+      <div class="chips" id="chips"></div>
+      ${noteHTML(r.note)}
+      <button class="mini go" id="b-late" style="margin-top:9px">やっぱり、できた！</button>`;
+    renderChips(r.reason);
+    wireNote();
+    $("b-late").onclick=()=>{ setDone(t,true); bannerMode=null; applyLiveBuff(); renderAll(); showPop("チカラがみなぎる！","#9fe0b6"); };
+    return;
+  }
+  bn.className="banner";
+  bn.innerHTML=`<p class="q">今日の一歩、できた？</p>${stepText}
+    <div class="row">
+      <button class="mini go" id="b-yes">できた</button>
+      <button class="mini skip" id="b-no">まだ</button>
+    </div>`;
+  $("b-yes").onclick=()=>{ setDone(t,true); applyLiveBuff(); renderAll(); showPop("チカラがみなぎる！","#9fe0b6"); };
+  $("b-no").onclick=()=>{ bannerMode='reason'; renderBanner(); };
+}
+function renderChips(active){
+  const box=$("chips"); if(!box)return; box.innerHTML="";
+  FAIL_REASONS.forEach(r=>{ const c=document.createElement("button");
+    c.className="chip"+(r===active?" on":""); c.textContent=r;
+    c.onclick=()=>{ setReason(todayStr(),r); renderBanner(); }; box.appendChild(c); });
+}
+function noteHTML(val){
+  return `<div class="note"><input id="noteIn" type="text" maxlength="60"
+    placeholder="今日の気づき（任意・必殺＋1）" value="${esc(val||"")}"></div>`;
 }
 function wireNote(){
-  const inp=document.getElementById("noteIn"); if(!inp)return;
-  let had=!!inp.value.trim();
-  inp.addEventListener("change",()=>{
-    const v=inp.value.trim();
-    setNote(todayStr(),v);
-    if(v && !had){ burst(["🦋","✨"]); }   // 新しく書いたときだけ演出
-    had=!!v;
-  });
+  const inp=$("noteIn"); if(!inp)return; let had=!!inp.value.trim();
+  inp.addEventListener("change",()=>{ const v=inp.value.trim(); setNote(todayStr(),v);
+    if(v&&!had){ if(G)G.skill++; renderSkill(); showPop("ひらめき＋1 🦋","#ffe27a"); } had=!!v; });
 }
 
+// 一歩を「できた」にしたら、実行中の自分も即強化（=現実の行動がゲームに効く）
+function applyLiveBuff(){
+  if(!G)return; const nm=calcMaxHP();
+  G.php=Math.min(nm, G.php + Math.max(0,nm-G.maxhp)); // 増えた分だけ回復
+  G.maxhp=nm; G.atk=calcATK(); G.skill+=1;
+}
+
+function overlay(html,onBtn){
+  const d=document.createElement("div"); d.className="ov"; d.innerHTML=html; document.body.appendChild(d);
+  const btn=d.querySelector("#ov-btn"); if(btn)btn.onclick=()=>{ d.remove(); onBtn&&onBtn(); };
+}
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
 
-render();
-// 他タブ（本体アプリ）で更新されたら反映
-window.addEventListener("focus",render);
-window.addEventListener("storage",render);
+// ── 起動 ──
+$("skill").onclick=useSkill;
+loadShared();
+newRun(1);
+renderAll();
+window.addEventListener("focus",()=>{ loadShared(); renderBanner(); });
 </script>
 </body>
 </html>
