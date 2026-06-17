@@ -81,6 +81,7 @@ const uid=()=>Math.random().toString(36).slice(2,9);
 const fmtDate=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const todayStr=()=>fmtDate(new Date());
 const yestStr=()=>{const d=new Date();d.setDate(d.getDate()-1);return fmtDate(d);};
+const tomoStr=()=>{const d=new Date();d.setDate(d.getDate()+1);return fmtDate(d);};
 const monthStr=()=>{const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;};
 const weekStr=()=>{const d=new Date();const day=d.getDay()||7;d.setDate(d.getDate()-day+1);return fmtDate(d);};
 const WD=["日","月","火","水","木","金","土"];
@@ -97,10 +98,12 @@ let routineEntries=lsGet("routine-entries",{});
 let tasks=lsGet("task-list",[]);
 let monthlyGoal=lsGet("monthly-"+monthStr(),"");
 let weeklyGoal=lsGet("weekly-"+weekStr(),"");
+let firstSteps=lsGet("first-steps",{});
 
 const saveGoals=()=>lsSet("goals",goals);
 const saveEntries=()=>lsSet("routine-entries",routineEntries);
 const saveTasks=()=>lsSet("task-list",tasks);
+const saveFirstSteps=()=>lsSet("first-steps",firstSteps);
 
 function getEntry(){if(!routineEntries[todayStr()])routineEntries[todayStr()]=defEntry();return routineEntries[todayStr()];}
 function getDayType(){return lsGet("daytype-"+todayStr(),"テレワーク");}
@@ -109,6 +112,20 @@ function getSlotTask(i){return lsGet("slot-"+todayStr()+"-"+i,"");}
 function getSlotSeat(i){return lsGet("slotseat-"+todayStr()+"-"+i,"all");}
 function setSlotSeat(i,v){lsSet("slotseat-"+todayStr()+"-"+i,v);}
 function setSlotTask(i,v){lsSet("slot-"+todayStr()+"-"+i,v);}
+
+// ── First step (最初の一歩) ─────────────────────────────────────────────────────
+function getFirstStep(date){return firstSteps[date]||null;}
+function setFirstStepText(date,text,goalNodeId){
+  const prev=firstSteps[date]||{done:false,doneTs:""};
+  firstSteps[date]={...prev,text,goalNodeId:goalNodeId||null};
+  saveFirstSteps();
+}
+function toggleFirstStepDone(date){
+  const fs=firstSteps[date];if(!fs)return;
+  fs.done=!fs.done;
+  fs.doneTs=fs.done?new Date().toLocaleTimeString("ja-JP",{hour:"2-digit",minute:"2-digit"}):"";
+  saveFirstSteps();
+}
 
 // ── S (UI state) ──────────────────────────────────────────────────────────────
 let S={
@@ -377,6 +394,73 @@ ${S.editMode&&Object.keys(S.selected).length>0?`
 </div>`;
 }
 
+// ── First step UI ───────────────────────────────────────────────────────────────
+function stepOpts(){
+  const leafOpts=leaves();
+  const manual=tasks.filter(t=>!t.goalNodeId&&t.status!=="完了");
+  return{leafOpts,manual};
+}
+function stepPicker(date,ph){
+  const{leafOpts,manual}=stepOpts();
+  return`<select onchange="setFirstStepFromSelect('${date}',this.value)" class="select" style="margin-bottom:6px">
+    <option value="">${ph}</option>
+    ${leafOpts.length?`<optgroup label="🎯 目標から">${leafOpts.map(n=>`<option value="g:${n.id}">${esc(n.title)}</option>`).join("")}</optgroup>`:""}
+    ${manual.length?`<optgroup label="📋 タスクから">${manual.map(t=>`<option value="m:${esc(t.title)}">${esc(t.title)}</option>`).join("")}</optgroup>`:""}
+  </select>
+  <input class="input" placeholder="または自由に書く（10秒で）" onkeydown="if(event.key==='Enter')setFirstStepFromText('${date}',this.value)" style="margin:0"/>`;
+}
+function firstStepTodayHTML(){
+  const date=todayStr();const fs=getFirstStep(date);
+  if(!fs)return`<div style="font-size:12px;color:var(--muted);margin-bottom:7px">まだ決まっていません。今決めるなら ↓</div>${stepPicker(date,'今日の一歩を選ぶ...')}`;
+  const gTitle=fs.goalNodeId&&goals.nodes[fs.goalNodeId]?goals.nodes[fs.goalNodeId].title:"";
+  return`<div style="display:flex;align-items:center;gap:11px;background:${fs.done?'#F0FDF4':'var(--cream)'};border:1.5px solid ${fs.done?'#86EFAC':'rgba(0,0,0,.08)'};border-radius:10px;padding:12px 13px">
+    <div onclick="toggleFirstStepAction('${date}')" style="width:24px;height:24px;border-radius:6px;border:2.5px solid ${fs.done?'var(--green)':'#D6D3D1'};background:${fs.done?'var(--green)':'transparent'};cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center">${fs.done?'<span style="color:#fff;font-size:13px;font-weight:800">✓</span>':''}</div>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:16px;font-weight:800;color:${fs.done?'var(--green)':'var(--text)'};text-decoration:${fs.done?'line-through':'none'};line-height:1.35;word-break:break-word">${esc(fs.text)}</div>
+      ${gTitle?`<div style="font-size:10px;color:var(--light);font-weight:600;margin-top:2px">🎯 ${esc(gTitle)} の一歩</div>`:''}
+      ${fs.done&&fs.doneTs?`<div style="font-size:10px;color:var(--green);font-weight:700;margin-top:2px">${fs.doneTs} 完了 ✓ えらい</div>`:''}
+    </div>
+    <button onclick="clearFirstStep('${date}')" style="background:none;border:none;color:#C7B8A8;font-size:17px;cursor:pointer;flex-shrink:0;line-height:1">×</button>
+  </div>`;
+}
+function firstStepTomorrowHTML(){
+  const date=tomoStr();const fs=getFirstStep(date);
+  return`<div style="margin-top:11px;padding-top:11px;border-top:1px dashed rgba(0,0,0,.12)">
+    <div style="font-size:11px;font-weight:800;color:#7C3AED;letter-spacing:.5px;margin-bottom:6px">🌙 明日の最初の一歩（寝る前・薬のときに1つ）</div>
+    ${fs?`<div style="display:flex;align-items:center;gap:8px;background:var(--purple-pale);border-radius:8px;padding:9px 11px">
+        <div style="flex:1;min-width:0;font-size:13px;font-weight:700;color:#6D28D9;word-break:break-word">▶ ${esc(fs.text)}</div>
+        <button onclick="clearFirstStep('${date}')" style="background:none;border:none;color:#A78BFA;font-size:15px;cursor:pointer;flex-shrink:0;line-height:1">×</button>
+      </div>`:stepPicker(date,'明日の一歩を選ぶ...')}
+  </div>`;
+}
+function firstStepCardHTML(){
+  return`<div class="card" style="border-left:3px solid var(--green)">
+  <div class="lbl lbl-green">🌱 今日の最初の一歩</div>
+  ${firstStepTodayHTML()}
+  ${firstStepTomorrowHTML()}
+</div>`;
+}
+function traceHTML(){
+  const doneCount=Object.values(firstSteps).filter(fs=>fs&&fs.done).length;
+  let streak=0;
+  for(let i=0;i<400;i++){
+    const d=new Date();d.setDate(d.getDate()-i);const fs=firstSteps[fmtDate(d)];
+    if(fs&&fs.done)streak++;else if(i===0)continue;else break;
+  }
+  const days=[];
+  for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push(fmtDate(d));}
+  const dots=days.map(d=>{const fs=firstSteps[d];const c=fs?(fs.done?"var(--green)":"#FCD34D"):"#E7E5E4";return`<div style="flex:1;height:16px;border-radius:4px;background:${c}"></div>`;}).join("");
+  return`<div class="card card-green" style="margin-bottom:12px">
+  <div class="lbl lbl-green">🌱 積み重ね</div>
+  <div style="display:flex;gap:16px;align-items:baseline;margin-bottom:8px">
+    <div><span style="font-size:22px;font-weight:800;color:var(--green)">${doneCount}</span><span style="font-size:11px;color:var(--muted);font-weight:600"> 個の一歩</span></div>
+    <div><span style="font-size:22px;font-weight:800;color:var(--coral)">${streak}</span><span style="font-size:11px;color:var(--muted);font-weight:600"> 日連続</span></div>
+  </div>
+  <div style="display:flex;gap:3px">${dots}</div>
+  <div style="font-size:9px;color:var(--light);margin-top:5px">直近14日 ・ <span style="color:var(--green)">緑=実行</span> / <span style="color:#D97706">黄=決めたが未実行</span></div>
+</div>`;
+}
+
 // ── Routine Tab ───────────────────────────────────────────────────────────────
 function buildRoutineTab(){
   const e=getEntry();
@@ -404,6 +488,9 @@ function buildRoutineTab(){
   <span style="font-size:20px">🌅</span>
   <div><div style="font-size:14px;font-weight:800">${todayLabel()}</div><div style="font-size:11px;color:var(--muted);font-weight:500">${total}日目のルーティン</div></div>
 </div>
+
+<!-- 🌱 最初の一歩（朝やる・夜決める） -->
+${firstStepCardHTML()}
 
 <!-- 月次・週次・今日の目標 -->
 <div class="card card-purple">
@@ -504,18 +591,22 @@ ${yest?.challenge?`<div class="card card-green">
 <div style="text-align:center;font-size:10px;color:var(--light);padding:6px 0;font-weight:600">入力すると自動保存されます（右上 ✓）</div>
 </div>`;
   } else {
-    const dates=Object.keys(routineEntries).filter(d=>d!==todayStr()).sort((a,b)=>b.localeCompare(a));
-    const filtered=S.search?dates.filter(d=>{const en=routineEntries[d];return[en.goal||"",...(en.tasks||[]).map(t=>typeof t==="object"?t.t||"":t||""),en.challenge||"",en.challengeResponse||""].join(" ").toLowerCase().includes(S.search.toLowerCase())}):dates;
+    const allDates=new Set([...Object.keys(routineEntries),...Object.keys(firstSteps)]);
+    const dates=[...allDates].filter(d=>d!==todayStr()).sort((a,b)=>b.localeCompare(a));
+    const filtered=S.search?dates.filter(d=>{const en=routineEntries[d]||{};const fs=firstSteps[d];return[en.goal||"",...(en.tasks||[]).map(t=>typeof t==="object"?t.t||"":t||""),en.challenge||"",en.challengeResponse||"",fs?.text||""].join(" ").toLowerCase().includes(S.search.toLowerCase())}):dates;
     content=`<div style="padding:14px">
+${traceHTML()}
 <input oninput="S.search=this.value;render()" value="${esc(S.search)}" placeholder="🔍 過去の記録を検索..." class="input" style="margin-bottom:12px"/>
 ${filtered.length===0?'<div style="text-align:center;padding:40px;color:var(--light);font-size:13px">記録がありません</div>':filtered.map(d=>{
-  const en=routineEntries[d];const ts=en.tasks||[];
+  const en=routineEntries[d]||{};const ts=en.tasks||[];
+  const fs=firstSteps[d];
   const dayT=lsGet("daytype-"+d,"");
   return`<div style="background:var(--warm);border-radius:var(--r);border:1px solid var(--border);padding:12px;margin-bottom:8px;box-shadow:var(--shadow)">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
     <div style="font-size:11px;font-weight:800;color:var(--amber)">${fmtDisp(d)}</div>
     ${dayT?`<span style="font-size:9px;background:var(--amber-pale);color:var(--amber);padding:2px 7px;border-radius:10px;font-weight:700">${dayT}</span>`:""}
   </div>
+  ${fs?.text?`<div style="font-size:12px;color:${fs.done?"var(--green)":"var(--muted)"};font-weight:700;margin-bottom:4px">${fs.done?"🌱 ":"○ "}${esc(fs.text)}${fs.done?"":' <span style="font-size:9px;color:var(--light)">(未実行)</span>'}</div>`:""}
   ${en.goal?`<div style="font-size:12px;color:var(--amber);font-weight:700;margin-bottom:4px">🎯 ${esc(en.goal)}</div>`:""}
   ${(DAY_SLOTS[dayT]||[]).map((_,i)=>{const sv=lsGet("slot-"+d+"-"+i,"");return sv?`<div style="font-size:11px;color:var(--coral);margin-bottom:2px;font-weight:600">⏰ ${_?.label||""}：${esc(sv)}</div>`:""}).join("")}
   ${ts.map(t=>{const tx=t&&typeof t==="object"?(t.t||""):(typeof t==="string"?t:"");const dn=t?.done||false;const stamp=t?.ts||"";return tx?`<div style="font-size:12px;color:${dn?"var(--green)":"var(--text)"};padding-left:6px;text-decoration:${dn?"line-through":"none"}">${dn?"✓ ":"· "}${esc(tx)}${stamp?` <span style="font-size:10px;color:var(--light)">(${stamp})</span>`:""}</div>`:""}).join("")}
@@ -558,6 +649,15 @@ window.setF=function(t,v){if(t==="a")S.af=v;else if(t==="h")S.hf=v;else S.sf=v;r
 window.setMonthly=function(v){monthlyGoal=v;lsSet("monthly-"+monthStr(),v);render();};
 window.setWeekly=function(v){weeklyGoal=v;lsSet("weekly-"+weekStr(),v);render();};
 window.setDayTypeAction=function(v){setDayType(v);render();};
+window.setFirstStepFromSelect=function(date,val){
+  if(!val)return;
+  if(val.slice(0,2)==="g:"){const id=val.slice(2);const n=goals.nodes[id];if(n)setFirstStepText(date,n.title,id);}
+  else if(val.slice(0,2)==="m:"){setFirstStepText(date,val.slice(2),null);}
+  render();
+};
+window.setFirstStepFromText=function(date,text){text=(text||"").trim();if(!text)return;setFirstStepText(date,text,null);render();};
+window.toggleFirstStepAction=function(date){toggleFirstStepDone(date);render();};
+window.clearFirstStep=function(date){delete firstSteps[date];saveFirstSteps();render();};
 window.setSlotTaskAction=function(i,v){setSlotTask(i,v);render();};
 window.setSeatFilter=function(i,v){setSlotSeat(i,v);render();};
 window.doUpdateEntry=function(f,v){const e=getEntry();e[f]=v;routineEntries[todayStr()]=e;saveEntries();render();};
