@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="theme-color" content="#FFFBF0"/>
+<title>つぎの一歩</title>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --cream:#FFFBF0;--warm:#FFFFFF;--amber:#F59E0B;--amber-pale:#FEF3C7;--coral:#F97316;--coral-pale:#FFEDD5;
+  --green:#10B981;--green-pale:#D1FAE5;--red:#EF4444;--red-pale:#FEE2E2;--purple:#8B5CF6;--purple-pale:#EDE9FE;
+  --blue:#3B82F6;--blue-pale:#DBEAFE;--text:#1C1917;--muted:#78716C;--light:#A8A29E;
+  --border:rgba(0,0,0,.07);--shadow:0 2px 12px rgba(0,0,0,.06);--r:16px;--rs:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--cream);color:var(--text);font-family:'M PLUS Rounded 1c',sans-serif;min-height:100vh;overflow-x:hidden;padding-bottom:80px}
+input,textarea,select,button{font-family:'M PLUS Rounded 1c',sans-serif}
+
+.save-badge{position:fixed;top:10px;right:12px;background:var(--green);color:#fff;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;box-shadow:0 2px 8px rgba(16,185,129,.3)}
+.save-badge.show{opacity:1}
+
+.header{background:linear-gradient(135deg,var(--amber-pale),var(--coral-pale));padding:16px 16px 14px;position:sticky;top:0;z-index:100;border-bottom:1px solid rgba(245,158,11,.15)}
+.header-top{display:flex;align-items:center;justify-content:space-between}
+.header-title{font-size:19px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:7px}
+.header-date{font-size:11px;color:var(--muted);font-weight:600;background:rgba(255,255,255,.6);padding:4px 9px;border-radius:20px}
+
+.wrap{max-width:560px;margin:0 auto;padding:14px 14px 0}
+
+.tabbar{position:fixed;bottom:0;left:0;right:0;background:var(--warm);border-top:1px solid var(--border);display:flex;z-index:200;padding-bottom:env(safe-area-inset-bottom)}
+.tabbar-inner{max-width:560px;margin:0 auto;display:flex;width:100%}
+.tab{flex:1;padding:9px 4px 8px;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;color:var(--light);font-size:10px;font-weight:700}
+.tab .ic{font-size:20px;line-height:1}
+.tab.active{color:var(--amber)}
+.tab .badge{position:absolute;transform:translate(14px,-4px);background:var(--coral);color:#fff;font-size:9px;font-weight:800;min-width:15px;height:15px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px}
+
+.card{background:var(--warm);border-radius:var(--r);box-shadow:var(--shadow);padding:14px 15px;margin-bottom:12px;border:1px solid var(--border)}
+.lbl{font-size:9px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;color:var(--amber)}
+.lbl-blue{color:var(--blue)}.lbl-green{color:var(--green)}.lbl-purple{color:var(--purple)}.lbl-coral{color:var(--coral)}
+
+.input{width:100%;background:var(--cream);border:1.5px solid rgba(0,0,0,.08);border-radius:var(--rs);padding:11px 12px;color:var(--text);font-size:15px;outline:none;transition:border .2s}
+.input:focus{border-color:var(--amber)}
+.textarea{width:100%;background:var(--cream);border:1.5px solid rgba(0,0,0,.08);border-radius:var(--rs);padding:11px 12px;color:var(--text);font-size:14px;outline:none;resize:vertical;line-height:1.6;min-height:80px}
+.textarea:focus{border-color:var(--amber)}
+
+.btn{background:linear-gradient(135deg,var(--amber),var(--coral));color:#fff;border:none;border-radius:var(--rs);padding:11px 16px;font-size:14px;font-weight:800;cursor:pointer;white-space:nowrap}
+.btn:active{transform:scale(.98)}
+.btn-block{width:100%}
+.btn-ghost{background:var(--cream);color:var(--muted);border:1.5px solid rgba(0,0,0,.1);border-radius:var(--rs);padding:9px 13px;font-size:13px;font-weight:700;cursor:pointer}
+.btn-green{background:linear-gradient(135deg,var(--green),#059669)}
+.btn-blue{background:linear-gradient(135deg,var(--blue),#2563EB)}
+.btn-sm{padding:6px 11px;font-size:12px}
+
+.row{display:flex;gap:8px;align-items:center}
+.row-top{align-items:flex-start}
+
+.empty{text-align:center;color:var(--light);padding:40px 20px;font-size:14px;font-weight:600;line-height:1.7}
+.empty .big{font-size:36px;margin-bottom:10px}
+
+/* task list item */
+.task-item{background:var(--warm);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);padding:13px 14px;margin-bottom:10px;cursor:pointer;transition:transform .12s}
+.task-item:active{transform:scale(.99)}
+.task-item .t-title{font-size:15px;font-weight:700;line-height:1.4}
+.task-item .t-meta{font-size:11px;color:var(--muted);margin-top:6px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.chip{font-size:10px;font-weight:800;padding:3px 8px;border-radius:20px}
+.chip-inbox{background:var(--purple-pale);color:var(--purple)}
+.chip-active{background:var(--amber-pale);color:var(--coral)}
+.chip-done{background:var(--green-pale);color:var(--green)}
+.pbar{height:5px;background:#EEE9E0;border-radius:3px;flex:1;overflow:hidden;min-width:60px}
+.pbar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--amber),var(--green));transition:width .4s}
+
+/* step */
+.step{display:flex;align-items:flex-start;gap:10px;padding:11px 0;border-bottom:1px dashed var(--border)}
+.step:last-child{border-bottom:none}
+.check{width:22px;height:22px;border-radius:7px;border:2px solid #D6D3D1;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;font-size:14px;color:#fff;margin-top:1px}
+.check.done{background:var(--green);border-color:var(--green)}
+.step .s-text{flex:1;font-size:14px;line-height:1.5}
+.step.is-done .s-text{text-decoration:line-through;color:var(--light)}
+.step .s-mins{font-size:10px;font-weight:800;color:var(--amber);background:var(--amber-pale);padding:2px 7px;border-radius:20px;white-space:nowrap;flex-shrink:0;margin-top:2px}
+.step-del{background:none;border:none;color:var(--light);font-size:16px;cursor:pointer;padding:0 2px;flex-shrink:0}
+
+/* focus / now */
+.now-hero{background:linear-gradient(135deg,#fff,var(--amber-pale));border:1.5px solid rgba(245,158,11,.25);border-radius:20px;padding:22px 18px;box-shadow:0 6px 24px rgba(245,158,11,.12);margin-bottom:14px}
+.now-from{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:10px}
+.now-from b{color:var(--coral)}
+.now-step{font-size:22px;font-weight:800;line-height:1.45;margin-bottom:6px}
+.now-mins{display:inline-block;font-size:12px;font-weight:800;color:#fff;background:var(--coral);padding:4px 12px;border-radius:20px;margin-bottom:18px}
+.now-actions{display:flex;gap:9px}
+.now-actions .btn{flex:1;padding:14px}
+
+.tiny{font-size:11px;color:var(--muted);line-height:1.6}
+.divider{height:1px;background:var(--border);margin:14px 0}
+.section-h{font-size:13px;font-weight:800;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+
+.back{background:none;border:none;color:var(--amber);font-weight:800;font-size:14px;cursor:pointer;padding:0;margin-bottom:12px;display:flex;align-items:center;gap:4px}
+
+/* modal */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:none;align-items:flex-end;justify-content:center}
+.modal-bg.show{display:flex}
+.modal{background:var(--cream);width:100%;max-width:560px;border-radius:20px 20px 0 0;padding:18px 16px calc(20px + env(safe-area-inset-bottom));max-height:88vh;overflow-y:auto}
+.modal-h{font-size:16px;font-weight:800;margin-bottom:4px}
+.modal-sub{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:14px}
+.step-num{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;color:var(--coral);margin:14px 0 8px}
+.step-num .n{background:var(--coral);color:#fff;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px}
+
+.help{background:var(--blue-pale);border-radius:var(--rs);padding:11px 12px;font-size:12px;color:#1E40AF;line-height:1.65;margin-bottom:12px}
+.help b{font-weight:800}
+
+.copybox{position:relative}
+.copied{position:absolute;top:8px;right:8px;background:var(--green);color:#fff;font-size:10px;font-weight:800;padding:3px 9px;border-radius:20px;opacity:0;transition:opacity .25s;pointer-events:none}
+.copied.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="save-badge" id="saveBadge">保存しました</div>
+
+<div class="header">
+  <div class="header-top">
+    <div class="header-title">🐾 つぎの一歩</div>
+    <div class="header-date" id="dateLabel"></div>
+  </div>
+</div>
+
+<div class="wrap" id="view"></div>
+
+<div class="tabbar">
+  <div class="tabbar-inner">
+    <button class="tab active" data-tab="now"><span class="ic">🎯</span>いまの一歩</button>
+    <button class="tab" data-tab="inbox"><span class="ic">📥</span>受信トレイ</button>
+    <button class="tab" data-tab="tasks"><span class="ic">🗂️</span>タスク</button>
+    <button class="tab" data-tab="settings"><span class="ic">⚙️</span>設定</button>
+  </div>
+</div>
+
+<!-- breakdown / AI modal -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal" id="modalBody"></div>
+</div>
+
+<script>
+/* ============ data ============ */
+const KEY='nextstep_v1';
+let DB={tasks:[],settings:{}};
+let TAB='now';
+let openTaskId=null;
+
+function load(){
+  try{const r=localStorage.getItem(KEY);if(r)DB=JSON.parse(r);}catch(e){}
+  if(!DB.tasks)DB.tasks=[];
+  if(!DB.settings)DB.settings={};
+}
+let saveT;
+function save(){
+  localStorage.setItem(KEY,JSON.stringify(DB));
+  const b=document.getElementById('saveBadge');
+  b.classList.add('show');clearTimeout(saveT);
+  saveT=setTimeout(()=>b.classList.remove('show'),1100);
+}
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ============ task helpers ============ */
+function activeTasks(){return DB.tasks.filter(t=>t.status==='active');}
+function inboxTasks(){return DB.tasks.filter(t=>t.status==='inbox');}
+function progress(t){
+  if(!t.steps||!t.steps.length)return 0;
+  return Math.round(t.steps.filter(s=>s.done).length/t.steps.length*100);
+}
+// the single next step across all active tasks (first active task with an undone step)
+function nextStep(){
+  for(const t of activeTasks()){
+    if(!t.steps)continue;
+    const s=t.steps.find(x=>!x.done);
+    if(s)return {task:t,step:s};
+  }
+  return null;
+}
+
+/* ============ render ============ */
+function render(){
+  document.getElementById('dateLabel').textContent=
+    new Date().toLocaleDateString('ja-JP',{month:'long',day:'numeric',weekday:'short'});
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===TAB));
+  // inbox badge
+  document.querySelectorAll('.tab').forEach(b=>{
+    const old=b.querySelector('.badge');if(old)old.remove();
+    if(b.dataset.tab==='inbox'&&inboxTasks().length){
+      const s=document.createElement('span');s.className='badge';s.textContent=inboxTasks().length;b.appendChild(s);
+    }
+  });
+  const v=document.getElementById('view');
+  if(openTaskId){v.innerHTML=taskDetailHTML(DB.tasks.find(t=>t.id===openTaskId));bindDetail();return;}
+  if(TAB==='now')v.innerHTML=nowHTML();
+  else if(TAB==='inbox')v.innerHTML=inboxHTML();
+  else if(TAB==='tasks')v.innerHTML=tasksHTML();
+  else if(TAB==='settings')v.innerHTML=settingsHTML();
+  bindView();
+}
+
+/* ---- NOW (focus) ---- */
+function nowHTML(){
+  const n=nextStep();
+  if(!n){
+    const hasActive=activeTasks().length>0;
+    return `<div class="card"><div class="empty">
+      <div class="big">${hasActive?'🎉':'🌱'}</div>
+      ${hasActive?'いまやる一歩は全部おわり！<br>おつかれさま。':'まだ一歩がありません。<br>「受信トレイ」に仕事を放り込んで、<br>分解してみよう。'}
+    </div></div>
+    ${hasActive?'':`<button class="btn btn-block" onclick="TAB='inbox';render()">📥 受信トレイへ</button>`}`;
+  }
+  const {task,step}=n;
+  const done=task.steps.filter(s=>s.done).length, total=task.steps.length;
+  return `
+  <div class="now-hero">
+    <div class="now-from">いまの仕事：<b>${esc(task.title)}</b>（${done}/${total} 完了）</div>
+    <div class="now-step">${esc(step.text)}</div>
+    ${step.mins?`<span class="now-mins">⏱ だいたい ${step.mins}分</span>`:''}
+    <div class="now-actions">
+      <button class="btn btn-green" onclick="doneStep('${task.id}','${step.id}')">✓ できた</button>
+      <button class="btn btn-ghost" onclick="skipStep('${task.id}','${step.id}')">あとで</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="lbl">この一歩が無理なとき</div>
+    <div class="tiny">「まだ大きい / 重い」と感じたら、もっと小さく割れます。</div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn-ghost" style="flex:1" onclick="openTask('${task.id}')">🗂️ この仕事を開く</button>
+      <button class="btn-ghost" style="flex:1" onclick="splitStepPrompt('${task.id}','${step.id}')">🔪 もっと小さく</button>
+    </div>
+  </div>`;
+}
+
+/* ---- INBOX (capture) ---- */
+function inboxHTML(){
+  const list=inboxTasks();
+  return `
+  <div class="card">
+    <div class="lbl lbl-purple">仕事が発生した</div>
+    <div class="row row-top">
+      <input class="input" id="capInput" placeholder="例）請求書を送る / 〇〇さんに返信 / 資料作る" autocomplete="off"/>
+    </div>
+    <button class="btn btn-block" style="margin-top:10px" id="capBtn">📥 とりあえず放り込む</button>
+    <div class="tiny" style="margin-top:9px">考えずに書いてOK。分解はあとから。</div>
+  </div>
+  ${list.length?`<div class="lbl" style="padding:0 4px">未分解（${list.length}）</div>`+list.map(t=>`
+    <div class="task-item" onclick="openTask('${t.id}')">
+      <div class="t-title">${esc(t.title)}</div>
+      <div class="t-meta"><span class="chip chip-inbox">未分解</span>タップして分解する →</div>
+    </div>`).join(''):
+    `<div class="empty"><div class="big">📥</div>受信トレイは空っぽ。</div>`}`;
+}
+
+/* ---- TASKS ---- */
+function tasksHTML(){
+  const act=activeTasks(), done=DB.tasks.filter(t=>t.status==='done');
+  const item=t=>`<div class="task-item" onclick="openTask('${t.id}')">
+    <div class="t-title">${esc(t.title)}</div>
+    <div class="t-meta">
+      <span class="chip ${t.status==='done'?'chip-done':'chip-active'}">${t.status==='done'?'完了':'進行中'}</span>
+      <div class="pbar"><div class="pbar-fill" style="width:${progress(t)}%"></div></div>
+      <span>${(t.steps||[]).filter(s=>s.done).length}/${(t.steps||[]).length}</span>
+    </div></div>`;
+  return `
+  ${act.length?`<div class="lbl" style="padding:0 4px">進行中（${act.length}）</div>`+act.map(item).join(''):
+    `<div class="empty"><div class="big">🗂️</div>進行中の仕事はまだありません。</div>`}
+  ${done.length?`<div class="lbl lbl-green" style="padding:14px 4px 0">完了（${done.length}）</div>`+done.map(item).join(''):''}`;
+}
+
+/* ---- TASK DETAIL ---- */
+function taskDetailHTML(t){
+  if(!t)return '';
+  const steps=t.steps||[];
+  const pct=progress(t);
+  return `
+  <button class="back" onclick="openTaskId=null;render()">← もどる</button>
+  <div class="card">
+    <input class="input" id="dTitle" value="${esc(t.title)}" style="font-weight:700;font-size:16px;border:none;background:transparent;padding:4px 0"/>
+    <div class="row" style="margin-top:6px">
+      <span class="chip ${t.status==='done'?'chip-done':t.status==='inbox'?'chip-inbox':'chip-active'}">
+        ${t.status==='done'?'完了':t.status==='inbox'?'未分解':'進行中'}</span>
+      <div class="pbar"><div class="pbar-fill" style="width:${pct}%"></div></div>
+      <span class="tiny">${pct}%</span>
+    </div>
+  </div>
+
+  ${steps.length?`
+  <div class="card">
+    <div class="section-h">🪜 一歩リスト</div>
+    ${steps.map((s,i)=>`
+      <div class="step ${s.done?'is-done':''}">
+        <div class="check ${s.done?'done':''}" onclick="toggleStep('${t.id}','${s.id}')">${s.done?'✓':''}</div>
+        <div class="s-text">${esc(s.text)}</div>
+        ${s.mins?`<span class="s-mins">${s.mins}分</span>`:''}
+        <button class="step-del" onclick="delStep('${t.id}','${s.id}')">×</button>
+      </div>`).join('')}
+    <div class="row" style="margin-top:12px">
+      <input class="input" id="addStep" placeholder="一歩を手で足す…" style="font-size:14px"/>
+      <button class="btn btn-sm" id="addStepBtn">足す</button>
+    </div>
+  </div>`:`
+  <div class="card">
+    <div class="empty" style="padding:24px 10px">
+      <div class="big">🔪</div>まだ分解されていません。<br>AIに「極小の一歩」へ割ってもらおう。
+    </div>
+  </div>`}
+
+  <div class="card">
+    <div class="lbl lbl-blue">AIで分解する（往復方式）</div>
+    <div class="tiny" style="margin-bottom:10px">①プロンプトをコピー → ②AI（Claude等）に貼って実行 → ③返ってきた文章をまるごと貼り戻す。</div>
+    <button class="btn btn-blue btn-block" onclick="openAImodal('${t.id}')">🤖 分解プロンプトを作る</button>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      ${t.status==='inbox'?`<button class="btn-ghost" style="flex:1" onclick="setStatus('${t.id}','active')">▶ 進行中にする</button>`:''}
+      ${t.status!=='done'?`<button class="btn-ghost" style="flex:1" onclick="setStatus('${t.id}','done')">✓ 完了にする</button>`:
+        `<button class="btn-ghost" style="flex:1" onclick="setStatus('${t.id}','active')">↩ 進行中にもどす</button>`}
+      <button class="btn-ghost" onclick="delTask('${t.id}')">🗑 削除</button>
+    </div>
+  </div>`;
+}
+
+/* ---- SETTINGS ---- */
+function settingsHTML(){
+  return `
+  <div class="card">
+    <div class="lbl lbl-green">別のPCに移す / バックアップ</div>
+    <div class="tiny" style="margin-bottom:10px">このHTMLファイルをコピーすれば各PCで動きます。データ（タスク）も移したいときは、書き出して相手のPCで読み込みます。</div>
+    <div class="row">
+      <button class="btn-ghost" style="flex:1" onclick="exportData()">⬇ データを書き出す</button>
+      <button class="btn-ghost" style="flex:1" onclick="document.getElementById('importFile').click()">⬆ 読み込む</button>
+    </div>
+    <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(this)"/>
+  </div>
+  <div class="card">
+    <div class="lbl lbl-coral">使い方</div>
+    <div class="tiny" style="line-height:1.9">
+      <b>1.</b> 仕事が来たら「受信トレイ」に放り込む（考えない）<br>
+      <b>2.</b> タップして開き「分解プロンプト」をコピー<br>
+      <b>3.</b> AIに貼って実行 → 返事をまるごとコピー<br>
+      <b>4.</b> アプリに貼り戻すと「極小の一歩」が並ぶ<br>
+      <b>5.</b> 「いまの一歩」で 1つだけ やる
+    </div>
+  </div>
+  <div class="card">
+    <div class="lbl">全消去</div>
+    <button class="btn-ghost" style="color:var(--red)" onclick="if(confirm('すべてのデータを消します。よろしいですか？')){localStorage.removeItem(KEY);DB={tasks:[],settings:{}};openTaskId=null;render();}">⚠ すべて消す</button>
+  </div>`;
+}
+
+/* ============ AI prompt ============ */
+function buildPrompt(title,extra){
+  return `あなたはADHDの人の「実行支援コーチ」です。次の仕事を、いますぐ動ける「極小の次の一歩」へ分解してください。
+
+# 仕事
+${title}${extra?'\n# 補足\n'+extra:''}
+
+# 分解のルール
+- 1ステップ = 物理的に1アクション。「〜について考える」など曖昧なものは禁止。
+- 最初のステップは「2分以内・座ったまま始められる」具体行動にする（例: ファイルを開く / 宛先を1人だけ書く）。
+- 各ステップに目安の所要時間(分)を付ける。基本は1〜10分。重いものは更に割る。
+- 「頑張る/集中する」等の精神論は入れない。迷いどころは選択肢を埋めて消す。
+- ステップ数は3〜8個。多すぎないこと。
+
+# 出力フォーマット（重要）
+説明や前置きは書かず、次のJSONだけをコードブロックで出力してください:
+\`\`\`json
+{"steps":[{"text":"最初の極小の一歩","mins":2},{"text":"次の一歩","mins":5}]}
+\`\`\``;
+}
+
+function openAImodal(id){
+  const t=DB.tasks.find(x=>x.id===id);if(!t)return;
+  const prompt=buildPrompt(t.title,t.note);
+  document.getElementById('modalBody').innerHTML=`
+    <div class="modal-h">🤖 AIで「極小の一歩」に分解</div>
+    <div class="modal-sub">下の3ステップで進めます。AIは Claude / ChatGPT どれでもOK。</div>
+
+    <div class="step-num"><span class="n">1</span>このプロンプトをコピー</div>
+    <div class="copybox">
+      <textarea class="textarea" id="promptText" readonly style="min-height:120px;font-size:12px">${esc(prompt)}</textarea>
+      <span class="copied" id="copied1">コピー！</span>
+    </div>
+    <button class="btn btn-blue btn-block" style="margin-top:8px" onclick="copyText(document.getElementById('promptText').value,'copied1')">📋 プロンプトをコピー</button>
+
+    <div class="step-num"><span class="n">2</span>AIに貼って実行 → 返事をまるごとコピー</div>
+    <div class="help">AIの返事（<b>\`\`\`json … \`\`\`</b> の部分を含む文章）をそのままコピーして、下に貼り付けます。</div>
+
+    <div class="step-num"><span class="n">3</span>結果を貼り付ける</div>
+    <textarea class="textarea" id="resultText" placeholder='ここにAIの返事を貼り付け…（{"steps":[…]} を含んでいればOK）'></textarea>
+    <div class="tiny" id="parseMsg" style="margin-top:8px;min-height:16px"></div>
+    <button class="btn btn-green btn-block" style="margin-top:8px" onclick="applyResult('${id}')">✓ 一歩リストに取り込む</button>
+
+    <button class="btn-ghost btn-block" style="margin-top:12px" onclick="closeModal()">閉じる</button>`;
+  document.getElementById('modalBg').classList.add('show');
+}
+
+function splitStepPrompt(taskId,stepId){
+  const t=DB.tasks.find(x=>x.id===taskId);if(!t)return;
+  const s=t.steps.find(x=>x.id===stepId);if(!s)return;
+  const prompt=buildPrompt(s.text,'これは「'+t.title+'」の一歩。これ自体がまだ重いので、さらに極小に割ってください。');
+  document.getElementById('modalBody').innerHTML=`
+    <div class="modal-h">🔪 この一歩をもっと小さく</div>
+    <div class="modal-sub">「${esc(s.text)}」を、さらに極小の一歩へ。取り込むと、この一歩はそれらに置き換わります。</div>
+    <div class="step-num"><span class="n">1</span>プロンプトをコピー</div>
+    <div class="copybox">
+      <textarea class="textarea" id="promptText" readonly style="min-height:110px;font-size:12px">${esc(prompt)}</textarea>
+    </div>
+    <button class="btn btn-blue btn-block" style="margin-top:8px" onclick="copyText(document.getElementById('promptText').value,null)">📋 コピー</button>
+    <div class="step-num"><span class="n">2</span>結果を貼り付ける</div>
+    <textarea class="textarea" id="resultText" placeholder='AIの返事を貼り付け…'></textarea>
+    <div class="tiny" id="parseMsg" style="margin-top:8px;min-height:16px"></div>
+    <button class="btn btn-green btn-block" style="margin-top:8px" onclick="applyResult('${taskId}','${stepId}')">✓ この一歩を置き換える</button>
+    <button class="btn-ghost btn-block" style="margin-top:12px" onclick="closeModal()">閉じる</button>`;
+  document.getElementById('modalBg').classList.add('show');
+}
+
+function parseSteps(raw){
+  if(!raw)return null;
+  let txt=raw.trim();
+  // try fenced json block
+  const fence=txt.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  if(fence)txt=fence[1].trim();
+  // else grab first {...}
+  let obj=null;
+  try{obj=JSON.parse(txt);}catch(e){
+    const m=txt.match(/\{[\s\S]*\}/);
+    if(m){try{obj=JSON.parse(m[0]);}catch(e2){}}
+  }
+  if(!obj||!Array.isArray(obj.steps))return null;
+  const steps=obj.steps.map(s=>({
+    id:uid(),
+    text:typeof s==='string'?s:(s.text||s.step||''),
+    mins:(s&&typeof s.mins==='number')?s.mins:(s&&parseInt(s.mins))||null,
+    done:false
+  })).filter(s=>s.text);
+  return steps.length?steps:null;
+}
+
+function applyResult(taskId,replaceStepId){
+  const t=DB.tasks.find(x=>x.id===taskId);if(!t)return;
+  const raw=document.getElementById('resultText').value;
+  const steps=parseSteps(raw);
+  const msg=document.getElementById('parseMsg');
+  if(!steps){msg.style.color='var(--red)';msg.textContent='⚠ うまく読み取れませんでした。{"steps":[…]} を含む返事を貼ってください。';return;}
+  if(!t.steps)t.steps=[];
+  if(replaceStepId){
+    const idx=t.steps.findIndex(s=>s.id===replaceStepId);
+    if(idx>=0)t.steps.splice(idx,1,...steps);
+    else t.steps.push(...steps);
+  }else{
+    t.steps=steps; // fresh breakdown replaces list
+  }
+  if(t.status==='inbox')t.status='active';
+  save();closeModal();
+  if(!openTaskId)openTaskId=t.id;
+  render();
+}
+
+function copyText(txt,badgeId){
+  const done=()=>{if(badgeId){const b=document.getElementById(badgeId);if(b){b.classList.add('show');setTimeout(()=>b.classList.remove('show'),1200);}}};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(done).catch(()=>fallbackCopy(txt,done));}
+  else fallbackCopy(txt,done);
+}
+function fallbackCopy(txt,cb){
+  const ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.top='-9999px';
+  document.body.appendChild(ta);ta.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(ta);cb&&cb();
+}
+function closeModal(){document.getElementById('modalBg').classList.remove('show');}
+
+/* ============ actions ============ */
+function capture(){
+  const i=document.getElementById('capInput');
+  const v=i.value.trim();if(!v)return;
+  DB.tasks.unshift({id:uid(),title:v,note:'',status:'inbox',steps:[],createdAt:Date.now()});
+  i.value='';save();render();document.getElementById('capInput')?.focus();
+}
+function openTask(id){openTaskId=id;render();window.scrollTo(0,0);}
+function setStatus(id,st){const t=DB.tasks.find(x=>x.id===id);if(t){t.status=st;save();render();}}
+function delTask(id){if(confirm('この仕事を削除しますか？')){DB.tasks=DB.tasks.filter(t=>t.id!==id);openTaskId=null;save();render();}}
+
+function toggleStep(taskId,stepId){
+  const t=DB.tasks.find(x=>x.id===taskId);if(!t)return;
+  const s=t.steps.find(x=>x.id===stepId);if(!s)return;
+  s.done=!s.done;
+  if(t.status==='inbox')t.status='active';
+  // auto-complete task when all done
+  if(t.steps.length&&t.steps.every(x=>x.done))t.status='done';
+  else if(t.status==='done')t.status='active';
+  save();render();
+}
+function doneStep(taskId,stepId){toggleStep(taskId,stepId);}
+function skipStep(taskId,stepId){
+  // move step to end so the next one surfaces
+  const t=DB.tasks.find(x=>x.id===taskId);if(!t)return;
+  const idx=t.steps.findIndex(s=>s.id===stepId);
+  if(idx>=0){const[s]=t.steps.splice(idx,1);t.steps.push(s);}
+  save();render();
+}
+function delStep(taskId,stepId){
+  const t=DB.tasks.find(x=>x.id===taskId);if(!t)return;
+  t.steps=t.steps.filter(s=>s.id!==stepId);save();render();
+}
+function addStepManual(taskId){
+  const i=document.getElementById('addStep');const v=i.value.trim();if(!v)return;
+  const t=DB.tasks.find(x=>x.id===taskId);if(!t)return;
+  if(!t.steps)t.steps=[];
+  t.steps.push({id:uid(),text:v,mins:null,done:false});
+  if(t.status==='inbox')t.status='active';
+  save();render();
+}
+
+/* export / import */
+function exportData(){
+  const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='tsugino-ippo-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();URL.revokeObjectURL(a.href);
+}
+function importData(input){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    try{const d=JSON.parse(e.target.result);
+      if(!d.tasks)throw 0;
+      if(confirm('読み込むと現在のデータは上書きされます。よろしいですか？')){
+        DB=d;if(!DB.settings)DB.settings={};openTaskId=null;save();render();
+      }
+    }catch(err){alert('読み込めませんでした。書き出したJSONファイルを選んでください。');}
+    input.value='';
+  };
+  r.readAsText(f);
+}
+
+/* ============ bind ============ */
+function bindView(){
+  if(TAB==='inbox'){
+    document.getElementById('capBtn')?.addEventListener('click',capture);
+    document.getElementById('capInput')?.addEventListener('keydown',e=>{if(e.key==='Enter')capture();});
+  }
+}
+function bindDetail(){
+  const title=document.getElementById('dTitle');
+  if(title)title.addEventListener('change',()=>{const t=DB.tasks.find(x=>x.id===openTaskId);if(t){t.title=title.value.trim()||t.title;save();}});
+  const ab=document.getElementById('addStepBtn');
+  if(ab)ab.addEventListener('click',()=>addStepManual(openTaskId));
+  const ai=document.getElementById('addStep');
+  if(ai)ai.addEventListener('keydown',e=>{if(e.key==='Enter')addStepManual(openTaskId);});
+}
+
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{TAB=b.dataset.tab;openTaskId=null;render();window.scrollTo(0,0);}));
+document.getElementById('modalBg').addEventListener('click',e=>{if(e.target.id==='modalBg')closeModal();});
+
+load();render();
+</script>
+</body>
+</html>
