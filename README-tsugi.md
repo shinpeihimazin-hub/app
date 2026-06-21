@@ -1,47 +1,51 @@
 # つぎの一歩 (tsugi)
 
-ADHD向け。**仕事が来たら「極小の次の一歩」までAIに分解させて、1つだけやる** ためのターミナルCLI。
+ADHD向け。**仕事が来たら極小の「次の一歩」まで分解して、見やすく(WBS / カンバン)管理する** ためのツール。
 
-- Python標準ライブラリのみ。**追加インストール不要**。
-- **AIとの対話(コピペ)以外はすべてオフライン**で完結。
-- データは `tsugi.py` と同じフォルダの `next_step_data.json` に保存。
-  **フォルダごとコピーすれば別PCでもそのまま動く**。
+分解は **Claude Code(チャット)が直接おこなう**。コピペの往復も外部APIも不要。すべて Claude Code 上で完結する。
 
-## 使い方
+## いちばん簡単な使い方
+
+Claude Code のチャットで、こう話すだけ:
+
+> いま「請求書を送る」と「勉強会の資料作り」と「健康診断の予約」がある。分解してカンバンで見せて。
+
+Claude Code が各タスクを極小ステップへ分解し、`tsugi.py` に保存して、カンバン/WBSで表示し返します。
+あとは「#1の最初のやつ終わった」と言えば進捗が更新されます。
+
+(この自動運用のルールは `CLAUDE.md` に書いてあります)
+
+## 自分で直接たたく場合
 
 ```bash
-python tsugi.py add "請求書をクライアントに送る"   # ① 受信トレイに放り込む(考えない)
-python tsugi.py b 1                                # ② 分解プロンプトが出る → AIに貼って実行
-python tsugi.py import 1                           # ③ AIの返事をまるごと貼り付け → Ctrl-D で確定
-python tsugi.py now                                # ④ いまやる一歩を「1つだけ」表示
-python tsugi.py done 1                             #    できたら次の一歩へ
+python tsugi.py board          # カンバン表示(引数なしでもこれ)
+python tsugi.py wbs            # WBSツリー表示
+python tsugi.py now            # いまやる一歩を1つだけ
+python tsugi.py done 1         # #1 の次の一歩を完了
+python tsugi.py skip 1         # 後回し
+python tsugi.py add "やること" # 受信トレイに足す
+python tsugi.py ls             # 一覧
+python tsugi.py show 1         # 詳細
 ```
-
-`python tsugi.py` だけでも `now`(いまの一歩) が出ます。
-
-## コマンド一覧
 
 | コマンド | 説明 |
 |---|---|
-| `add "やること"` | 受信トレイに放り込む |
-| `ls` / `ls --inbox` | 一覧 / 未分解だけ |
-| `show <id>` | 詳細(一歩リスト)表示 |
-| `b <id> [--note "補足"]` | 分解プロンプトを出す(可能ならクリップボードにコピー) |
-| `import <id>` | AIの返事を取り込む(`--file 返事.txt` でファイルからも) |
+| `board [--all]` | カンバン(ToDo / Doing / Done) |
+| `wbs [--all]` | WBSツリー(プロジェクト > 仕事 > 一歩) |
 | `now` | いまやる一歩を1つ表示 |
-| `done <id> [番号]` | 一歩を「できた」に。全部終わると自動で完了 |
-| `skip <id>` | いまの一歩を後回し(末尾へ) |
-| `split <id> <番号>` | その一歩をさらに小さく割るプロンプト → `import <id> --replace <番号>` で取り込む |
+| `plan --file -` | 分解済み計画(JSON)を流し込む ※主にClaude Codeが使う |
+| `add "仕事" [--project 名]` | 仕事を足す |
 | `step <id> "一歩" [--mins N]` | 一歩を手で足す |
-| `status <id> inbox\|active\|done` | 状態を変える |
-| `rm <id>` | 削除 |
-| `where` | データの保存先を表示 |
+| `done <id> [番号]` / `skip <id>` | 完了 / 後回し |
+| `status <id> inbox\|active\|done` / `rm <id>` | 状態変更 / 削除 |
+| `show <id>` / `ls` / `where` | 詳細 / 一覧 / 保存先 |
 
-## 仕組み(往復方式)
+## 必要なもの
 
-アプリ自体はAIのAPIを叩きません。`b` でADHD向けに作り込んだ**分解プロンプト**を出力するので、それを普段使っているAI(Claude等)に貼って実行し、返ってきたJSONを `import` で貼り戻すだけ。APIキー不要・完全オフラインのまま、AIの分解品質を使えます。
+- Python 3（標準ライブラリのみ。追加インストール不要）
+- データは `next_step_data.json` に保存。
 
-## 別PCへ
+## 仕組み
 
-`tsugi.py` を相手のPCにコピーすればOK(Python 3 があれば動く)。
-タスクのデータも移したいときは `next_step_data.json` も一緒にコピーしてください。
+- ADHDの実行支援に効くよう、**最初の一歩は「2分・座ったまま始められる」具体行動**にし、各ステップに所要時間を付けて分解する(ルールは `CLAUDE.md`)。
+- `tsugi.py` は「保存庫 + 表示器」。分解の知能は Claude Code が担うので、APIキー不要・チャット内完結。
