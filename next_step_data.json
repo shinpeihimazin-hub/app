@@ -1,0 +1,160 @@
+{
+  "next_id": 6,
+  "tasks": [
+    {
+      "id": 1,
+      "title": "まず“何を作るか”を1枚で決める",
+      "project": "パワポ作成支援エージェント",
+      "note": "",
+      "status": "active",
+      "steps": [
+        {
+          "text": "紙に「誰が・どんな場面で使う?」を1行だけ書く",
+          "mins": 2,
+          "done": false
+        },
+        {
+          "text": "入力は何か1つ選んで書く（例: テーマ1語 / 箇条書き原稿 / 既存メモ）",
+          "mins": 2,
+          "done": false
+        },
+        {
+          "text": "出力形式を1つに丸をつける（.pptx / Googleスライド / Markdown(Marp)）",
+          "mins": 2,
+          "done": false
+        },
+        {
+          "text": "理想の完成スライドを1枚だけ手で書いてみる",
+          "mins": 5,
+          "done": false
+        }
+      ],
+      "created": "2026-06-21T23:07:39"
+    },
+    {
+      "id": 2,
+      "title": "技術を1つ選んで“空スライド1枚”を出す",
+      "project": "パワポ作成支援エージェント",
+      "note": "",
+      "status": "active",
+      "steps": [
+        {
+          "text": "作業フォルダを1つ作る",
+          "mins": 1,
+          "done": false
+        },
+        {
+          "text": "出力方法の候補を3つ書く（python-pptx / Slides API / Marp）",
+          "mins": 3,
+          "done": false
+        },
+        {
+          "text": "一番ラクそうな1つに丸をつける",
+          "mins": 1,
+          "done": false
+        },
+        {
+          "text": "選んだ方法の「1枚だけ生成するサンプル」を検索して開く",
+          "mins": 3,
+          "done": false
+        },
+        {
+          "text": "サンプルを真似て、タイトルだけのスライドを1枚生成して開く",
+          "mins": 10,
+          "done": false
+        }
+      ],
+      "created": "2026-06-21T23:07:39"
+    },
+    {
+      "id": 3,
+      "title": "中身（アウトライン）をAIに作らせる",
+      "project": "パワポ作成支援エージェント",
+      "note": "",
+      "status": "active",
+      "steps": [
+        {
+          "text": "テーマ1語を入力に、見出し案を5つ出させるプロンプトを書く",
+          "mins": 5,
+          "done": false
+        },
+        {
+          "text": "返ってきた見出しから使う3つだけ手で選ぶ",
+          "mins": 3,
+          "done": false
+        },
+        {
+          "text": "各見出しのスライド箇条書き(3点)をAIに出させる",
+          "mins": 5,
+          "done": false
+        },
+        {
+          "text": "アウトラインを後で使える形(JSON or 箇条書き)で1ファイルに保存",
+          "mins": 3,
+          "done": false
+        }
+      ],
+      "created": "2026-06-21T23:07:39"
+    },
+    {
+      "id": 4,
+      "title": "アウトライン → スライドに流し込む",
+      "project": "パワポ作成支援エージェント",
+      "note": "",
+      "status": "active",
+      "steps": [
+        {
+          "text": "アウトライン1件を読み込むコードを1行書いて中身をprint",
+          "mins": 5,
+          "done": false
+        },
+        {
+          "text": "見出し1つ分をスライド1枚に変換する処理を書く",
+          "mins": 10,
+          "done": false
+        },
+        {
+          "text": "全見出しをループして1ファイルに書き出す",
+          "mins": 8,
+          "done": false
+        },
+        {
+          "text": "サンプル1テーマで通しで生成して開いて確認",
+          "mins": 5,
+          "done": false
+        }
+      ],
+      "created": "2026-06-21T23:07:39"
+    },
+    {
+      "id": 5,
+      "title": "使えるエージェントに仕上げる",
+      "project": "パワポ作成支援エージェント",
+      "note": "",
+      "status": "active",
+      "steps": [
+        {
+          "text": "テーマを引数で渡せるようにする（コマンド1本で生成）",
+          "mins": 6,
+          "done": false
+        },
+        {
+          "text": "体裁を1点だけ直す（フォント or 箇条書きの字下げ）",
+          "mins": 5,
+          "done": false
+        },
+        {
+          "text": "自分の本番テーマ1つで実際に使ってみる",
+          "mins": 8,
+          "done": false
+        },
+        {
+          "text": "次に直したい点を1つだけメモする",
+          "mins": 2,
+          "done": false
+        }
+      ],
+      "created": "2026-06-21T23:07:39"
+    }
+  ]
+}
