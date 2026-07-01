@@ -33,7 +33,7 @@
 | [`03-task-and-effort-breakdown.md`](./03-task-and-effort-breakdown.md) | タスク分解の型・工数見積りの基準表 | フェーズ2 |
 | [`04-tool-selection-matrix.md`](./04-tool-selection-matrix.md) | モデル/フレームワーク/DB/評価/デプロイの選定マトリクス | フェーズ3 |
 | [`08-agent-primitives-and-composition.md`](./08-agent-primitives-and-composition.md) | **サブエージェント/スキル/スラッシュコマンド/MCP/プラグインの正確な仕様・使い分け・探索と選定の決定木**（公式仕様ベース） | **フェーズ3.5（心臓部）** |
-| [`05-build-and-output-templates.md`](./05-build-and-output-templates.md) | 各フレームワーク向けの実働テンプレ（コード/設定/プロンプト） | フェーズ4 |
+| [`05-build-and-output-templates.md`](./05-build-and-output-templates.md) | 実働テンプレ集（A システムプロンプト / B 素のSDK / C LangGraph HITL / D CrewAI / E MCP / F n8n / G Claude Code拡張 / H 評価 / I OpenAI Agents SDK / J RAG(pgvector) / K ガードレール / L ストリーミング / M 可観測性 / N Docker＋CI） | フェーズ4 |
 | [`09-claude-code-skill-authoring.md`](./09-claude-code-skill-authoring.md) | **Claude Code実装リファレンス① スキルを実装する完全版**（frontmatter全項目/動的注入/引数/progressive disclosure/scripts/context:fork/評価） | 実装 |
 | [`10-claude-code-mcp-servers.md`](./10-claude-code-mcp-servers.md) | **同② MCPで外部ツールを実装・接続**（Tools/Resources/Prompts、transports、scope、Python/TS） | 実装 |
 | [`11-claude-code-tool-use-and-sdk.md`](./11-claude-code-tool-use-and-sdk.md) | **同③ API tool use（関数呼び出し）＋Agent SDKカスタムツール＋ビルトインツール表** | 実装 |
