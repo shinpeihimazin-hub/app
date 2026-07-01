@@ -156,7 +156,8 @@ def human_review_node(state: State) -> dict:
     return {"messages": [("assistant", f"人間の判断: {decision}")], "draft": state["draft"]}
 
 def route_after_review(state: State) -> str:
-    last = state["messages"][-1][1] if state["messages"] else ""
+    # add_messages はタプルを Message オブジェクトに変換するので .content で読む
+    last = state["messages"][-1].content if state["messages"] else ""
     return "execute" if "approve" in last else "draft"
 
 def execute_node(state: State) -> dict:
@@ -424,14 +425,19 @@ def embed(text: str) -> list[float]:
 def ingest(doc_text: str):
     with conn.cursor() as cur:
         for c in chunk(doc_text):
-            cur.execute("INSERT INTO docs (content, embedding) VALUES (%s, %s)",
-                        (c, embed(c)))
+            # リストを直接渡すとPostgreSQLの配列リテラルになり vector にキャストできない。
+            # str(list) は '[0.1, 0.2, ...]' 形式で vector の入力形式と一致する。
+            # （pgvector パッケージの register_vector を使う方法でも可）
+            cur.execute("INSERT INTO docs (content, embedding) VALUES (%s, %s::vector)",
+                        (c, str(embed(c))))
     conn.commit()
 ```
 
 ```python
 # ask.py — 検索＋根拠つき生成
 import os, psycopg, anthropic
+from ingest import embed   # 同じEmbeddingモデルを使う（次元・正規化を揃える）
+
 conn = psycopg.connect(os.environ["DATABASE_URL"])
 client = anthropic.Anthropic()
 
@@ -439,7 +445,7 @@ def retrieve(query: str, k: int = 5) -> list[str]:
     with conn.cursor() as cur:
         cur.execute(
             "SELECT content FROM docs ORDER BY embedding <=> %s::vector LIMIT %s",
-            (embed(query), k))   # <=> はコサイン距離
+            (str(embed(query)), k))   # <=> はコサイン距離
         return [r[0] for r in cur.fetchall()]
 
 def answer(query: str) -> str:
