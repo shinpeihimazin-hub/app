@@ -43,7 +43,7 @@
 | [`15-bedrock-vertex-deployment.md`](./15-bedrock-vertex-deployment.md) | **Amazon Bedrock / Google Vertex AI 実運用**（設定・認証・モデルpin・IAM・キャッシュ・1M・ガードレール・Mantle・トラブルシュート） | デプロイ（エンタープライズ） |
 | [`anthropic-academy-coverage.md`](./anthropic-academy-coverage.md) | **Anthropic Academy カバレッジマップ**（各コース×キット対応、網羅の証跡） | 網羅確認 |
 | [`06-evaluation-and-iteration.md`](./06-evaluation-and-iteration.md) | 評価方法・改善ループの回し方 | フェーズ5 |
-| [`07-worked-example.md`](./07-worked-example.md) | 一連の流れを通しで実演したサンプル（フェーズ3.5含む） | 迷ったとき・型を掴みたいとき |
+| [`07-worked-example.md`](./07-worked-example.md) | 通し実演2例（例1=線形＋HITL/保守性優先、例2=パターン合成/精度優先。同じフェーズでも優先順位で選択が真逆になる対比） | 迷ったとき・型を掴みたいとき |
 | `templates/phase0〜3-*.md` | 各フェーズで使う空テンプレート（コピーして埋める用） | 各フェーズ |
 | [`templates/agent-builder.subagent.md`](./templates/agent-builder.subagent.md) | **このビルダー自身**を Claude Code のサブエージェントとして常駐させる完成テンプレ | 常駐化 |
 | [`templates/agent-builder.SKILL.md`](./templates/agent-builder.SKILL.md) | **このビルダー自身**を Claude Code のスキル（`/agent-builder`）として常駐させる完成テンプレ | 常駐化 |
