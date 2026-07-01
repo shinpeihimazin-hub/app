@@ -14,14 +14,14 @@
 | **Building with the Claude API** | API基礎・高度プロンプト・**tool use**・RAG・自動化・マルチモーダル | [`11 §1-2`](./11-claude-code-tool-use-and-sdk.md)（tool use/tool_choice/エージェントループ/RAG/マルチモーダル/構造化）、[`04`](./04-tool-selection-matrix.md)（RAG基盤） | ✅ |
 | **Introduction to MCP** | Python でサーバー/クライアントを**ゼロから**構築。3プリミティブ（Tools/Resources/Prompts） | [`10 §1,§3,§4`](./10-claude-code-mcp-servers.md)（3プリミティブ、Python/TS実装、接続） | ✅ |
 | **MCP: Advanced Topics** | sampling / notifications / filesystem / transports、本番サーバー | [`10 §5`](./10-claude-code-mcp-servers.md)（sampling/list_changed/transports/再接続/channel） | ✅ |
-| **Claude with Amazon Bedrock** | Bedrock 上での Claude 運用 | [`04`](./04-tool-selection-matrix.md) カテゴリ1・9（クラウド基盤選定）で言及。Bedrock固有の詳細手順は範囲外（公式ドキュメント参照） | ⚠️ 部分 |
-| **Claude with Google Vertex AI** | Vertex AI 上での Claude 運用 | 同上 | ⚠️ 部分 |
+| **Claude with Amazon Bedrock** | Bedrock 上での Claude 運用（設定〜本番） | [`15`](./15-bedrock-vertex-deployment.md)（設定・認証・モデルpin・IAM・キャッシュ・1M・ガードレール・Mantle・トラブルシュート） | ✅ |
+| **Claude with Google Vertex AI** | Vertex AI 上での Claude 運用（設定〜本番） | [`15`](./15-bedrock-vertex-deployment.md)（設定・認証・region・モデルpin・IAM・キャッシュ・tool search・トラブルシュート） | ✅ |
 | **AI Fluency / Claude 101** | 非技術者向けの Claude 活用（4E: Effective/Efficient/Ethical/Safe） | 本キットは「エージェント構築」に特化。非技術者向け一般活用は対象外（意図的スコープ外） | ⛔ 対象外 |
 
 ## 網羅の判定
 
 - **開発者ディープダイブ（Claude Code / Agent Skills / Subagents / Claude API tool use / MCP入門 / MCP応用）＝このキットの主対象は網羅済み（✅）。** 「あらゆるスキル・ツールを Claude Code で実装する」に必要な範囲を、公式仕様ベースで [`08`](./08-agent-primitives-and-composition.md)〜[`12`](./12-claude-code-hooks-and-plugins.md) に落とした。
-- **⚠️ 部分**: Bedrock / Vertex AI 上での運用は、選定観点では触れるが、クラウド固有のセットアップ手順そのものは範囲外にしている（本キットの目的はエージェント設計・実装であって、特定クラウドの構築手順書ではないため）。必要なら該当コース／公式ドキュメントに接続する。
+- **Bedrock / Vertex AI 運用も網羅（✅）。** [`15`](./15-bedrock-vertex-deployment.md) に設定・認証・モデルpin・IAM・キャッシュ・1M context・ガードレール・Mantle・トラブルシュートまで公式仕様ベースで収録。残る「クラウドネイティブなAPIアプリ構築」の細部（各クラウドSDK固有のアプリ実装）は本キットの目的外だが、Claude Code/Agent SDK をこの2クラウドで動かす運用は満たしている。
 - **⛔ 対象外**: 非技術者向けの一般 Claude 活用（Claude 101 / AI Fluency）は、本キットの目的（AIエージェントを作るエージェント）とスコープが異なるため意図的に含めない。
 
 ## Academy を超えてキットが持つもの（Academyの範囲外の実務補強）
