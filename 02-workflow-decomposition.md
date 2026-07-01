@@ -15,6 +15,8 @@
 5. **どの設計パターンに近いか判定する**（下記）。
 6. **Mermaidで可視化する**。
 
+> より高度・網羅的なパターン（Anthropic「Building Effective Agents」の5ワークフローパターン＋自律エージェント、ワークフローvsエージェントの区別、中核原則）は [`13-advanced-agent-patterns.md`](./13-advanced-agent-patterns.md)。ここは基本形、13は上位版。
+
 ## 代表的なエージェント設計パターン
 
 ### 1. 線形パイプライン（Linear Pipeline）

@@ -38,6 +38,8 @@
 | [`10-claude-code-mcp-servers.md`](./10-claude-code-mcp-servers.md) | **同② MCPで外部ツールを実装・接続**（Tools/Resources/Prompts、transports、scope、Python/TS） | 実装 |
 | [`11-claude-code-tool-use-and-sdk.md`](./11-claude-code-tool-use-and-sdk.md) | **同③ API tool use（関数呼び出し）＋Agent SDKカスタムツール＋ビルトインツール表** | 実装 |
 | [`12-claude-code-hooks-and-plugins.md`](./12-claude-code-hooks-and-plugins.md) | **同④ フック（確定的自動化）＋プラグイン配布＋output styles** | 実装 |
+| [`13-advanced-agent-patterns.md`](./13-advanced-agent-patterns.md) | **Building Effective Agents**（ワークフローvsエージェント、5ワークフローパターン＋自律エージェント、中核原則）をClaude Codeプリミティブへ対応 | フェーズ1（高度） |
+| [`14-prompt-and-context-engineering.md`](./14-prompt-and-context-engineering.md) | **プロンプト／コンテキストエンジニアリング**（system prompt設計、ツール記述ACI、思考/effort、並列ツール、長期state管理、自律と安全、失敗モード対処） | フェーズ4 |
 | [`anthropic-academy-coverage.md`](./anthropic-academy-coverage.md) | **Anthropic Academy カバレッジマップ**（各コース×キット対応、網羅の証跡） | 網羅確認 |
 | [`06-evaluation-and-iteration.md`](./06-evaluation-and-iteration.md) | 評価方法・改善ループの回し方 | フェーズ5 |
 | [`07-worked-example.md`](./07-worked-example.md) | 一連の流れを通しで実演したサンプル（フェーズ3.5含む） | 迷ったとき・型を掴みたいとき |
