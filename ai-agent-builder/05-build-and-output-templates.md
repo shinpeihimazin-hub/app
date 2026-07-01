@@ -2,7 +2,9 @@
 
 「保存・実行すれば動く」レベルの雛形。案件で確定したツールに対応するものを選び、埋めて使う。
 
-> **注意**: モデルID・SDKのバージョン・APIの細部は変わる。Claudeを使う場合、Claude Code環境なら `claude-api` スキルで最新のモデルID・料金・パラメータを必ず確認してから確定すること。このファイルの値はプレースホルダを含む雛形。
+**収録テンプレ**: A システムプロンプト / B 素のSDK(Claude) / C LangGraph(HITL) / D CrewAI / E MCPサーバー / F n8n / G Claude Code拡張 / H 評価テストケース / **I OpenAI Agents SDK(handoffs, Claude可)** / **J RAG(pgvector)** / **K ガードレール** / **L ストリーミング** / **M 可観測性** / **N Docker＋CI評価**。
+
+> **注意**: モデルID・SDKのバージョン・APIの細部は変わる。Claudeを使う場合、Claude Code環境なら `claude-api` スキルで最新のモデルID・料金・パラメータを必ず確認してから確定すること。第三者フレームワーク（LangGraph / CrewAI / OpenAI Agents SDK / pgvector 等）も各公式ドキュメントで現行APIを確認する。このファイルの値はプレースホルダを含む雛形。
 
 ---
 
@@ -129,50 +131,70 @@ ANTHROPIC_API_KEY=sk-ant-...
 
 ## テンプレC: LangGraph（複雑な分岐・状態遷移・Human-in-the-Loop）— Python
 
-状態遷移を明示的に制御したいとき。ノードとエッジで処理を組む。
+状態遷移を明示的に制御したいとき。ノードとエッジで処理を組む。**Human-in-the-Loopは `interrupt()`＋`Command(resume=...)`＋checkpointer** で実装する（この3点セットが必須。checkpointerが無いと割り込みで状態を保存できない）。
 
 ```python
 from typing import TypedDict, Annotated
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
+from langgraph.types import interrupt, Command
+from langgraph.checkpoint.memory import InMemorySaver  # 本番は PostgresSaver / SqliteSaver
 
 class State(TypedDict):
     messages: Annotated[list, add_messages]
-    approved: bool
+    draft: str
 
 def draft_node(state: State) -> dict:
-    # LLMで下書きを作る処理
-    return {"messages": [("assistant", "下書き内容")]}
+    # LLMで下書きを作る（例: langchain-anthropic の ChatAnthropic を呼ぶ）
+    return {"draft": "下書き内容..."}
 
 def human_review_node(state: State) -> dict:
-    # ここで割り込み、人間の承認を待つ（interruptを使う）
-    return state
-
-def execute_node(state: State) -> dict:
-    # 承認後の実行処理（外部送信など）
-    return {"messages": [("assistant", "実行完了")]}
+    # 実行をここで一時停止し、下書きを人間に提示して承認/修正を待つ。
+    # interrupt() は初回呼び出しで GraphInterrupt を送出してグラフを止める。
+    decision = interrupt({"draft": state["draft"], "question": "承認する? (approve/edit)"})
+    # 再開後、Command(resume=...) で渡した値が decision に入る
+    return {"messages": [("assistant", f"人間の判断: {decision}")], "draft": state["draft"]}
 
 def route_after_review(state: State) -> str:
-    return "execute" if state.get("approved") else "draft"
+    last = state["messages"][-1][1] if state["messages"] else ""
+    return "execute" if "approve" in last else "draft"
 
-graph = StateGraph(State)
-graph.add_node("draft", draft_node)
-graph.add_node("human_review", human_review_node)
-graph.add_node("execute", execute_node)
-graph.add_edge(START, "draft")
-graph.add_edge("draft", "human_review")
-graph.add_conditional_edges("human_review", route_after_review,
-                            {"execute": "execute", "draft": "draft"})
-graph.add_edge("execute", END)
+def execute_node(state: State) -> dict:
+    # 承認後の実行（外部送信など、取り返しのつかない操作はここ）
+    return {"messages": [("assistant", "実行完了")]}
 
-app = graph.compile()  # 実運用では checkpointer を付けて状態を永続化する
+builder = StateGraph(State)
+builder.add_node("draft", draft_node)
+builder.add_node("human_review", human_review_node)
+builder.add_node("execute", execute_node)
+builder.add_edge(START, "draft")
+builder.add_edge("draft", "human_review")
+builder.add_conditional_edges("human_review", route_after_review,
+                              {"execute": "execute", "draft": "draft"})
+builder.add_edge("execute", END)
+
+graph = builder.compile(checkpointer=InMemorySaver())  # interrupt には checkpointer 必須
+
+# --- 実行と再開 ---
+config = {"configurable": {"thread_id": "approval-123"}}  # 同一threadで中断/再開が繋がる
+result = graph.invoke({"messages": []}, config=config)
+if "__interrupt__" in result:                 # 割り込みが発生＝人間の入力待ち
+    payload = result["__interrupt__"][0].value
+    print("承認待ち:", payload)
+    human_decision = "approve"                # 実際はUI/API経由で受け取る
+    graph.invoke(Command(resume=human_decision), config=config)  # 同一configで再開
 ```
+- `interrupt()` を含むノードは、再開時に**ノード先頭から再実行**される（副作用のある処理は `interrupt()` より後に置く）。
+- `thread_id` を揃えて `Command(resume=...)` で再開する。中断中の状態は checkpointer が保持する。
+- 本番は `InMemorySaver` を `PostgresSaver`/`SqliteSaver` に置き換える（プロセス再起動をまたいで再開できる）。
 
 `requirements.txt`:
 ```
 langgraph
 langchain-anthropic   # 使うモデルのプロバイダに合わせる
 ```
+
+> LangGraph のAPIはバージョンで変わる。`interrupt`/`Command`/checkpointer の現行仕様は公式ドキュメント（docs.langchain.com の LangGraph interrupts）で確認する。
 
 ---
 
@@ -318,3 +340,253 @@ def evaluate(run_agent):
                 print(f"FAIL #{case['id']}: {out[:200]}")
     print(f"passed={passed} failed={failed}")
 ```
+
+---
+
+## テンプレI: OpenAI Agents SDK（マルチエージェント＋handoffs、Claudeも可）— Python
+
+プロバイダ非依存の軽量マルチエージェント。役割別エージェントを **handoffs（委譲）** で繋ぐ。公開APIは `Agent` / `Runner` / `@function_tool` / `handoff` / `Guardrail` / `SQLiteSession` と小さい。**Claudeを使うなら LiteLLM 経由**（`pip install "openai-agents[litellm]"`）。
+
+```python
+from agents import Agent, Runner, function_tool
+from agents.extensions.models.litellm_model import LitellmModel
+import os
+
+# Claude を LiteLLM 経由で使う（OpenAI以外のモデルはこの形）
+claude = LitellmModel(model="anthropic/claude-sonnet-4-5",
+                      api_key=os.environ["ANTHROPIC_API_KEY"])
+
+# ツール = Python関数（スキーマは自動生成、Pydanticで検証）
+@function_tool
+def search_orders(user_id: str) -> str:
+    """ユーザーの注文履歴を返す。"""
+    return "注文A(発送済), 注文B(処理中)"
+
+# 専門エージェント
+refund_agent = Agent(
+    name="Refund Agent",
+    instructions="返金の可否を判断し、手順を案内する。",
+    model=claude,
+)
+support_agent = Agent(
+    name="Support Agent",
+    instructions="一次対応。返金が絡む場合は Refund Agent に handoff する。",
+    model=claude,
+    tools=[search_orders],
+    handoffs=[refund_agent],   # LLMには transfer_to_refund_agent ツールとして見える
+)
+
+result = Runner.run_sync(support_agent, "注文Bを返金したい。user_id=42")
+print(result.final_output)   # どのエージェントが答えたか等のメタも result に入る
+```
+- `Runner` が実行・ツール呼び出し・handoffを回し、`RunResult`（最終出力＋メタ）を返す。
+- 会話継続は `SQLiteSession`、安全側は `Guardrail`、外部ツールは MCP サーバーを drop-in で接続可。
+- **プロバイダ非依存**: GPT系はネイティブ、Claude/Ollama等は LiteLLM 経由。モデル選定は [`04`](./04-tool-selection-matrix.md) の結論に合わせる。
+
+`requirements.txt`:
+```
+openai-agents[litellm]
+```
+> APIは 0.2.x 系で流動的。`Agent`/`Runner`/handoff/LiteLLM の現行仕様は公式（openai.github.io/openai-agents-python）で確認する。
+
+---
+
+## テンプレJ: RAGパイプライン（pgvector）— Python
+
+社内文書に根拠づけて答えるとき。既存PostgreSQLに `pgvector` を載せ、インフラを増やさない構成（[`04`](./04-tool-selection-matrix.md) カテゴリ4の推奨）。**取り込み（一度）** と **検索＋生成（都度）** の2段。
+
+```sql
+-- 一度だけ: 拡張とテーブル
+CREATE EXTENSION IF NOT EXISTS vector;
+CREATE TABLE docs (
+  id bigserial PRIMARY KEY,
+  content text NOT NULL,
+  embedding vector(1024)          -- 使うEmbeddingモデルの次元に合わせる
+);
+CREATE INDEX ON docs USING hnsw (embedding vector_cosine_ops);  -- 近似最近傍
+```
+
+```python
+# ingest.py — 取り込み: チャンク分割 → Embedding → 保存
+import os, psycopg
+from anthropic import Anthropic   # Embeddingは利用中の埋め込みAPIに置換
+
+conn = psycopg.connect(os.environ["DATABASE_URL"])
+
+def chunk(text: str, size: int = 800, overlap: int = 100):
+    for i in range(0, len(text), size - overlap):
+        yield text[i:i + size]
+
+def embed(text: str) -> list[float]:
+    # 実際のEmbeddingモデル呼び出しに置き換える（次元をテーブルと一致させる）
+    ...
+
+def ingest(doc_text: str):
+    with conn.cursor() as cur:
+        for c in chunk(doc_text):
+            cur.execute("INSERT INTO docs (content, embedding) VALUES (%s, %s)",
+                        (c, embed(c)))
+    conn.commit()
+```
+
+```python
+# ask.py — 検索＋根拠つき生成
+import os, psycopg, anthropic
+conn = psycopg.connect(os.environ["DATABASE_URL"])
+client = anthropic.Anthropic()
+
+def retrieve(query: str, k: int = 5) -> list[str]:
+    with conn.cursor() as cur:
+        cur.execute(
+            "SELECT content FROM docs ORDER BY embedding <=> %s::vector LIMIT %s",
+            (embed(query), k))   # <=> はコサイン距離
+        return [r[0] for r in cur.fetchall()]
+
+def answer(query: str) -> str:
+    context = "\n\n".join(retrieve(query))
+    msg = client.messages.create(
+        model="claude-sonnet-4-5", max_tokens=1024,
+        system="以下のコンテキストのみを根拠に答える。無ければ「情報なし」と言う。推測しない。",
+        messages=[{"role": "user", "content": f"<context>\n{context}\n</context>\n\n質問: {query}"}],
+    )
+    return "".join(b.text for b in msg.content if b.type == "text")
+```
+- 精度が要れば ハイブリッド検索（全文＋ベクトル＋リランク）へ拡張（[`04`](./04-tool-selection-matrix.md)）。
+- 「RAGが本当に要るか」を先に問う（[`10`](./10-claude-code-mcp-servers.md)/[`04`](./04-tool-selection-matrix.md)）。長文コンテキストに全部入るなら検索基盤を作らない。
+
+`requirements.txt`:
+```
+anthropic
+psycopg[binary]
+```
+
+---
+
+## テンプレK: ガードレール（入出力フィルタ）— Python
+
+機密・不適切入出力を防ぐ最小の砦。プロンプト頼みにせず、コードで検査する（安全設計は [`08 §6.5`](./08-agent-primitives-and-composition.md)・[`14 §6`](./14-prompt-and-context-engineering.md)）。
+
+```python
+import re
+
+PII_PATTERNS = [
+    re.compile(r"\b\d{3}-\d{4}-\d{4}\b"),          # 電話番号例
+    re.compile(r"\b[\w.+-]+@[\w-]+\.[\w.-]+\b"),   # メール
+]
+BLOCKED_TOPICS = ["社外秘", "パスワード"]
+
+def check_input(text: str) -> tuple[bool, str]:
+    for p in PII_PATTERNS:
+        if p.search(text):
+            return False, "個人情報が含まれるため処理できません"
+    return True, ""
+
+def redact(text: str) -> str:                       # 外部送信前にマスキング
+    for p in PII_PATTERNS:
+        text = p.sub("[REDACTED]", text)
+    return text
+
+def check_output(text: str) -> tuple[bool, str]:
+    for t in BLOCKED_TOPICS:
+        if t in text:
+            return False, f"禁止トピック({t})を含む出力をブロックしました"
+    return True, ""
+
+def guarded_run(agent_fn, user_input: str) -> str:
+    ok, reason = check_input(user_input)
+    if not ok:
+        return reason
+    out = agent_fn(redact(user_input))
+    ok, reason = check_output(out)
+    return out if ok else reason
+```
+- 取り返しのつかない操作の承認は Human-in-the-Loop（テンプレC）／Claude Codeなら[フック](./12-claude-code-hooks-and-plugins.md)の `PreToolUse` deny で確定的に。
+- 過検出/検出漏れはテストセット（テンプレH）で継続調整する。
+
+---
+
+## テンプレL: ストリーミング付きエージェントループ — Python + Claude
+
+ユーザーに逐次表示したいUI向け。テンプレBのループを `stream` 化する。
+
+```python
+import anthropic
+client = anthropic.Anthropic()
+
+def stream_answer(messages, tools, system):
+    with client.messages.stream(
+        model="claude-sonnet-4-5", max_tokens=1024,
+        system=system, tools=tools, messages=messages,
+    ) as stream:
+        for text in stream.text_stream:   # 生成テキストを逐次受け取る
+            print(text, end="", flush=True)
+        final = stream.get_final_message()  # 完了後にtool_use等を含む最終メッセージ
+    return final
+```
+- ツール使用を伴う場合は、`final.stop_reason == "tool_use"` を見てテンプレBと同じくツール実行→`tool_result`追加→再ストリーム、をループする。
+- Agent SDK 側のストリーミングは [`11`](./11-claude-code-tool-use-and-sdk.md)（SDKの streaming 機能）。
+
+---
+
+## テンプレM: 可観測性（トレーシング）の配線
+
+エージェントの実行を追跡・評価・回帰確認できるようにする（[`06`](./06-evaluation-and-iteration.md) と対）。
+
+- **OpenTelemetry**: Agent SDK は OTel 出力に対応（[`11`](./11-claude-code-tool-use-and-sdk.md) 周辺機能）。既存の可観測性基盤（Grafana/Datadog等）に流す。
+- **LLM特化プラットフォーム**（Langfuse / LangSmith / Braintrust / Arize Phoenix 等）: 実行トレース・スコア推移・A/Bを継続追跡（[`04`](./04-tool-selection-matrix.md) カテゴリ7）。
+- 最小構成: 各エージェント実行の `入力 / 使ったツールと結果 / 出力 / トークン / レイテンシ / 成否` を1行の構造化ログ（JSON）で残すだけでも、後から回帰と異常を追える。
+
+```python
+import json, time, uuid
+
+def traced(agent_fn, user_input: str) -> str:
+    t0 = time.time(); trace_id = str(uuid.uuid4())
+    try:
+        out = agent_fn(user_input); status = "ok"
+    except Exception as e:
+        out = ""; status = f"error:{e}"
+        raise
+    finally:
+        print(json.dumps({"trace_id": trace_id, "status": status,
+                          "latency_ms": int((time.time()-t0)*1000),
+                          "input_len": len(user_input), "output_len": len(out)},
+                         ensure_ascii=False))
+    return out
+```
+
+---
+
+## テンプレN: デプロイ（Docker）＋ CI評価
+
+「動く」を「動き続ける」にする最小構成（[`03`](./03-task-and-effort-breakdown.md) の運用系タスク）。
+
+`Dockerfile`:
+```dockerfile
+FROM python:3.12-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
+# 秘密情報はイメージに焼かず、実行時に環境変数で注入する
+CMD ["python", "agent.py"]
+```
+
+CIで評価を自動実行（`.github/workflows/eval.yml`）:
+```yaml
+name: agent-eval
+on: [push, pull_request]
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -r requirements.txt
+      - run: python run_eval.py   # テンプレHの評価を実行し、合格ライン未満なら非0で落とす
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+```
+- 秘密情報はイメージ・リポジトリに置かず、CIシークレット／実行時環境変数で注入する。
+- プロンプト・モデル・ツールを変えるたびにCIで評価を回し、回帰を検知する（[`06`](./06-evaluation-and-iteration.md)）。
+- 常時稼働・スケール・チャット統合などデプロイ方式の選定は [`04`](./04-tool-selection-matrix.md) カテゴリ9、エンタープライズなクラウド運用は [`15`](./15-bedrock-vertex-deployment.md)。
