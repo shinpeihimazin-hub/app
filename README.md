@@ -34,6 +34,11 @@
 | [`04-tool-selection-matrix.md`](./04-tool-selection-matrix.md) | モデル/フレームワーク/DB/評価/デプロイの選定マトリクス | フェーズ3 |
 | [`08-agent-primitives-and-composition.md`](./08-agent-primitives-and-composition.md) | **サブエージェント/スキル/スラッシュコマンド/MCP/プラグインの正確な仕様・使い分け・探索と選定の決定木**（公式仕様ベース） | **フェーズ3.5（心臓部）** |
 | [`05-build-and-output-templates.md`](./05-build-and-output-templates.md) | 各フレームワーク向けの実働テンプレ（コード/設定/プロンプト） | フェーズ4 |
+| [`09-claude-code-skill-authoring.md`](./09-claude-code-skill-authoring.md) | **Claude Code実装リファレンス① スキルを実装する完全版**（frontmatter全項目/動的注入/引数/progressive disclosure/scripts/context:fork/評価） | 実装 |
+| [`10-claude-code-mcp-servers.md`](./10-claude-code-mcp-servers.md) | **同② MCPで外部ツールを実装・接続**（Tools/Resources/Prompts、transports、scope、Python/TS） | 実装 |
+| [`11-claude-code-tool-use-and-sdk.md`](./11-claude-code-tool-use-and-sdk.md) | **同③ API tool use（関数呼び出し）＋Agent SDKカスタムツール＋ビルトインツール表** | 実装 |
+| [`12-claude-code-hooks-and-plugins.md`](./12-claude-code-hooks-and-plugins.md) | **同④ フック（確定的自動化）＋プラグイン配布＋output styles** | 実装 |
+| [`anthropic-academy-coverage.md`](./anthropic-academy-coverage.md) | **Anthropic Academy カバレッジマップ**（各コース×キット対応、網羅の証跡） | 網羅確認 |
 | [`06-evaluation-and-iteration.md`](./06-evaluation-and-iteration.md) | 評価方法・改善ループの回し方 | フェーズ5 |
 | [`07-worked-example.md`](./07-worked-example.md) | 一連の流れを通しで実演したサンプル（フェーズ3.5含む） | 迷ったとき・型を掴みたいとき |
 | `templates/phase0〜3-*.md` | 各フェーズで使う空テンプレート（コピーして埋める用） | 各フェーズ |
