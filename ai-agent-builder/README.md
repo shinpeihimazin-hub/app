@@ -18,6 +18,10 @@
 
 ## 使い方（最短ルート）
 
+**Claude Code なら導入済み・1コマンド**: このリポジトリには `/agent-builder` スキル（対話で6フェーズを回す本体）と `agent-builder-researcher` サブエージェント（大量探索を隔離する調査役）が `.claude/` に導入済み。`/agent-builder 作りたいものの概要` で始める。他プロジェクトへは `./ai-agent-builder/install.sh /path/to/project` で導入できる。
+
+Claude Code 以外のLLMで使う場合:
+
 1. [`00-meta-agent-prompt.md`](./00-meta-agent-prompt.md) の中身をまるごとコピーして、Claude（や他のLLM）のシステムプロンプト／カスタム指示として渡す。これが「エージェントを作るエージェント」本体になる。
 2. 作りたいエージェントの要件を投げる。曖昧でもよい。フェーズ0のヒアリングが足りない部分を埋めてくれる（人間が埋める場合は [`01-intake-and-requirements.md`](./01-intake-and-requirements.md) を使う）。
 3. 出てくるワークフロー分解・タスク分解・ツール選定・成果物を、各フェーズごとに確認しながら進める。

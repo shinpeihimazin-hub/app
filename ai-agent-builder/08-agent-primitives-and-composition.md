@@ -95,6 +95,7 @@ When invoked:
 - **許可リスト（`tools`）** か **拒否リスト（`disallowedTools`）** で絞る。読み取り専用にしたければ `tools: Read, Grep, Glob, Bash` のように書き、Write/Editを与えない。
 - MCPサーバー単位でも制御可能: `mcp__<server>` や `mcp__<server>__*`。
 - **原則: 必要最小限の権限だけ与える**（セキュリティと集中のため）。
+- **サブエージェントでは使えないツールがある**（`tools` に書いても無効）: `AskUserQuestion` / `EnterPlanMode` / `ExitPlanMode`（permissionModeがplanの場合を除く）/ `ScheduleWakeup` / `WaitForMcpServers`。**ユーザーとの対話が要る処理はサブエージェントに切り出せない**——これがスキル（メイン会話）との使い分けの決定要因になる。
 
 ### モデル選定でコストを制御する
 公式が明記する強力な使い方: **速く安いモデル（Haiku等）にサブエージェントをルーティング**する。調査・分類・大量処理はHaiku、難しい推論だけSonnet/Opus、というルーティングでコストと精度を両立する。
@@ -264,10 +265,13 @@ flowchart TD
 
 **「エージェントを作るエージェント」自身が、正しいプリミティブとして構成されているべき**——これは当然の要求で、キットはそれに答える。
 
-- このビルダーは、Claude Code環境では **サブエージェント**（`.claude/agents/agent-builder.md`）または **スキル**（`.claude/skills/agent-builder/SKILL.md`）として常駐させるのが正しい形。
-  - **要件ヒアリング（フェーズ0）で人と対話的に往復する**性質があるので、基本は**スキル**（メイン会話内で動く）が第一候補。
-  - 一方、**大量の探索（既存プリミティブ・マーケットプレイス調査）を隔離したい**局面では、その探索部分だけを**サブエージェント**（`Explore`等）に `context: fork` で切り出す。
-- すぐ使えるテンプレを同梱している:
+- このビルダーは、**実際にこのリポジトリの `.claude/` に導入済み**。導入形はこのファイルの方法論で選定した:
+  - **本体 = スキル**（`.claude/skills/agent-builder/SKILL.md`、`/agent-builder` で起動）。理由: フェーズ0の対話ヒアリングが核で、**`AskUserQuestion` はサブエージェントでは使えない**（§2の可用性制約）ため、メイン会話で動くスキルでしか成立しない。
+  - **調査役 = サブエージェント**（`.claude/agents/agent-builder-researcher.md`）。フェーズ3.5の大量探索（既存プリミティブ・公式仕様・サードパーティ調査）を隔離し、要約だけ返す。読み取り＋Web系ツールに最小権限化。
+  - **Explore は再利用**（同等の調査役を新規に作らない）。**MCPサーバーは追加しない**（WebSearch/WebFetchで足りる。必要が出るまで足さない＝§0の原則）。
+  - 権限セットは `.claude/settings.json`（公式ドキュメントドメインのWebFetch等、調査系の最小allow。[`16 §2-5`](./16-claude-code-memory-and-permissions.md)の実践）。
+- 他プロジェクトへの導入は `./install.sh /path/to/project`（スキル＋調査サブエージェント＋リファレンスキットをコピー）。
+- テンプレも同梱している（キット無しで単体利用する場合や、全フェーズ自律実行版が欲しい場合）:
   - サブエージェント版: [`templates/agent-builder.subagent.md`](./templates/agent-builder.subagent.md)
   - スキル版: [`templates/agent-builder.SKILL.md`](./templates/agent-builder.SKILL.md)
 - メタプロンプト本体（[`00-meta-agent-prompt.md`](./00-meta-agent-prompt.md)）には、**フェーズ3.5としてこの探索・再利用・合成を必須化**してある。だからこのビルダーに要件を渡すと、「まず既存を探す→無い分だけ、正しいプリミティブで作る」という順序が毎回強制される。
