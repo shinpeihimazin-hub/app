@@ -13,6 +13,11 @@ mkdir -p "$TARGET/.claude/skills/agent-builder" "$TARGET/.claude/agents"
 cp "$KIT_DIR/templates/agent-builder.SKILL.md" \
    "$TARGET/.claude/skills/agent-builder/SKILL.md"
 
+# 取り込みスキル（新しいツール/MCP/スキルを調査→台帳追記→導入する「食う」機能）
+mkdir -p "$TARGET/.claude/skills/absorb"
+cp "$KIT_DIR/templates/absorb.SKILL.md" \
+   "$TARGET/.claude/skills/absorb/SKILL.md"
+
 # 調査専門サブエージェント（フェーズ3.5の大量探索を隔離して要約だけ返す）
 cp "$KIT_DIR/templates/agent-builder-researcher.md" \
    "$TARGET/.claude/agents/agent-builder-researcher.md"
@@ -28,6 +33,7 @@ fi
 cat <<'MSG'
 導入完了:
   .claude/skills/agent-builder/SKILL.md        … /agent-builder で起動（スキルは即時反映）
+  .claude/skills/absorb/SKILL.md               … /absorb で新しいツール/MCPを取り込む
   .claude/agents/agent-builder-researcher.md   … 調査用サブエージェント（新セッションから有効）
   ai-agent-builder/                            … 詳細リファレンス（スキルが必要時に参照）
 推奨: 公式ドキュメント調査を無承認化する permissions.allow（ai-agent-builder/16 §2-5 参照）

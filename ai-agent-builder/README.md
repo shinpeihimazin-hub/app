@@ -16,11 +16,24 @@
 
 > **フェーズ3.5がこのキットの心臓部。** 「エージェントを作る」＝ゼロからコードを書く、ではない。既存の部品を探して選び、足りない分だけ正しい形（スキルか、サブエージェントか、MCPか、プラグインか）で作る。この探索・選定の方法論は [`08-agent-primitives-and-composition.md`](./08-agent-primitives-and-composition.md) に集約してある。
 
-## 使い方（最短ルート）
+## 利用の流れ（3ルート）
 
-**Claude Code なら導入済み・1コマンド**: このリポジトリには `/agent-builder` スキル（対話で6フェーズを回す本体）と `agent-builder-researcher` サブエージェント（大量探索を隔離する調査役）が `.claude/` に導入済み。`/agent-builder 作りたいものの概要` で始める。他プロジェクトへは `./ai-agent-builder/install.sh /path/to/project` で導入できる。
+### ルートA: このリポジトリを母艦として使う（推奨・ビルドアップ拠点）
+Claude Code（Web/CLI）でこのリポジトリを開いた**新しいセッション**で:
 
-Claude Code 以外のLLMで使う場合:
+1. **エージェントを作る**: `/agent-builder 作りたいものの概要` — 起動した瞬間に既存プリミティブ・実行環境の装備・ネットワーク疎通が自動棚卸しされ、フェーズ0のヒアリングから始まる。フェーズごとに確認を挟みながら成果物（スキル/サブエージェント/MCP設定/コード）まで到達する
+2. **装備を増やす**: `/absorb <ツール名やURL>` — 調査→台帳（`19`）追記→キー不要なら即導入・検証。`/absorb sweep` で新着巡回
+3. 作った成果物・食った装備はコミットして蓄積する。**このリポジトリ自体が「育つエージェント」**
+
+### ルートB: 他プロジェクトに配る（ローカルCLI等）
+```bash
+git clone https://github.com/shinpeihimazin-hub/app && cd app
+# （キットがmain未マージの間は）git checkout claude/ai-agent-builder-1yqxlf
+./ai-agent-builder/install.sh /path/to/your-project
+```
+対象プロジェクトに `/agent-builder`・`/absorb`・調査サブエージェント・リファレンス一式が入る。以後そのプロジェクトのClaude Codeセッションで同じように使える。
+
+### ルートC: Claude Code 以外のLLMで使う場合:
 
 1. [`00-meta-agent-prompt.md`](./00-meta-agent-prompt.md) の中身をまるごとコピーして、Claude（や他のLLM）のシステムプロンプト／カスタム指示として渡す。これが「エージェントを作るエージェント」本体になる。
 2. 作りたいエージェントの要件を投げる。曖昧でもよい。フェーズ0のヒアリングが足りない部分を埋めてくれる（人間が埋める場合は [`01-intake-and-requirements.md`](./01-intake-and-requirements.md) を使う）。
@@ -48,6 +61,7 @@ Claude Code 以外のLLMで使う場合:
 | [`16-claude-code-memory-and-permissions.md`](./16-claude-code-memory-and-permissions.md) | **メモリ（CLAUDE.md階層・rules/・imports・auto memory）と権限（ルール構文・deny→ask→allow評価・settings階層）** | 実装（挙動の基盤） |
 | [`17-claude-code-advanced-operations.md`](./17-claude-code-advanced-operations.md) | **運用系周辺機能**（sandboxのOS層隔離・checkpoint/`/rewind`・`/loop`とcron/Routines・agent teams vs サブエージェント・Monitor/Channels） | 運用 |
 | [`18-third-party-ecosystem.md`](./18-third-party-ecosystem.md) | **サードパーティ・エコシステム**（モダリティ別: ブラウザ/音声/computer use・既製MCPカタログ・追加FW（Pydantic AI/ADK/MS Agent Framework/Mastra）・検索API/サンドボックス/メモリ・A2A） | フェーズ3/3.5（幅出し） |
+| [`19-living-registry.md`](./19-living-registry.md) | **生きた台帳**（実際に調査・検証・導入した部品の全記録。`/absorb` で成長） | 常時（装備の確認・拡張） |
 | [`anthropic-academy-coverage.md`](./anthropic-academy-coverage.md) | **Anthropic Academy カバレッジマップ**（各コース×キット対応、網羅の証跡） | 網羅確認 |
 | [`06-evaluation-and-iteration.md`](./06-evaluation-and-iteration.md) | 評価方法・改善ループの回し方 | フェーズ5 |
 | [`07-worked-example.md`](./07-worked-example.md) | 通し実演2例（例1=線形＋HITL/保守性優先、例2=パターン合成/精度優先。同じフェーズでも優先順位で選択が真逆になる対比） | 迷ったとき・型を掴みたいとき |
@@ -61,7 +75,7 @@ Claude Code 以外のLLMで使う場合:
 
 | 種別 | 実体 |
 |---|---|
-| スキル | `/agent-builder`（起動時に既存プリミティブ＋**実行環境の装備＋ネットワーク疎通**を自動棚卸し）、`/price-hunter` |
+| スキル | `/agent-builder`（起動時に既存プリミティブ＋**実行環境の装備＋ネットワーク疎通**を自動棚卸し）、`/absorb`（新部品の取り込み）、`/price-hunter` |
 | サブエージェント | `agent-builder-researcher`（調査隔離役） |
 | MCPサーバー | **Playwright MCP**（`.mcp.json`。プリインストールChromiumで実ブラウザ操作。キー不要） |
 | bundledスキル（ハーネス同梱） | `/code-review` `/verify` `/simplify` `/run` `/dataviz` `/claude-api` `/loop` `/security-review` `/init` 等（導入不要で常時使える） |
