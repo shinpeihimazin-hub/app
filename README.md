@@ -72,13 +72,19 @@ git subtree split --prefix=ai-agent-builder -b ai-agent-builder-only
 
 # 2. 空の新リポジトリを作って push（<URL> は新規作成したリポジトリのもの）
 git push <新リポジトリのURL> ai-agent-builder-only:main
+
+# 3. 新リポジトリ側で agent-builder を再導入（.claude/ はリポジトリ直下にあるため
+#    subtree には含まれない。install.sh が templates/ から自己完結で入れ直す）
+cd <新リポジトリ> && ./install.sh .
 ```
 
 履歴が不要なら、ディレクトリをコピーして `git init` するだけでもよい:
 
 ```bash
 cp -r ai-agent-builder /path/to/ai-agent-builder-kit
-cd /path/to/ai-agent-builder-kit && git init && git add . && git commit -m "init: AIエージェント・ビルダー・キット"
+cd /path/to/ai-agent-builder-kit && git init
+./install.sh .   # .claude/（スキル＋調査サブエージェント）を導入
+git add . && git commit -m "init: AIエージェント・ビルダー・キット"
 # その後、新リポジトリを作成して push
 ```
 
