@@ -30,8 +30,11 @@
 | Exa | 🔑待機 | セマンティック検索・類似ページ探索 | 同上 | EXA_API_KEY | 2026-07-02 | exa.ai |
 | Brave Search | 🔑待機 | 独立インデックスのWeb検索 | 同上 | BRAVE_API_KEY | 2026-07-02 | brave.com/search/api |
 | GitHub MCP | ⚠️制約あり | PR/issue/CI/リポジトリ操作 約60ツール | リモート実行環境が自動接続（ローカルは要設定） | 環境付与 | 2026-07-02 | github.com/github/github-mcp-server |
-| Serena | ✅導入済 | LSPベースの意味論的コード操作（find_symbol/replace_symbol_body等、40+言語）。エージェントに「IDEの腕」。ローカル完結 | `.mcp.json`（uvx＋PyPI `serena-agent`。v1.5.3で起動確認） | 不要 | 2026-07-02 | github.com/oraios/serena |
-| Sequential Thinking | ✅導入済 | 構造化推論ツール（複雑な設計の計画を明示的ステップに分解）。公式リファレンス実装・ローカル完結 | `.mcp.json`（npx。stdio起動確認済み） | 不要 | 2026-07-02 | github.com/modelcontextprotocol/servers |
+| Serena | ✅導入済 | LSPベースの意味論的コード操作（find_symbol/replace_symbol_body等、40+言語）。エージェントに「IDEの腕」。ローカル完結 | `.mcp.json`（uvx＋PyPI `serena-agent`。v1.5.3で起動確認。**次セッションで21ツールの実ツール化を確認済み**） | 不要 | 2026-07-02 | github.com/oraios/serena |
+| Sequential Thinking | ✅導入済 | 構造化推論ツール（複雑な設計の計画を明示的ステップに分解）。公式リファレンス実装・ローカル完結 | `.mcp.json`（npx。stdio起動確認済み。**次セッションで実ツール化を確認済み**） | 不要 | 2026-07-02 | github.com/modelcontextprotocol/servers |
+| Memory（公式） | ✅導入済 | ナレッジグラフ型の永続メモリ。セッションをまたいで学習を蓄積。保存先を `.claude/agent-memory.json` に固定＝**gitで永続化され母艦が育つ** | `.mcp.json`（npx。stdio起動確認済み。保存先が生成されない場合は `MEMORY_FILE_PATH` を絶対パスに） | 不要 | 2026-07-02 | github.com/modelcontextprotocol/servers |
+| MarkItDown（Microsoft公式） | ✅導入済 | PDF/Office/画像→Markdown変換（RAG前処理・ドキュメント処理の腕。18 §4-4の実装装備） | `.mcp.json`（uvx。--help検証済み。音声変換のみffmpeg未PATHで不可） | 不要 | 2026-07-02 | github.com/microsoft/markitdown |
+| DuckDuckGo Search | ⚠️制約あり | キー不要のWeb検索。ローカルCLIならWebSearchのセッション上限の代替 | `templates/mcp-optional.json`（uvx。起動確認済み。**この環境は外部遮断のため検索は不可＝ローカル用**） | 不要 | 2026-07-02 | github.com/nickclyde/duckduckgo-mcp-server |
 
 ## 2. REST API（MCP不要・Bash/requestsから直接叩く）
 
@@ -47,6 +50,7 @@
 | Chromium 実ブラウザ | ✅導入済 | `/opt/pw-browsers/chromium`（Playwright 1.56対応ビルド） | 2026-07-02（起動確認済み） |
 | playwright 1.56.1（npmグローバル） | ✅導入済 | Bashから直接スクリプト実行可（CJS＋`executablePath`指定） | 2026-07-02 |
 | Node 22 / Python 3 / uv・uvx / requests | ✅導入済 | uvxでPython系MCPも起動可 | 2026-07-02 |
+| MCP Inspector（公式） | 📖調査済 | 自作MCPサーバーのデバッグ標準ツール（Web UI）。`npx @modelcontextprotocol/inspector` で随時起動（常駐不要） | 2026-07-02（仕様調査のみ） |
 | ネットワーク | ⚠️制約あり | **プロキシポリシーが許可リスト外ドメインをCONNECT 403で遮断**。アンチボット403と誤診しないこと。curl 1回で切り分ける | 2026-07-02（実測） |
 
 ## 4. スキル
@@ -74,7 +78,8 @@
 | 名前 | 状態 | 何があるか | 使い方 | 検証日 |
 |---|---|---|---|---|
 | 公式プラグインマーケットプレイス（anthropics/claude-plugins-official） | ✅利用可 | Anthropic監査済みプラグイン119件（agents/commands/LSP/skills/hooks） | Claude Code起動時から自動で利用可。`/plugin` のDiscoverタブで閲覧、`/plugin install <名前>@claude-plugins-official` で導入。カタログ: claude.com/plugins | 2026-07-02 |
-| awesome-claude-code（36.8k★）／VoltAgent subagents集 | 📖次回sweep候補 | コミュニティ製スキル・サブエージェントのカタログ | 次回 `/absorb sweep` で取り込み判定（今回は3件上限で繰越） | — |
+| awesome-claude-code（hesreallyhim, 36.8k★） | ✅登録済 | コミュニティ製スラッシュコマンド/スキル/フック/ワークフローの最大手カタログ | フェーズ3.5の探索先。この環境からは直接読めないため、候補名を特定→WebSearchで個別裏取り→`/absorb <名前>` | 2026-07-02 |
+| VoltAgent/awesome-claude-code-subagents | ✅登録済 | 既製サブエージェント150+のカタログ（カテゴリ別） | 同上。サブエージェントを新規に書く前にここを確認 | 2026-07-02 |
 
 ---
 

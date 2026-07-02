@@ -19,6 +19,11 @@
       "args": ["-y", "@modelcontextprotocol/server-brave-search"],
       "env": { "BRAVE_API_KEY": "${BRAVE_API_KEY}" }
     },
+    "duckduckgo": {
+      "_comment": "キー不要のWeb検索。ローカルCLI等の外部到達可能な環境でWebSearchのセッション上限の代替になる（遮断環境では検索が失敗する。起動検証は済み）",
+      "command": "uvx",
+      "args": ["duckduckgo-mcp-server"]
+    },
     "context7": {
       "_comment": "ライブラリの最新公式ドキュメントを文脈に注入。キー無しでも動く（レート制限あり）。外部API（context7.com）に到達できるネットワークポリシーが前提",
       "command": "npx",
