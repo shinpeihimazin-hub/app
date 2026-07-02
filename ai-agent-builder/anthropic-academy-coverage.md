@@ -31,6 +31,9 @@ Academy が扱わない、実運用で必須の領域も入れてある。
 - **要件ヒアリング → ワークフロー分解 → 工数見積り**（[`01`](./01-intake-and-requirements.md)〜[`03`](./03-task-and-effort-breakdown.md)）
 - **プリミティブ選定の決定木と再利用優先の探索手順**（[`08`](./08-agent-primitives-and-composition.md)）
 - **フック／プラグイン／output styles／配布**（[`12`](./12-claude-code-hooks-and-plugins.md)）
+- **メモリ（CLAUDE.md階層・rules・auto memory）と権限（ルール構文・settings階層）**（[`16`](./16-claude-code-memory-and-permissions.md)）
+- **headless（`claude -p`）／CI組み込み**（[`05`](./05-build-and-output-templates.md) テンプレO）
+- **Citations API（構造化された出典）**（[`11 §2`](./11-claude-code-tool-use-and-sdk.md)）
 - **安全設計**（最小権限・プロンプトインジェクション・信頼境界: [`08 §6.5`](./08-agent-primitives-and-composition.md)）
 - **評価・回帰・反復ループ**（[`06`](./06-evaluation-and-iteration.md)）
 - **非Claude系ツール（他LLM/LangGraph/n8n/ベクトルDB等）との比較選定**（[`04`](./04-tool-selection-matrix.md)）

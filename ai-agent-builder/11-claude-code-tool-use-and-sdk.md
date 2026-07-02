@@ -89,6 +89,33 @@ while True:
 - **構造化出力**: `strict` ツール / tool_choice で特定ツール強制 → スキーマ準拠のJSONを取り出す定番手法。SDKなら structured outputs 機能。
 - **プロンプトキャッシュ**: 長い system/tools をキャッシュしてコスト削減（[`04`](./04-tool-selection-matrix.md) と併用）。
 
+### Citations API（出典を構造化して返す）
+
+RAGで「出典つき回答」を作るとき、プロンプトで「出典を書け」と頼むより**API機能のCitations**が確実。文書ブロックに `citations: {enabled: true}` を付けると、応答のtextブロックに**検証可能な出典**（どの文書のどの位置か）が構造化されて付く。
+
+```python
+msg = client.messages.create(
+    model="claude-sonnet-5", max_tokens=1024,
+    messages=[{"role": "user", "content": [
+        {"type": "document",
+         "source": {"type": "text", "media_type": "text/plain",
+                    "data": "芝は緑である。空は青である。"},
+         "title": "観察記録",
+         "citations": {"enabled": True}},
+        {"type": "text", "text": "芝と空は何色?"},
+    ]}],
+)
+# 応答のtextブロックに citations が付く:
+# {"type": "char_location", "cited_text": "芝は緑である。",
+#  "document_index": 0, "document_title": "観察記録",
+#  "start_char_index": 0, "end_char_index": 8}
+```
+
+- 位置型は文書種別で変わる: プレーンテキスト=`char_location`、PDF=`page_location`、カスタムコンテンツ=`content_block_location`。
+- **プロンプトで引用させるより優れる点**: `cited_text` は**出力トークンに数えられず**（コスト減）、APIがパースして返すので**必ず実在の文書位置を指す**（偽の出典が構造上出ない）。
+- 制約: structured outputs と併用不可。ほぼ全ての現行モデルが対応。
+- RAG実装（[`05`](./05-build-and-output-templates.md) テンプレJ）で「出典必須」の要件があるなら、取得チャンクを `document` ブロック（`search_result` ブロック）で渡してCitationsを有効にするのが第一候補。
+
 ---
 
 ## 3. Agent SDK の in-process カスタムツール（別プロセス不要）

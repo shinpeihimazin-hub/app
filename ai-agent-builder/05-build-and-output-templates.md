@@ -596,3 +596,72 @@ jobs:
 - 秘密情報はイメージ・リポジトリに置かず、CIシークレット／実行時環境変数で注入する。
 - プロンプト・モデル・ツールを変えるたびにCIで評価を回し、回帰を検知する（[`06`](./06-evaluation-and-iteration.md)）。
 - 常時稼働・スケール・チャット統合などデプロイ方式の選定は [`04`](./04-tool-selection-matrix.md) カテゴリ9、エンタープライズなクラウド運用は [`15`](./15-bedrock-vertex-deployment.md)。
+
+---
+
+## テンプレO: Claude Code自体をCI・スクリプトで使う（headless `claude -p`）
+
+テンプレNは「作ったエージェントの評価CI」。これは**Claude Code自体を自動化の部品にする**方（非対話モード）。エージェントを新しく実装せずに、`claude -p` 一発で「エージェント的な仕事」をパイプラインへ組み込める——**フェーズ3.5の再利用優先の観点で、自作の前にこれで足りないか検討する価値がある**。
+
+### 基本形
+```bash
+# 単発実行（-p = 非対話）。CI/スクリプトでは --bare 推奨:
+# フック・スキル・MCP・CLAUDE.md の自動探索をスキップし、どのマシンでも同じ結果にする
+claude --bare -p "このファイルを要約して" --allowedTools "Read"
+
+# パイプで流し込み、結果をリダイレクト（普通のCLIツールとして振る舞う）
+cat build-error.txt | claude -p 'このビルドエラーの根本原因を簡潔に' > output.txt
+```
+- `--bare` では認証は `ANTHROPIC_API_KEY`（または `--settings` のapiKeyHelper、Bedrock/Vertexは各資格情報）。
+- `--allowedTools` は権限ルール構文（[`16`](./16-claude-code-memory-and-permissions.md)）: `--allowedTools "Bash(git diff *),Read,Edit"`。
+- ベースライン制御は `--permission-mode`（`dontAsk`=許可済み以外を自動拒否＝ロックダウンCI向け／`acceptEdits`=編集を自動承認）。
+
+### 構造化出力（スクリプトで受ける）
+```bash
+# JSON（result / session_id / total_cost_usd 等のメタ込み）
+claude -p "このプロジェクトを要約" --output-format json | jq -r '.result'
+
+# スキーマ強制（structured_output に準拠JSONが入る）
+claude -p "auth.py の主要関数名を抽出" --output-format json \
+  --json-schema '{"type":"object","properties":{"functions":{"type":"array","items":{"type":"string"}}},"required":["functions"]}' \
+  | jq '.structured_output'
+
+# 会話の継続（同一ディレクトリで）
+session_id=$(claude -p "レビュー開始" --output-format json | jq -r '.session_id')
+claude -p "DBクエリ部分を深掘りして" --resume "$session_id"
+```
+
+### package.json に「Claudeリンター」を足す例
+```json
+{
+  "scripts": {
+    "lint:claude": "git diff main | claude -p \"you are a typo linter. for each typo in this diff, report filename:line on one line and the issue on the next. return nothing else.\""
+  }
+}
+```
+
+### GitHub Actions で PR レビュー
+公式の GitHub Actions 統合（[github-actions](https://code.claude.com/docs/en/github-actions)、`@claude` メンション対応）を使うのが本筋。最小の自前ワークフローなら:
+```yaml
+name: claude-pr-review
+on: [pull_request]
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - run: npm install -g @anthropic-ai/claude-code
+      - run: |
+          git diff origin/${{ github.base_ref }} | claude --bare -p \
+            --append-system-prompt "セキュリティエンジニアとして脆弱性を重点レビューする" \
+            --output-format json > review.json
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      - run: jq -r '.result' review.json
+```
+- diffを**パイプで渡す**とBash権限なしで読ませられる（権限を最小にできる）。
+- 秘密情報はCIシークレットで注入。`--bare`でローカル設定の混入を防ぐ。
+- スキルも `-p` で使える: プロンプト文字列に `/skill-name` を含めると展開される。
+
+> `claude -p` のフラグ・出力仕様は更新される。[headless公式](https://code.claude.com/docs/en/headless)と `claude --help` で現行を確認する。
