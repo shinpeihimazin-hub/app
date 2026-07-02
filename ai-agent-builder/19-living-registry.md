@@ -77,9 +77,41 @@
 
 | 名前 | 状態 | 何があるか | 使い方 | 検証日 |
 |---|---|---|---|---|
-| 公式プラグインマーケットプレイス（anthropics/claude-plugins-official） | ✅利用可 | Anthropic監査済みプラグイン119件（agents/commands/LSP/skills/hooks） | Claude Code起動時から自動で利用可。`/plugin` のDiscoverタブで閲覧、`/plugin install <名前>@claude-plugins-official` で導入。カタログ: claude.com/plugins | 2026-07-02 |
+| 公式プラグインマーケットプレイス（anthropics/claude-plugins-official） | ✅精査済 | Anthropic監査済みプラグイン**255件**（development 109 / productivity 45 / database 34 / monitoring 17 / security 13 ほか。※「119件」という記事情報は旧数—一次ソースのmarketplace.jsonで確認） | `/plugin` のDiscoverタブで閲覧、`claude plugin install <名前>@claude-plugins-official -s project` で導入。カタログ: claude.com/plugins | 2026-07-02（全255件精査） |
 | awesome-claude-code（hesreallyhim, 36.8k★） | ✅登録済 | コミュニティ製スラッシュコマンド/スキル/フック/ワークフローの最大手カタログ | フェーズ3.5の探索先。この環境からは直接読めないため、候補名を特定→WebSearchで個別裏取り→`/absorb <名前>` | 2026-07-02 |
 | VoltAgent/awesome-claude-code-subagents | ✅登録済 | 既製サブエージェント150+のカタログ（カテゴリ別） | 同上。サブエージェントを新規に書く前にここを確認 | 2026-07-02 |
+
+## 8. プラグイン選定（公式マーケットプレイス255件から精査済み）
+
+**この環境での導入は人間側アクション待ち**: セッションのGitHubアクセスが shinpeihimazin-hub/app に限定されており、マーケットプレイスのclone（anthropics/claude-plugins-official）が403になる（エラーは「Use add_repo to request access」。tarball/API/HTML/jsDelivrも検証済みで全て遮断、raw単体ファイルのみ可＝ファイル列挙不能で搬入不可）。**セッションのリポジトリアクセスに `anthropics/claude-plugins-official` を追加するか、ローカルCLIで下記2コマンドを実行すれば即導入できる**:
+
+```bash
+claude plugin marketplace add anthropics/claude-plugins-official   # ローカルCLIでは不要（自動登録済み）
+claude plugin install <名前>@claude-plugins-official -s project    # -s project でリポジトリに記録され全セッションに効く
+```
+
+### 中核5選（🔑導入待ち・全てAnthropic公式作）— エージェント作成の使命に直結
+
+| 名前 | 何ができるか | キット対応 |
+|---|---|---|
+| **skill-creator** | スキルの新規作成・改善・eval計測 | 09の実装版 |
+| **mcp-server-dev** | MCPサーバーの設計・構築ガイド一式 | 10の実装版 |
+| **plugin-dev** | プラグイン開発（hooks/agents/commands/MCP統合、7スキル） | 12の実装版 |
+| **agent-sdk-dev** | Claude Agent SDK開発キット | 11の実装版 |
+| **security-guidance** | 生成コードのセキュリティレビュー（編集時パターン警告＋LLM差分レビュー） | 08 §6.5の自動化 |
+
+### 次点（用途が発生したら個別に。全て精査済み）
+
+| 名前 | 何ができるか | 入れ時 |
+|---|---|---|
+| hookify（Anthropic） | 会話パターン分析からカスタムフック生成 | フック需要が出たら |
+| claude-code-setup（Anthropic） | コードベース分析→hooks/skills/MCPの提案 | 新規プロジェクト導入時 |
+| claude-md-management（Anthropic） | CLAUDE.mdの品質監査・セッション学習の取り込み | メモリ運用を始めたら |
+| feature-dev / pr-review-toolkit（Anthropic） | 機能開発ワークフロー／PR多角レビュー | 実装案件が回り始めたら |
+| superpowers（obra・コミュニティ有名作） | ブレスト＋サブエージェント駆動開発＋内蔵レビュー | メタ開発を強化したいとき |
+| chrome-devtools-mcp（Google公式） | 実Chromeの制御・パフォーマンストレース | Playwright MCPで不足したら |
+| ○○-lsp 系（typescript/pyright/gopls/rust等 十数種） | 言語別LSP | **Serenaと重複のため原則不要**。Serena不調の言語のみ |
+| tavily / exa / context7 / firecrawl / brightdata | 検索・スクレイパのプラグイン版 | §1のMCP待機行と同じキーで、MCP単体よりスキル込みのこちらを優先してもよい |
 
 ---
 
