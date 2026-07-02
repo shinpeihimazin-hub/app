@@ -2,7 +2,7 @@
 
 「保存・実行すれば動く」レベルの雛形。案件で確定したツールに対応するものを選び、埋めて使う。
 
-**収録テンプレ**: A システムプロンプト / B 素のSDK(Claude) / C LangGraph(HITL) / D CrewAI / E MCPサーバー / F n8n / G Claude Code拡張 / H 評価テストケース / **I OpenAI Agents SDK(handoffs, Claude可)** / **J RAG(pgvector)** / **K ガードレール** / **L ストリーミング** / **M 可観測性** / **N Docker＋CI評価**。
+**収録テンプレ**: A システムプロンプト / B 素のSDK(Claude) / C LangGraph(HITL) / D CrewAI / E MCPサーバー / F n8n / G Claude Code拡張 / H 評価テストケース / I OpenAI Agents SDK(handoffs, Claude可) / J RAG(pgvector) / K ガードレール / L ストリーミング / M 可観測性 / N Docker＋CI評価 / **O headless(claude -p)/GitHub Actions** / **P ブラウザ操作エージェント(Playwright MCP)**。
 
 > **注意**: モデルID・SDKのバージョン・APIの細部は変わる。Claudeを使う場合、Claude Code環境なら `claude-api` スキルで最新のモデルID・料金・パラメータを必ず確認してから確定すること。第三者フレームワーク（LangGraph / CrewAI / OpenAI Agents SDK / pgvector 等）も各公式ドキュメントで現行APIを確認する。このファイルの値はプレースホルダを含む雛形。
 
@@ -665,3 +665,49 @@ jobs:
 - スキルも `-p` で使える: プロンプト文字列に `/skill-name` を含めると展開される。
 
 > `claude -p` のフラグ・出力仕様は更新される。[headless公式](https://code.claude.com/docs/en/headless)と `claude --help` で現行を確認する。
+
+---
+
+## テンプレP: ブラウザ操作エージェント（Playwright MCP）
+
+Webサイトの操作・検証・データ抽出を行う「ブラウザの腕」を持つエージェント。エコシステムの全体像と代替（Stagehand / browser-use / computer use）は [`18 §4-1`](./18-third-party-ecosystem.md)。ここでは最も再利用性の高い **Playwright MCP をサブエージェントに隔離して与える**構成（[`08`](./08-agent-primitives-and-composition.md) の `mcpServers` インライン定義＝メイン会話の文脈を汚さない）。
+
+`.claude/agents/browser-tester.md`:
+```markdown
+---
+name: browser-tester
+description: 実ブラウザでWebページの動作確認・E2E検証・スクリーンショット取得・データ抽出を行う。UIの変更確認やフォーム送信テストが必要なとき使う。
+tools: Read, Grep, Glob
+mcpServers:
+  - playwright:
+      type: stdio
+      command: npx
+      args: ["-y", "@playwright/mcp@latest"]
+model: inherit
+maxTurns: 30
+---
+
+あなたはブラウザ操作の専門家。Playwrightツールでページを開き、操作し、検証する。
+
+手順:
+1. 対象URLを開き、目的の要素が描画されるまで待つ
+2. 指示された操作（クリック/入力/送信）を実行する
+3. 結果を検証し、必要ならスクリーンショットを撮る
+4. 「何をして、何を確認し、何が期待と違ったか」だけを簡潔に報告する
+
+制約:
+- 対象ドメイン以外へ遷移しない。ログイン情報の入力は指示された場合のみ
+- 破壊的操作（削除・購入・送信の確定）は実行前に必ず報告して止まる
+- ページの生HTMLを大量に転記しない（要点と根拠のみ返す）
+```
+
+使い方: 「browser-tester でステージングのサインアップフローを通しで確認して」——サブエージェントが別コンテキストでブラウザを操作し、**要約だけ**が戻る。
+
+**選定の分岐**（[`18 §1`](./18-third-party-ecosystem.md) のDOM/vision二分法）:
+- 決定的なE2Eテストが主体 → 素のPlaywrightスクリプト（AIなし）＋失敗解析だけClaude
+- 構造化データ抽出が主体（TS） → Stagehand の `extract`
+- 完全自律のWebタスク（Python） → browser-use のエージェントループ
+- canvas UI・デスクトップアプリ・DOMが取れない → computer use（vision駆動）
+- 実務の定番は**ハイブリッド**: 予測可能な部分はスクリプト、判断が要る部分だけエージェント
+
+**安全上の注意**: ブラウザは**未検証の外部コンテンツ**を読む経路（プロンプトインジェクションの入口: [`08 §6.5`](./08-agent-primitives-and-composition.md)）。読む役（このサブエージェント）と破壊的操作を実行する役を分け、決済・送信系の確定操作には Human-in-the-Loop を挟む。
