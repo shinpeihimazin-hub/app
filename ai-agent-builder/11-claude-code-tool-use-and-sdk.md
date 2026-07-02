@@ -77,8 +77,10 @@ while True:
 - 呼ばせたい/抑えたいは system prompt でも操作可（「答える前にツールで調べよ」等）。
 - **並列ツール使用**: Claudeは1ターンで複数 `tool_use` を返しうる。副作用のない読み取り系は並列化に向く。
 
-### サーバーツール（Anthropic実行、ハンドラ不要）
-`web_search`, `web_fetch`, `code_execution`, `tool_search`, `memory`, `bash`, `text_editor`, `computer use`, MCP connector など。schemaはAnthropic提供。`{"type": "web_search_20260209", "name": "web_search"}` のように type を渡すだけ。
+### サーバーツール（Anthropic実行、ハンドラ不要）とAnthropicスキーマ・クライアントツール
+- **サーバーツール**（Anthropic側で実行）: `web_search` / `web_fetch` / `code_execution` / `tool_search` / **`advisor`**（高速な実行モデルが、生成の途中で高知能モデルに難所だけ相談する） / MCP connector。`{"type": "web_search_20260209", "name": "web_search"}` のように type を渡すだけ。
+- **Anthropicスキーマのクライアントツール**（スキーマはAnthropic提供・実行はあなたのアプリ）: `bash` / `text_editor` / `memory` / `computer use`。
+- type文字列・バージョンは [Tool reference](https://platform.claude.com/docs/en/agents-and-tools/tool-use/tool-reference) で最新を確認。
 
 ---
 
@@ -198,30 +200,61 @@ for await (const m of query({ prompt: "SFの気温は?", options: {
 
 ---
 
-## 4. Claude Code のビルトインツール（既存資産）
+## 4. Claude Code のビルトインツール（公式リファレンス全43種）
 
-自作ツールの前に、Claude Codeが標準で持つツールを把握する。ツール名は permission ルール・サブエージェントの `tools`・フックの matcher で使う正確な文字列。無効化は permission の `deny`。
+自作ツールの前に、Claude Codeが標準で持つツールを把握する。ツール名は permission ルール・サブエージェントの `tools`・フックの matcher で使う正確な文字列。無効化は permission の `deny`。（公式 [tools-reference](https://code.claude.com/docs/en/tools-reference) の全ツール。追加・変更されるため実装時に原典確認。）
 
-| ツール | 説明 | 権限要 | 種別 |
-|---|---|---|---|
-| `Read` | ファイル読み取り | 否 | 読取 |
-| `Glob` | パターンでファイル検索 | 否 | 読取 |
-| `Grep` | ファイル内容検索（ripgrep） | 否 | 読取 |
-| `Edit` | 対象ファイルの部分編集 | **要** | 変更 |
-| `Write` | ファイル作成/上書き | **要** | 変更 |
-| `NotebookEdit` | Jupyterセル編集 | **要** | 変更 |
-| `Bash` | シェル実行 | **要** | 実行 |
-| `PowerShell` | PowerShell実行 | **要** | 実行 |
-| `WebFetch` | URL取得 | **要** | 外部 |
-| `WebSearch` | Web検索 | **要** | 外部 |
-| `Agent` | サブエージェント起動（別コンテキスト） | 否 | 委譲 |
-| `Skill` | スキルをメイン会話で実行 | **要** | 拡張 |
-| `Task*`（Create/Get/List/Update） | タスクリスト管理 | 否 | 管理 |
-| `AskUserQuestion` | 選択式で要件確認 | 否 | 対話 |
-| `LSP` | 定義ジャンプ/参照/型エラー | 否 | 読取 |
-| `Monitor` | バックグラウンド実行の出力を逐次フィードバック | **要** | 実行 |
-| MCP系（`ListMcpResourcesTool`/`ReadMcpResourceTool`/`ToolSearch`/`WaitForMcpServers`） | MCPリソース/ツールの列挙・読取・遅延ロード | 否 | 拡張 |
+**ファイル・コード（読取/変更）**
+| ツール | 説明 | 権限要 |
+|---|---|---|
+| `Read` / `Glob` / `Grep` | ファイル読取／パターン検索／内容検索（ripgrep） | 否 |
+| `LSP` | 定義ジャンプ・参照・型エラー（言語サーバー） | 否 |
+| `Edit` / `Write` / `NotebookEdit` | 部分編集／作成・上書き／Jupyterセル編集 | **要** |
 
+**実行**
+| ツール | 説明 | 権限要 |
+|---|---|---|
+| `Bash` / `PowerShell` | シェル実行（[sandbox](./17-claude-code-advanced-operations.md)対象） | **要** |
+| `Monitor` | バックグラウンド実行の出力行を逐次フィードバック（WebSocket受信も可） | **要** |
+| `TaskStop` / `TaskOutput` | 背景タスクの停止／出力取得（Outputは非推奨→出力ファイルをRead） | 否 |
+
+**外部アクセス**
+| ツール | 説明 | 権限要 |
+|---|---|---|
+| `WebFetch` / `WebSearch` | URL取得／Web検索 | **要** |
+| `ListMcpResourcesTool` / `ReadMcpResourceTool` | MCPリソースの列挙／URI指定読取 | 否 |
+| `ToolSearch` / `WaitForMcpServers` | 遅延ツールの検索ロード／接続待ち（tool search 有効/無効で排他） | 否 |
+
+**委譲・オーケストレーション**
+| ツール | 説明 | 権限要 |
+|---|---|---|
+| `Agent` | サブエージェント起動（別コンテキスト。[`08`](./08-agent-primitives-and-composition.md)） | 否 |
+| `SendMessage` | サブエージェントの再開・[agent teams](./17-claude-code-advanced-operations.md) のメッセージ | 否 |
+| `Workflow` | [dynamic workflow](https://code.claude.com/docs/en/workflows)（スクリプトが多数のサブエージェントを裏で編成し結果を統合） | **要** |
+| `Skill` | スキルをメイン会話で実行（[`09`](./09-claude-code-skill-authoring.md)） | **要** |
+
+**セッション制御・計画**
+| ツール | 説明 | 権限要 |
+|---|---|---|
+| `EnterPlanMode` / `ExitPlanMode` | 計画モードへ／計画を提示して抜ける | 否/**要** |
+| `EnterWorktree` / `ExitWorktree` | git worktreeの作成・移動／復帰（並列作業の隔離） | 否 |
+| `TaskCreate` / `TaskGet` / `TaskList` / `TaskUpdate` | セッションのタスクリスト管理 | 否 |
+| `TodoWrite` | 旧タスク管理（既定で無効化済み。Task系が後継） | 否 |
+
+**スケジュール・通知・ユーザー連携**
+| ツール | 説明 | 権限要 |
+|---|---|---|
+| `CronCreate` / `CronList` / `CronDelete` | セッション内スケジュール（[`17 §3`](./17-claude-code-advanced-operations.md)） | 否 |
+| `ScheduleWakeup` | 自己調整 `/loop` の次回起動を予約（Claude が使う） | 否 |
+| `RemoteTrigger` | claude.ai の Routines を作成・実行（`/schedule` の裏側） | 否 |
+| `AskUserQuestion` | 選択式で要件・曖昧さを確認 | 否 |
+| `PushNotification` | デスクトップ/スマホ通知（長時間タスクの完了連絡） | 否 |
+| `SendUserFile` | 生成物（レポート・画像等）をユーザーのデバイスへ送付 | 否 |
+| `ReportFindings` | コードレビュー所見を構造化して報告（`/code-review` 系が使用） | 否 |
+| `Artifact` | HTML/Markdownを組織内共有のアーティファクトとして公開（Team/Enterprise） | **要** |
+| `ShareOnboardingGuide` | ONBOARDING.md の共有リンク発行 | **要** |
+
+- 一部はプラン・プロバイダ依存（`PushNotification`/`SendUserFile`/`RemoteTrigger` はBedrock/Vertex/Foundry不可、`Artifact` はTeam/Enterprise）。
 - **カスタムツールを足す = MCPサーバーを繋ぐ**（[`10`](./10-claude-code-mcp-servers.md)）。**再利用可能なプロンプト手順を足す = スキル**（[`09`](./09-claude-code-skill-authoring.md)、既存の `Skill` ツール経由で動く＝新ツールは増えない）。
 
 ---
