@@ -38,6 +38,7 @@ Academy が扱わない、実運用で必須の領域も入れてある。
 - **安全設計**（最小権限・プロンプトインジェクション・信頼境界: [`08 §6.5`](./08-agent-primitives-and-composition.md)）
 - **評価・回帰・反復ループ**（[`06`](./06-evaluation-and-iteration.md)）
 - **非Claude系ツール（他LLM/LangGraph/n8n/ベクトルDB等）との比較選定**（[`04`](./04-tool-selection-matrix.md)）
+- **サードパーティ・エコシステムの地図**（ブラウザ操作/音声等のモダリティ、既製MCPカタログ、Pydantic AI・Google ADK・Microsoft Agent Framework・Mastra等の追加FW、検索API/コード実行サンドボックス/メモリレイヤー、A2Aプロトコル: [`18`](./18-third-party-ecosystem.md)）
 
 ## 一次情報リンク（実装時に最新確認）
 

@@ -8,6 +8,8 @@
 
 「そもそもこの処理を、スキル／サブエージェント／スラッシュコマンド／MCP／プラグイン／Agent SDK のどれで作るか」という**エージェント・プリミティブの選定**は、このマトリクスの前段にある最重要判断で、[`08-agent-primitives-and-composition.md`](./08-agent-primitives-and-composition.md) に集約している。フェーズ3.5として必ず先に通す。このファイル（カテゴリ1〜9）は、プリミティブを決めた後の「中身をどのモデル・FW・DB・基盤で実装するか」の選定に使う。
 
+**サードパーティの具体候補カタログは [`18-third-party-ecosystem.md`](./18-third-party-ecosystem.md)**: エージェントのモダリティ別ツール（ブラウザ操作/音声/computer use）、既製MCPサーバー群、追加フレームワーク（Pydantic AI/Google ADK/Microsoft Agent Framework/Mastra等）、専門ツール（検索API/コード実行サンドボックス/メモリレイヤー/ドキュメント解析）、A2Aプロトコル。このファイルの軸で、18の候補を評価する関係。
+
 ---
 
 ## 大原則: 選定は「軸」で決める

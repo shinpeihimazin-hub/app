@@ -33,7 +33,7 @@
 | [`03-task-and-effort-breakdown.md`](./03-task-and-effort-breakdown.md) | タスク分解の型・工数見積りの基準表 | フェーズ2 |
 | [`04-tool-selection-matrix.md`](./04-tool-selection-matrix.md) | モデル/フレームワーク/DB/評価/デプロイの選定マトリクス | フェーズ3 |
 | [`08-agent-primitives-and-composition.md`](./08-agent-primitives-and-composition.md) | **サブエージェント/スキル/スラッシュコマンド/MCP/プラグインの正確な仕様・使い分け・探索と選定の決定木**（公式仕様ベース） | **フェーズ3.5（心臓部）** |
-| [`05-build-and-output-templates.md`](./05-build-and-output-templates.md) | 実働テンプレ集（A システムプロンプト / B 素のSDK / C LangGraph HITL / D CrewAI / E MCP / F n8n / G Claude Code拡張 / H 評価 / I OpenAI Agents SDK / J RAG(pgvector) / K ガードレール / L ストリーミング / M 可観測性 / N Docker＋CI） | フェーズ4 |
+| [`05-build-and-output-templates.md`](./05-build-and-output-templates.md) | 実働テンプレ集A〜P（システムプロンプト/素のSDK/LangGraph HITL/CrewAI/MCP/n8n/Claude Code拡張/評価/OpenAI Agents SDK/RAG/ガードレール/ストリーミング/可観測性/Docker＋CI/headless/**ブラウザ操作**） | フェーズ4 |
 | [`09-claude-code-skill-authoring.md`](./09-claude-code-skill-authoring.md) | **Claude Code実装リファレンス① スキルを実装する完全版**（frontmatter全項目/動的注入/引数/progressive disclosure/scripts/context:fork/評価） | 実装 |
 | [`10-claude-code-mcp-servers.md`](./10-claude-code-mcp-servers.md) | **同② MCPで外部ツールを実装・接続**（Tools/Resources/Prompts、transports、scope、Python/TS） | 実装 |
 | [`11-claude-code-tool-use-and-sdk.md`](./11-claude-code-tool-use-and-sdk.md) | **同③ API tool use（関数呼び出し）＋Agent SDKカスタムツール＋ビルトインツール表** | 実装 |
@@ -43,6 +43,7 @@
 | [`15-bedrock-vertex-deployment.md`](./15-bedrock-vertex-deployment.md) | **Amazon Bedrock / Google Vertex AI 実運用**（設定・認証・モデルpin・IAM・キャッシュ・1M・ガードレール・Mantle・トラブルシュート） | デプロイ（エンタープライズ） |
 | [`16-claude-code-memory-and-permissions.md`](./16-claude-code-memory-and-permissions.md) | **メモリ（CLAUDE.md階層・rules/・imports・auto memory）と権限（ルール構文・deny→ask→allow評価・settings階層）** | 実装（挙動の基盤） |
 | [`17-claude-code-advanced-operations.md`](./17-claude-code-advanced-operations.md) | **運用系周辺機能**（sandboxのOS層隔離・checkpoint/`/rewind`・`/loop`とcron/Routines・agent teams vs サブエージェント・Monitor/Channels） | 運用 |
+| [`18-third-party-ecosystem.md`](./18-third-party-ecosystem.md) | **サードパーティ・エコシステム**（モダリティ別: ブラウザ/音声/computer use・既製MCPカタログ・追加FW（Pydantic AI/ADK/MS Agent Framework/Mastra）・検索API/サンドボックス/メモリ・A2A） | フェーズ3/3.5（幅出し） |
 | [`anthropic-academy-coverage.md`](./anthropic-academy-coverage.md) | **Anthropic Academy カバレッジマップ**（各コース×キット対応、網羅の証跡） | 網羅確認 |
 | [`06-evaluation-and-iteration.md`](./06-evaluation-and-iteration.md) | 評価方法・改善ループの回し方 | フェーズ5 |
 | [`07-worked-example.md`](./07-worked-example.md) | 通し実演2例（例1=線形＋HITL/保守性優先、例2=パターン合成/精度優先。同じフェーズでも優先順位で選択が真逆になる対比） | 迷ったとき・型を掴みたいとき |
