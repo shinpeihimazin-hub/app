@@ -1,0 +1,41 @@
+{
+  "_comment": "APIキーを取得したら、使うサーバーのブロックを .mcp.json の mcpServers にコピーし、環境変数にキーを設定するだけで有効化できる（${VAR} はClaude Codeが起動時に展開する）。キー未設定のまま入れると起動時に接続失敗のノイズが出るので、キーが揃ったものだけ移すこと。",
+  "mcpServers": {
+    "tavily": {
+      "_comment": "エージェント向け検索API（出典つき・セッション上限なし）。キー: https://tavily.com",
+      "command": "npx",
+      "args": ["-y", "tavily-mcp@latest"],
+      "env": { "TAVILY_API_KEY": "${TAVILY_API_KEY}" }
+    },
+    "exa": {
+      "_comment": "セマンティック検索・類似ページ探索。キー: https://exa.ai",
+      "command": "npx",
+      "args": ["-y", "exa-mcp-server"],
+      "env": { "EXA_API_KEY": "${EXA_API_KEY}" }
+    },
+    "brave-search": {
+      "_comment": "独立インデックスのWeb検索。キー: https://brave.com/search/api/",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-brave-search"],
+      "env": { "BRAVE_API_KEY": "${BRAVE_API_KEY}" }
+    },
+    "context7": {
+      "_comment": "ライブラリの最新公式ドキュメントを文脈に注入。キー無しでも動く（レート制限あり）。外部API（context7.com）に到達できるネットワークポリシーが前提",
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"]
+    }
+  },
+  "_rest_apis": {
+    "_comment": "MCPではなく素のREST API（Bash/requestsから直接叩く方が簡単なもの）。price-hunter等の構造化データ取得はスクレイピングよりこちらを先に検討する。",
+    "rakuten_ichiba": {
+      "用途": "楽天市場の商品検索。価格・ポイント倍率がJSONで返る（無料）",
+      "キー": "RAKUTEN_APP_ID（https://webservice.rakuten.co.jp/ で取得）",
+      "エンドポイント": "https://app.rakuten.co.jp/services/api/IchibaItem/Search/20220601"
+    },
+    "yahoo_shopping": {
+      "用途": "Yahoo!ショッピングの商品検索（無料）",
+      "キー": "YAHOO_APP_ID（https://developer.yahoo.co.jp/ で取得）",
+      "エンドポイント": "https://shopping.yahooapis.jp/ShoppingWebService/V3/itemSearch"
+    }
+  }
+}

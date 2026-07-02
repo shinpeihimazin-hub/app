@@ -40,6 +40,11 @@ argument-hint: [作りたいエージェントの概要（任意）]
 - 既存サブエージェント: !`ls .claude/agents/ 2>/dev/null || echo "(なし)"`
 - 既存スキル: !`ls .claude/skills/ 2>/dev/null || echo "(なし)"`
 - MCP設定: !`cat .mcp.json 2>/dev/null || echo "(なし)"`
+- 実行環境の装備（グローバルnpm）: !`npm ls -g --depth=0 2>/dev/null | tail -n +2 || echo "(npmなし)"`
+- プリインストールブラウザ: !`ls "${PLAYWRIGHT_BROWSERS_PATH:-/opt/pw-browsers}" 2>/dev/null | head -3 || echo "(なし)"`
+- 外部ネットワーク疎通: !`code=$(curl -m 4 -sS -o /dev/null -w "%{http_code}" https://example.com 2>/dev/null); [ "$code" = "200" ] && echo "OK(直接到達可)" || echo "遮断あり(HTTP $code)——許可リスト外ドメインはプロキシポリシーで403になる環境。外部サイト取得系の設計はこの制約を前提にする"`
+
+**環境棚卸しの原則**: 上記は「いま即使える装備」。キットのカタログ（18等）に載っていても未導入のものは選択肢ではなく導入タスクとして扱う。外部ドメイン取得が要件にあり疎通が「遮断あり」なら、先にネットワークポリシー変更（または到達可能な代替手段）を確定させてから設計する。
 
 上記とビルトイン（Explore/Plan/general-purpose/fork、bundledスキル）に要件を満たすものがあれば、まず再利用/拡張を検討する。無い/不十分な分だけ新規に作る。
 

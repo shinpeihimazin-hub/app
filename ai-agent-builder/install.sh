@@ -31,4 +31,6 @@ cat <<'MSG'
   .claude/agents/agent-builder-researcher.md   … 調査用サブエージェント（新セッションから有効）
   ai-agent-builder/                            … 詳細リファレンス（スキルが必要時に参照）
 推奨: 公式ドキュメント調査を無承認化する permissions.allow（ai-agent-builder/16 §2-5 参照）
+任意: 検索API・実ブラウザ等のMCPは ai-agent-builder/templates/mcp-optional.json を
+      .mcp.json にコピーしてAPIキーを設定すれば有効化できる
 MSG

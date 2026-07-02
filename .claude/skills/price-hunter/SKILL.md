@@ -31,12 +31,18 @@ AskUserQuestionで以下を確認する（すでに会話中で分かってい�
 
 未回答なら「一般会員（還元率の下限）」を仮定し、その旨を明記して進める。
 
+### ステップ3-0: 環境スパイク（実行前に必ず。3分で限界を見極める）
+価格取得を始める**前に**、この環境で何が可能かを代表1件で検証する:
+1. **ネットワーク疎通**: `curl -m 5 -sS -o /dev/null -w "%{http_code}" https://www.rakuten.co.jp` を1回実行。`000`＋`CONNECT tunnel failed, response 403` なら**プロキシのネットワークポリシーが許可リスト外ドメインを遮断している環境**であり、curl/Playwright/WebFetchのどれに替えても直接取得は不可能。即座にユーザーへ「この環境では直接取得不可。ネットワークポリシー変更が必要か、WebSearch（サーバー側実行）のみで進めるか」を確認する。**サイト側のアンチボット403と混同して誤診しない。**
+2. **装備確認**: `npm ls -g playwright` と `ls "${PLAYWRIGHT_BROWSERS_PATH:-/opt/pw-browsers}"` で実ブラウザルートの可否、`env | grep -iE "RAKUTEN|YAHOO"` でAPIキーの有無を確認する。
+3. 確認結果（可能なルート一覧）を明示してからステップ3へ進む。
+
 ### ステップ3: サイト別価格取得（公式API優先・1サイトずつ逐次検証・fail-fast）
 
-**ツールの選び方（反射で WebSearch を選ばない）**: サイトごとに「最も適した取得手段」を先に選ぶ。優先順位は **公式API > 検索API/スクレイパMCP > WebSearchスニペット > WebFetch**。
-- **楽天市場** → 楽天 商品検索API（Rakuten Ichiba Item Search）。無料・JSONで**価格とポイント倍率が構造化**で返る。スクレイピング不要。※本スキルはAPIキー（`RAKUTEN_APP_ID`等）が利用可能なときにこれを第一候補にする。無ければ検索API/スニペットへ降りる。
+**ツールの選び方（反射で WebSearch を選ばない）**: サイトごとに「最も適した取得手段」を先に選ぶ。優先順位は **公式API > Playwright実ブラウザ > 検索API/スクレイパMCP > WebSearchスニペット > WebFetch**。
+- **楽天市場** → 楽天 商品検索API（Rakuten Ichiba Item Search）。無料・JSONで**価格とポイント倍率が構造化**で返る。スクレイピング不要。※本スキルはAPIキー（`RAKUTEN_APP_ID`等）が利用可能なときにこれを第一候補にする。無ければ下位ルートへ降りる。
 - **Yahoo!ショッピング** → Yahoo!ショッピング 商品検索API。無料・JSON。同様にキーがあれば第一候補。
-- **Amazon.co.jp / 価格.com** → 公式の無料APIが無い/制約が強い。Tavily/Exa等の検索API（MCP）→ 無ければビルトインWebSearchのスニペット → それも不足なら Playwright MCP / Firecrawl 等のスクレイパMCP、の順で降りる。**個別ページへの素のWebFetchは`403 Forbidden`になりやすいので最後の手段**。
+- **Amazon.co.jp / 価格.com** → 公式の無料APIが無い/制約が強い。①Playwright実ブラウザ（ステップ3-0で装備確認済みなら。`.mcp.json` の playwright MCP、またはBashから `playwright` スクリプトで実ページを開く。アンチボット403を越えられる可能性が最も高い）→ ②Tavily/Exa等の検索API（MCP）→ ③ビルトインWebSearchのスニペット、の順で降りる。**個別ページへの素のWebFetchはアンチボットで`403`になりやすいので最後の手段**。
 
 **実行規律（絶対）** — 一気通貫で流さない:
 1. **spike-first**: まず1サイト目（取得容易な楽天など）を1回だけ実行し、価格が取れることを確認する。

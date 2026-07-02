@@ -55,6 +55,21 @@ Claude Code 以外のLLMで使う場合:
 | [`templates/agent-builder.subagent.md`](./templates/agent-builder.subagent.md) | **このビルダー自身**を Claude Code のサブエージェントとして常駐させる完成テンプレ | 常駐化 |
 | [`templates/agent-builder.SKILL.md`](./templates/agent-builder.SKILL.md) | **このビルダー自身**を Claude Code のスキル（`/agent-builder`）として常駐させる完成テンプレ | 常駐化 |
 
+## 導入済みの装備（カタログと装備を混同しない）
+
+このリポジトリで**いま即使える形**になっているもの:
+
+| 種別 | 実体 |
+|---|---|
+| スキル | `/agent-builder`（起動時に既存プリミティブ＋**実行環境の装備＋ネットワーク疎通**を自動棚卸し）、`/price-hunter` |
+| サブエージェント | `agent-builder-researcher`（調査隔離役） |
+| MCPサーバー | **Playwright MCP**（`.mcp.json`。プリインストールChromiumで実ブラウザ操作。キー不要） |
+| bundledスキル（ハーネス同梱） | `/code-review` `/verify` `/simplify` `/run` `/dataviz` `/claude-api` `/loop` `/security-review` `/init` 等（導入不要で常時使える） |
+
+APIキーが要るもの（Tavily / Exa / Brave / 楽天 / Yahoo!）は [`templates/mcp-optional.json`](./templates/mcp-optional.json) に**キーを差せば有効化できる形**で待機させてある。**教訓: `18` のカタログに載っていても、導入されていなければ実行時の選択肢にならない。** フェーズ3.5の探索には「環境に何がインストール済みか・外部ネットワークに到達できるか」の棚卸しを必ず含める（[`08 §6`](./08-agent-primitives-and-composition.md)）。
+
+> **マネージド環境のネットワークポリシー注意**: Claude Code on the web 等のリモート環境では、プロキシが許可リスト外ドメインへの接続を403で遮断することがある。これは対象サイトのアンチボット403と見分けがつかないため、必ず `curl` で切り分ける（`08 §6` / price-hunter ステップ3-0）。遮断環境で外部サイト取得系エージェントを動かすには、環境設定のネットワークポリシー変更が先。
+
 ## 運用ルール（4行）
 
 - **分解と見積りを飛ばしていきなり実装に入らない。** 「とりあえずClaudeに投げて動くもの作る」は最強のエージェントには辿り着かない。
