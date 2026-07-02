@@ -42,6 +42,7 @@
 | [`14-prompt-and-context-engineering.md`](./14-prompt-and-context-engineering.md) | **プロンプト／コンテキストエンジニアリング**（system prompt設計、ツール記述ACI、思考/effort、並列ツール、長期state管理、自律と安全、失敗モード対処） | フェーズ4 |
 | [`15-bedrock-vertex-deployment.md`](./15-bedrock-vertex-deployment.md) | **Amazon Bedrock / Google Vertex AI 実運用**（設定・認証・モデルpin・IAM・キャッシュ・1M・ガードレール・Mantle・トラブルシュート） | デプロイ（エンタープライズ） |
 | [`16-claude-code-memory-and-permissions.md`](./16-claude-code-memory-and-permissions.md) | **メモリ（CLAUDE.md階層・rules/・imports・auto memory）と権限（ルール構文・deny→ask→allow評価・settings階層）** | 実装（挙動の基盤） |
+| [`17-claude-code-advanced-operations.md`](./17-claude-code-advanced-operations.md) | **運用系周辺機能**（sandboxのOS層隔離・checkpoint/`/rewind`・`/loop`とcron/Routines・agent teams vs サブエージェント・Monitor/Channels） | 運用 |
 | [`anthropic-academy-coverage.md`](./anthropic-academy-coverage.md) | **Anthropic Academy カバレッジマップ**（各コース×キット対応、網羅の証跡） | 網羅確認 |
 | [`06-evaluation-and-iteration.md`](./06-evaluation-and-iteration.md) | 評価方法・改善ループの回し方 | フェーズ5 |
 | [`07-worked-example.md`](./07-worked-example.md) | 通し実演2例（例1=線形＋HITL/保守性優先、例2=パターン合成/精度優先。同じフェーズでも優先順位で選択が真逆になる対比） | 迷ったとき・型を掴みたいとき |

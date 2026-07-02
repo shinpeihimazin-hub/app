@@ -88,6 +88,17 @@ while True:
 - **マルチモーダル**: 画像等を content ブロックで渡す。ツール結果でも image ブロックを返せる（§3）。
 - **構造化出力**: `strict` ツール / tool_choice で特定ツール強制 → スキーマ準拠のJSONを取り出す定番手法。SDKなら structured outputs 機能。
 - **プロンプトキャッシュ**: 長い system/tools をキャッシュしてコスト削減（[`04`](./04-tool-selection-matrix.md) と併用）。
+- **Batch API（Message Batches）**: 即時応答が不要な大量処理を**50%引き**で非同期実行。大規模評価（[`06`](./06-evaluation-and-iteration.md) のゴールデンセット一括実行に最適）、コンテンツモデレーション、データ一括分析など。`custom_id` 付きリクエスト群を投げてポーリングで回収（多くは1時間以内、上限24時間・1バッチ最大10万件/256MB）。
+  ```python
+  batch = client.messages.batches.create(requests=[
+      {"custom_id": "eval-1",
+       "params": {"model": "claude-haiku-4-5", "max_tokens": 512,
+                  "messages": [{"role": "user", "content": "テストケース1..."}]}},
+      # ... 数千件並べられる
+  ])
+  # batch.id をポーリング → processing_status が ended になったら結果を取得
+  ```
+  フェーズ0で「コスト優先＋リアルタイム不要」ならバッチ化を最初に検討する。
 
 ### Citations API（出典を構造化して返す）
 

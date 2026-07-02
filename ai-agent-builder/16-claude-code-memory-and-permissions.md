@@ -104,7 +104,7 @@ paths:
 - **引数を縛るパターンは脆い**: `Bash(curl http://github.com/ *)` はオプション先行・https・リダイレクト・変数展開で漏れる。URL制御は「curl/wgetをdenyし、`WebFetch(domain:...)` を使わせる」か PreToolUse フックで。
 - `ls`/`cat`/`grep`/読み取り系gitなどの**組み込み読み取りコマンドは常に無承認**（設定不可。止めたければ ask/deny を書く）。
 
-**Read/Edit denyの限界**: 組み込みファイルツールと認識可能なBashコマンド（cat等）には効くが、**ファイルを自分で開くサブプロセス**（Pythonスクリプト等）には効かない。OSレベルで塞ぐには[サンドボックス](https://code.claude.com/docs/en/sandboxing)を併用（permissions=ツール層、sandbox=OS層の多層防御）。
+**Read/Edit denyの限界**: 組み込みファイルツールと認識可能なBashコマンド（cat等）には効くが、**ファイルを自分で開くサブプロセス**（Pythonスクリプト等）には効かない。OSレベルで塞ぐには[サンドボックス](./17-claude-code-advanced-operations.md)を併用（permissions=ツール層、sandbox=OS層の多層防御）。
 
 ### 2-3. settings ファイルの階層と優先
 
