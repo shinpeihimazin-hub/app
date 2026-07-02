@@ -77,7 +77,8 @@ git clone https://github.com/shinpeihimazin-hub/app && cd app
 |---|---|
 | スキル | `/agent-builder`（起動時に既存プリミティブ＋**実行環境の装備＋ネットワーク疎通**を自動棚卸し）、`/absorb`（新部品の取り込み）、`/price-hunter` |
 | サブエージェント | `agent-builder-researcher`（調査隔離役） |
-| MCPサーバー | **Playwright MCP**（`.mcp.json`。プリインストールChromiumで実ブラウザ操作。キー不要） |
+| MCPサーバー | **Playwright MCP**（実ブラウザ操作）、**Serena**（LSPベースの意味論的コード操作）、**Sequential Thinking**（構造化推論）——いずれも `.mcp.json`・キー不要・起動検証済み |
+| 発見チャネル | **公式プラグインマーケットプレイス**（`/plugin install <名前>@claude-plugins-official`、監査済み119件） |
 | bundledスキル（ハーネス同梱） | `/code-review` `/verify` `/simplify` `/run` `/dataviz` `/claude-api` `/loop` `/security-review` `/init` 等（導入不要で常時使える） |
 
 APIキーが要るもの（Tavily / Exa / Brave / 楽天 / Yahoo!）は [`templates/mcp-optional.json`](./templates/mcp-optional.json) に**キーを差せば有効化できる形**で待機させてある。**教訓: `18` のカタログに載っていても、導入されていなければ実行時の選択肢にならない。** フェーズ3.5の探索には「環境に何がインストール済みか・外部ネットワークに到達できるか」の棚卸しを必ず含める（[`08 §6`](./08-agent-primitives-and-composition.md)）。

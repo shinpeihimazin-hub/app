@@ -30,6 +30,8 @@
 | Exa | 🔑待機 | セマンティック検索・類似ページ探索 | 同上 | EXA_API_KEY | 2026-07-02 | exa.ai |
 | Brave Search | 🔑待機 | 独立インデックスのWeb検索 | 同上 | BRAVE_API_KEY | 2026-07-02 | brave.com/search/api |
 | GitHub MCP | ⚠️制約あり | PR/issue/CI/リポジトリ操作 約60ツール | リモート実行環境が自動接続（ローカルは要設定） | 環境付与 | 2026-07-02 | github.com/github/github-mcp-server |
+| Serena | ✅導入済 | LSPベースの意味論的コード操作（find_symbol/replace_symbol_body等、40+言語）。エージェントに「IDEの腕」。ローカル完結 | `.mcp.json`（uvx＋PyPI `serena-agent`。v1.5.3で起動確認） | 不要 | 2026-07-02 | github.com/oraios/serena |
+| Sequential Thinking | ✅導入済 | 構造化推論ツール（複雑な設計の計画を明示的ステップに分解）。公式リファレンス実装・ローカル完結 | `.mcp.json`（npx。stdio起動確認済み） | 不要 | 2026-07-02 | github.com/modelcontextprotocol/servers |
 
 ## 2. REST API（MCP不要・Bash/requestsから直接叩く）
 
@@ -66,6 +68,13 @@
 ## 6. フレームワーク・SDK（調査済みカタログは [`04`](./04-tool-selection-matrix.md)/[`18`](./18-third-party-ecosystem.md)）
 
 未導入。必要案件が来たら `/absorb <名前>` で調査→この台帳に昇格させる。
+
+## 7. 発見チャネル（部品を探しに行く「棚」）
+
+| 名前 | 状態 | 何があるか | 使い方 | 検証日 |
+|---|---|---|---|---|
+| 公式プラグインマーケットプレイス（anthropics/claude-plugins-official） | ✅利用可 | Anthropic監査済みプラグイン119件（agents/commands/LSP/skills/hooks） | Claude Code起動時から自動で利用可。`/plugin` のDiscoverタブで閲覧、`/plugin install <名前>@claude-plugins-official` で導入。カタログ: claude.com/plugins | 2026-07-02 |
+| awesome-claude-code（36.8k★）／VoltAgent subagents集 | 📖次回sweep候補 | コミュニティ製スキル・サブエージェントのカタログ | 次回 `/absorb sweep` で取り込み判定（今回は3件上限で繰越） | — |
 
 ---
 
