@@ -41,6 +41,7 @@
 | [`13-advanced-agent-patterns.md`](./13-advanced-agent-patterns.md) | **Building Effective Agents**（ワークフローvsエージェント、5ワークフローパターン＋自律エージェント、中核原則）をClaude Codeプリミティブへ対応 | フェーズ1（高度） |
 | [`14-prompt-and-context-engineering.md`](./14-prompt-and-context-engineering.md) | **プロンプト／コンテキストエンジニアリング**（system prompt設計、ツール記述ACI、思考/effort、並列ツール、長期state管理、自律と安全、失敗モード対処） | フェーズ4 |
 | [`15-bedrock-vertex-deployment.md`](./15-bedrock-vertex-deployment.md) | **Amazon Bedrock / Google Vertex AI 実運用**（設定・認証・モデルpin・IAM・キャッシュ・1M・ガードレール・Mantle・トラブルシュート） | デプロイ（エンタープライズ） |
+| [`16-claude-code-memory-and-permissions.md`](./16-claude-code-memory-and-permissions.md) | **メモリ（CLAUDE.md階層・rules/・imports・auto memory）と権限（ルール構文・deny→ask→allow評価・settings階層）** | 実装（挙動の基盤） |
 | [`anthropic-academy-coverage.md`](./anthropic-academy-coverage.md) | **Anthropic Academy カバレッジマップ**（各コース×キット対応、網羅の証跡） | 網羅確認 |
 | [`06-evaluation-and-iteration.md`](./06-evaluation-and-iteration.md) | 評価方法・改善ループの回し方 | フェーズ5 |
 | [`07-worked-example.md`](./07-worked-example.md) | 通し実演2例（例1=線形＋HITL/保守性優先、例2=パターン合成/精度優先。同じフェーズでも優先順位で選択が真逆になる対比） | 迷ったとき・型を掴みたいとき |
@@ -80,3 +81,8 @@ cd /path/to/ai-agent-builder-kit && git init && git add . && git commit -m "init
 - 特定の言語・クラウド・LLMベンダーに縛られない。案件ごとに最適解が変わる前提で作ってある。
 - 「最強」の基準は案件によって変わる（速度優先、精度優先、コスト優先、保守性優先）。フェーズ0で必ずこの優先順位を確定させる。
 - ツール・フレームワークのエコシステムは変化が速い。`04-tool-selection-matrix.md` は定期的に見直すことを前提に、選定基準（軸）を先に固定し、個別ツール名は入れ替え可能な形で書いてある。
+
+## 鮮度管理
+
+- **最終検証日: 2026-07-02**（全ファイル。Claude Code / API / MCP は公式ドキュメント、第三者FW（LangGraph / OpenAI Agents SDK 等）は公式ドキュメント・現行API情報と突き合わせて検証）。
+- モデルID・フロントマター仕様・SDKのAPIは変わる。**この日付から時間が経っているほど、実装前の公式確認（各ファイルの但し書き参照）を厚めに**。再検証したらこの日付を更新する。
