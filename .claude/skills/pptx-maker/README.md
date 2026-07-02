@@ -28,7 +28,19 @@ bash <repo>/.claude/skills/pptx-maker/setup.sh  # 2. 依存導入（Python3必�
 
 - 前提: Python 3.10+ / Claude Code。
 - LibreOffice は**任意**（あるとS6の視覚QAが全自動化。無くても幾何チェックで動く——setup.shが検出して案内を出す）。
-- 会社テンプレ（.pptx）は**このパッケージに含めない**。各部署の正規テンプレを利用時に指定する。
+
+## 機密設計（テンプレの読み込みは配布先PCで行う）
+
+**配布物に機密は一切含まれない。** 会社テンプレ（.pptx）の読み込み・解析（テンプレ地図の生成）は、配布先の各PCで初回セットアップとして実施する:
+
+| データ | 置き場所 | リポジトリへ |
+|---|---|---|
+| 会社テンプレ .pptx | 各PCの任意パス（`local/template.path` に記録） | ❌ 入らない |
+| テンプレ地図 template-map.json | `pptx-maker/local/`（gitignore） | ❌ 入らない |
+| ブリーフ・原稿・生成pptx・QA結果 | `pptx-work/`（gitignore） | ❌ 入らない |
+| スキル・スクリプト・ガイド | 配布リポジトリ | ✅ これだけ |
+
+`git push` しても機密がリポジトリに戻れない構造（.gitignoreで強制）。
 
 ## 品質の考え方
 

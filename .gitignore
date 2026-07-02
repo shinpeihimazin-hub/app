@@ -1,0 +1,3 @@
+# pptx-maker: 機密はローカル完結（配布先PCからリポジトリへ戻さない）
+pptx-work/
+.claude/skills/pptx-maker/local/
