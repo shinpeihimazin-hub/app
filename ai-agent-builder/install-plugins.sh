@@ -4,7 +4,8 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."   # リポジトリルートへ
 
-PLUGINS=(skill-creator mcp-server-dev plugin-dev agent-sdk-dev security-guidance)
+# 中核5（Anthropic公式）＋ superpowers（コミュニティ/obra・MITライセンス確認済み 2026-07-02）
+PLUGINS=(skill-creator mcp-server-dev plugin-dev agent-sdk-dev security-guidance superpowers)
 
 # 公式マーケットプレイスはローカルCLIでは自動登録済みのはず。無い場合のみ追加
 claude plugin marketplace list 2>/dev/null | grep -q "claude-plugins-official" || \
