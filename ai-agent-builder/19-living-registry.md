@@ -108,7 +108,7 @@ claude plugin install <名前>@claude-plugins-official -s project    # -s projec
 | claude-code-setup（Anthropic） | コードベース分析→hooks/skills/MCPの提案 | 新規プロジェクト導入時 |
 | claude-md-management（Anthropic） | CLAUDE.mdの品質監査・セッション学習の取り込み | メモリ運用を始めたら |
 | feature-dev / pr-review-toolkit（Anthropic） | 機能開発ワークフロー／PR多角レビュー | 実装案件が回り始めたら |
-| superpowers（obra・コミュニティ有名作） | ブレスト→計画→サブエージェント駆動開発＋内蔵コードレビューの方法論スキル集。**MIT確認済み・install-plugins.sh追加済み・さらに主要9スキルを一次取得して「合理化封じ」の強制力パターンを解剖→本キットの全スキル（00/agent-builder/absorb/pptx-maker）の規律文に移植済み（2026-07-02。出典: github.com/obra/superpowers, MIT）**。移植した部品: 鉄の掟（1行絶対文）／精神条項／言い訳・反駁表／停止シグナル／証拠なき完了宣言の禁止／例外は人間のみ | プラグイン本体はローカルCLIの導入スクリプトで。パターンは移植済みで全スキルに常時有効 |
+| superpowers（obra・コミュニティ有名作） | **✅本体導入済（v6.1.1・無改変・完全）**。ユーザーのfork（shinpeihimazin-hub/superpowers）経由で完全clone→`vendor/superpowers/`に搬入（SHA d884ae04・出所はvendor/README.md）。**14スキルを`.claude/skills/`に登録済み**（brainstorming/TDD/verification-before-completion/using-superpowers等——登録の即時有効を確認済み）。SessionStart自動注入の配線のみユーザー承認待ち。※それ以前に文体パターン6部品をうちのスキル群へ移植済み | 本体はこのリポジトリで有効。ローカルCLIはinstall-plugins.shでも可 |
 | chrome-devtools-mcp（Google公式） | 実Chromeの制御・パフォーマンストレース | Playwright MCPで不足したら |
 | ○○-lsp 系（typescript/pyright/gopls/rust等 十数種） | 言語別LSP | **Serenaと重複のため原則不要**。Serena不調の言語のみ |
 | tavily / exa / context7 / firecrawl / brightdata | 検索・スクレイパのプラグイン版 | §1のMCP待機行と同じキーで、MCP単体よりスキル込みのこちらを優先してもよい |
