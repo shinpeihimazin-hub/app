@@ -2,5 +2,8 @@
 pptx-work/
 .claude/skills/pptx-maker/local/
 
+# rental-finder: 年収・勤務先・保証人など個人情報を含むためリポジトリへ戻さない
+rental-work/
+
 # タスクごとのスコープ宣言（scope-guardフックが参照。タスク完了時に削除）
 .claude/task-scope
