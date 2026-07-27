@@ -236,3 +236,50 @@ MUST が **8個を超えたら S2b が警告を出す**。母数がゼロに近�
 - [ ] 上位5つのWANTに `PRI_exchange_rate` が付いている
 - [ ] `scripts/validate_conditions.py` が矛盾ゼロ、または全警告についてユーザーが承知済み
 - [ ] ユーザーが明示的に「凍結してよい」と述べた
+
+---
+
+## 項目の第二軸：エリアを決めるか、物件を決めるか
+
+カテゴリ（1〜9）は**何を聞くか**の分類であり、**いつ聞くか**の分類ではない。
+ユーザーが「まずエリアを決めたい」と言ったとき、カテゴリ順に流すと
+楽器・ペット・事故物件のような**エリアを1つも絞らない項目**を聞いてしまう。
+
+そこで全項目を第二軸で分ける。
+
+### A. エリア決定要因（エリアを絞る。エリア確定ラウンドで聞く）
+
+| 区分 | 項目ID |
+|---|---|
+| 通勤 | `LOC_commute_dest` `LOC_commute_time_max` `LOC_transfer_max` `LOC_transfer_quality` `LOC_commute_freq` `LOC_rush_direction` |
+| 範囲 | `LOC_area_include` `LOC_area_exclude` `LOC_walk_max` `LOC_bus_ok` |
+| 土地の性質 | `LOC_slope` `LOC_night_safety` `LOC_noise` `LOC_hazard_flood` `LOC_hazard_landslide` `LOC_hazard_quake` |
+| 生活圏 | `LOC_facility` `LOC_school_district` `LOC_parents_dist` |
+| 価格帯の決定 | `BUD_rent_max` `BUD_initial_max` `ROM_layout` `ROM_area_min` `BLD_age_max` |
+| 付帯コスト | `BLD_car_parking` `BLD_bike_parking` |
+
+**価格帯の決定**が要点。相場は「エリア × 間取り × 面積 × 築年数」で決まるため、
+この5項目が埋まらないとエリアを予算で絞れない。逆にこの5項目さえあれば絞れる。
+
+### B. 物件決定要因（エリアを絞らない。エリア確定後に聞く）
+
+`EQP_*` の全項目、`CTR_*` の全項目、`TIM_*` の全項目、
+`ROM_floor` `ROM_direction` `ROM_sunlight` `ROM_corner` `ROM_storage` `ROM_balcony`
+`ROM_ceiling` `ROM_flooring` `ROM_pillar` `ROM_window_count`、
+`BLD_structure` `BLD_soundproof_priority` `BLD_quake_std` `BLD_type` `BLD_floors_total`
+`BLD_elevator` `BLD_autolock` `BLD_delivery_box` `BLD_security` `BLD_mgmt_type`
+`BLD_units_total` `BLD_trash`、`BUD` の残り、`LIF_*` の残り。
+
+これらは**どのエリアにも存在しうる**ため、聞いてもエリアは1つも減らない。
+
+### 運用
+
+ユーザーが「エリアを先に決めたい」と述べた場合、**Aだけを埋めてエリアを確定させ、
+Bは後回しにする**。このときS3の凍結ゲートは「エリア確定」の部分ゲートとして扱い、
+物件探索（S4）へは進まない。Bが埋まるまで全体の凍結は成立しない。
+
+### 導出で埋まる項目（聞かずに済ませてよい唯一の例外）
+
+他の項目から**論理的に決まる**ものは、導出の根拠を `note` に書いたうえで埋めてよい。
+例: `BLD_age_max` が25年以内なら2001年以降の築であり、`BLD_quake_std`（新耐震＝
+1981年6月以降の建築確認）は自動的に充足する。推測ではなく演繹なのでこれは許される。
