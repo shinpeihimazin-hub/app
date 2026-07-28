@@ -352,6 +352,36 @@ def speed_report(seen):
         print(f"- {name}: {n}回")
 
 
+def persist(msg):
+    """runlog / seen をリポジトリに残す。
+
+    コンテナは揮発するので、コミットしないと記録が消える。定期実行の
+    プロンプト文言に依存させず、スクリプト側で完結させる。
+    失敗しても監視自体は成功扱いにする（記録の欠落は致命的ではない）。
+    """
+    import subprocess
+    def run(*a):
+        return subprocess.run(a, cwd=os.path.dirname(HERE) or ".",
+                              capture_output=True, text=True, timeout=120)
+    try:
+        run("git", "add", SEEN_PATH, RUNLOG_PATH)
+        st = run("git", "diff", "--cached", "--name-only")
+        if not st.stdout.strip():
+            return "commit不要（差分なし）"
+        c = run("git", "-c", "user.name=rental-watch",
+                "-c", "user.email=noreply@anthropic.com", "commit", "-m", msg)
+        if c.returncode != 0:
+            return f"commit失敗: {c.stderr.strip()[:120]}"
+        for attempt in range(3):
+            p = run("git", "push", "origin", "HEAD")
+            if p.returncode == 0:
+                return "commit+push 済み"
+            time.sleep(2 * (attempt + 1))
+        return f"push失敗: {p.stderr.strip()[:120]}"
+    except Exception as exc:  # noqa: BLE001 - 記録の失敗で監視を落とさない
+        return f"git処理で例外: {exc}"
+
+
 def append_runlog(line):
     new = not os.path.exists(RUNLOG_PATH)
     with open(RUNLOG_PATH, "a", encoding="utf-8") as fh:
@@ -367,6 +397,8 @@ def main():
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--all", action="store_true")
     ap.add_argument("--speed", action="store_true")
+    ap.add_argument("--no-commit", action="store_true",
+                    help="記録をリポジトリにコミットしない（ローカル検証用）")
     args = ap.parse_args()
 
     seen = {}
@@ -398,6 +430,8 @@ def main():
     if errors and not hits:
         if not args.dry_run:
             append_runlog(f"- {ts}  **ERROR**  {summary}  — {'; '.join(errors)[:120]}")
+            if not args.no_commit:
+                print(f"[git] {persist(f'chore(rental-watch): 監視エラー {ts}')}", file=sys.stderr)
         print("## ⚠ 監視エラー（取得できなかった）\n")
         for e in errors:
             print(f"- {e}")
@@ -432,6 +466,9 @@ def main():
         mark = "**新着%d**" % len(new) if new else "新着0"
         append_runlog(f"- {ts}  ok  {summary}  {mark}"
                       + (f"  ※一部失敗: {'; '.join(errors)[:80]}" if errors else ""))
+        if not args.no_commit:
+            print(f"[git] {persist(f'chore(rental-watch): 定期監視 {ts} {mark}')}",
+                  file=sys.stderr)
 
     return 1 if new else 0
 
