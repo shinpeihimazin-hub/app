@@ -37,8 +37,8 @@ UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/126.0 Safari/537.36")
 
 # ---- 確定条件 (conditions.md と対応) -------------------------------------
-RENT_CAP = 170000            # 賃料上限（円）
-RENT_CAP_INCLUSIVE = False   # True にすると「管理費込み」で上限判定する
+RENT_CAP = 170000            # 家賃の上限（円）
+RENT_CAP_INCLUSIVE = True    # True = 管理費・共益費込みで上限を判定する（本人確定 2026-07-29）
 AREA_MIN = 40.0              # 専有面積 下限（㎡）
 AGE_MAX = 25                 # 築年数 上限（年）
 WALK_MAX = 15                # 駅徒歩 上限（分）
@@ -134,6 +134,19 @@ def fingerprint(item):
 def madori_ok(m):
     m = unicodedata.normalize("NFKC", m or "").upper()
     return bool(re.search(r"[1-5]S?LDK|[2-5]S?[DL]?K", m))
+
+
+def within_budget(item):
+    """家賃上限の判定。
+
+    RENT_CAP_INCLUSIVE=True なら管理費・共益費込みで見る。
+    各サイトへのクエリは賃料（管理費抜き）で投げているが、管理費は必ず0以上なので
+    「賃料 <= 上限」は「込み <= 上限」の上位集合になる。取りこぼしはない。
+    """
+    value = item.get("total") if RENT_CAP_INCLUSIVE else item.get("rent")
+    if not value:
+        return True  # 賃料が「要問合せ」のものは落とさず人に判断させる
+    return value <= RENT_CAP
 
 
 # --------------------------------------------------------------------------
@@ -307,7 +320,8 @@ def athome():
 def render(item):
     st = " / ".join(f"{s}歩{w}分" for s, w in item["stations"])
     rent = f"{item['rent']:,}円" if item["rent"] else "要問合せ"
-    over = "  ⚠[管理費込みで17万超]" if item["total"] and item["total"] > RENT_CAP else ""
+    over = "" if RENT_CAP_INCLUSIVE else (
+        "  ⚠[管理費込みで上限超]" if item["total"] and item["total"] > RENT_CAP else "")
     lines = [
         f"### {item['addr'].strip() or '(名称なし)'}",
         f"- **賃料 {rent}**（管理費 {item['kanri']:,}円 / 込み {item['total']:,}円）{over}",
@@ -426,6 +440,13 @@ def main():
 
     ts = stamp()
     summary = " / ".join(f"{k}{v}" for k, v in counts.items())
+
+    # 家賃上限（管理費込み判定）でここで落とす。
+    # 各サイトへのクエリは賃料ベースなので、込み超過はこの段で除く。
+    dropped = [h for h in hits if not within_budget(h)]
+    hits = [h for h in hits if within_budget(h)]
+    if dropped:
+        print(f"[info] 管理費込みで上限超過のため除外: {len(dropped)}件", file=sys.stderr)
 
     if errors and not hits:
         if not args.dry_run:
