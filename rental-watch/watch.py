@@ -1,13 +1,19 @@
 #!/usr/bin/env python3
 """賃貸物件 監視スクリプト
 
-不動産ジャパン と ハトマークサイト を確定条件で叩き、seen.json に無い物件だけを報告する。
+不動産ジャパン / ハトマークサイト / at home を確定条件で叩き、
+seen.json に無い物件だけを報告する。
 SUUMO / LIFULL HOME'S / カナリー は対象外（本人が自分で見ているため）。
 
+物件はサイトを跨いで同一判定（fingerprint）するので、
+「同じ部屋がどのサイトに何時間早く出たか」が seen.json に蓄積される。
+--speed でその集計を出せる。
+
 使い方:
-    python3 rental-watch/watch.py            # 差分を報告し seen.json を更新
-    python3 rental-watch/watch.py --dry-run  # seen.json を更新せず表示だけ
+    python3 rental-watch/watch.py            # 差分を報告し seen.json / runlog.md を更新
+    python3 rental-watch/watch.py --dry-run  # 何も書かない
     python3 rental-watch/watch.py --all      # 既知も含めて全ヒットを表示
+    python3 rental-watch/watch.py --speed    # 掲載速度の集計だけ出す（取得しない）
 
 終了コード:
     0 = 新着なし（正常）
@@ -20,12 +26,13 @@ import os
 import re
 import sys
 import time
-import urllib.parse
+import unicodedata
 import urllib.request
 from datetime import datetime, timezone, timedelta
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SEEN_PATH = os.path.join(HERE, "seen.json")
+RUNLOG_PATH = os.path.join(HERE, "runlog.md")
 UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/126.0 Safari/537.36")
 
@@ -42,10 +49,20 @@ TARGET_STATIONS = {"田町", "高輪ゲートウェイ", "品川", "大崎",
 FDJ_STATION_CODES = ["C8MR8BDBN", "C8MR8BD5N", "C8MR8B5BD", "C8MR8BRBI",
                      "C8MR8BSB9", "C8MR8BXB4", "C8MX58RBI", "C8MX58SB9"]
 HATO_WARDS = ["13109", "13111", "13110", "13103"]
+ATHOME_SLUGS = ["tamachi", "takanawagateway", "shinagawa", "osaki",
+                "gotanda", "meguro", "oimachi", "omori"]
 FLOOR_PLANS = ["1XXSLDK", "2XXXXSK", "2XXXSDK", "2XXSLDK",
                "3XXXXSK", "3XXXSDK", "3XXSLDK", "4XXXXSK", "4XXXSDK"]
 
 JST = timezone(timedelta(hours=9))
+
+
+def now_jst():
+    return datetime.now(JST)
+
+
+def stamp():
+    return now_jst().strftime("%Y-%m-%d %H:%M JST")
 
 
 def fetch(url, timeout=90, retries=3):
@@ -87,14 +104,40 @@ def age_years(built_text):
     m = re.search(r"(\d{4})\D{0,4}年\D{0,4}(\d{1,2})?\s*月?", built_text)
     if not m:
         return None
-    now = datetime.now(JST)
-    y = int(m.group(1))
-    mo = int(m.group(2)) if m.group(2) else 1
-    return (now.year - y) + (now.month - mo) / 12.0
+    n = now_jst()
+    y, mo = int(m.group(1)), int(m.group(2)) if m.group(2) else 1
+    return (n.year - y) + (n.month - mo) / 12.0
+
+
+def norm_addr(s):
+    """サイト間で表記が揺れる住所を突き合わせ用に正規化する。"""
+    s = unicodedata.normalize("NFKC", s or "")
+    s = re.sub(r"^東京都", "", s)
+    s = re.sub(r"[\s　\-－ー–—]", "", s)
+    s = re.sub(r"(丁目|番地|番|号).*$", r"\1", s)
+    return s
+
+
+def fingerprint(item):
+    """サイトを跨いで同一物件を同定するキー。
+
+    住所（正規化）＋専有面積＋賃料。住所が取れないソースは駅＋徒歩で代替する。
+    """
+    a = norm_addr(item.get("addr", ""))
+    if not a and item.get("stations"):
+        st, w = item["stations"][0]
+        a = f"{st}{w}"
+    area = round(item["area"], 1) if item.get("area") else 0
+    return f"{item.get('rent') or 0}|{area}|{a}"
+
+
+def madori_ok(m):
+    m = unicodedata.normalize("NFKC", m or "").upper()
+    return bool(re.search(r"[1-5]S?LDK|[2-5]S?[DL]?K", m))
 
 
 # --------------------------------------------------------------------------
-# 不動産ジャパン
+# ソース1: 不動産ジャパン（駅指定・築年は詳細ページで判定）
 # --------------------------------------------------------------------------
 def fudousan_japan():
     q = ["ptm%5B%5D=0303"]
@@ -103,21 +146,18 @@ def fudousan_japan():
     q += [f"eki_walk={WALK_MAX}", "toil%5B%5D=TOIL04", "wsng%5B%5D=WSNG02",
           "wash%5B%5D=WASH13", f"exclusive_area_from={int(AREA_MIN)}",
           f"price_r_to={RENT_CAP}", "limit=100"]
-    url = "https://www.fudousan.or.jp/property/rent/13/station/list?" + "&".join(q)
-    page = fetch(url)
-
+    page = fetch("https://www.fudousan.or.jp/property/rent/13/station/list?" + "&".join(q))
     if "件見つかりました" not in page and "【マンション】" not in page:
-        raise RuntimeError("不動産ジャパン: 結果ページの形が変わった可能性")
+        raise RuntimeError("結果ページの目印が消えている（構造変化の疑い）")
 
     out = []
     for raw in re.split(r"(?=【(?:マンション|アパート)】)", page)[1:]:
-        blk = flatten(raw)
         pno = re.search(r"p_no=(\d+)", raw)
         if not pno:
             continue
-        detail_url = f"https://www.fudousan.or.jp/property/detail?p_no={pno.group(1)}"
+        url = f"https://www.fudousan.or.jp/property/detail?p_no={pno.group(1)}"
         try:
-            det = flatten(fetch(detail_url, timeout=60))
+            det = flatten(fetch(url, timeout=60))
         except RuntimeError:
             continue
         time.sleep(0.6)
@@ -129,58 +169,42 @@ def fudousan_japan():
         if age is None or age > AGE_MAX:
             continue
         setsubi = field(det, "設備", 400)
-        if "バス・トイレ別" not in setsubi:
+        if "バス・トイレ別" not in setsubi or "洗面所" not in setsubi:
             continue
-        if "洗面所独立" not in setsubi and "洗面所" not in setsubi:
-            continue
-
-        rent = to_yen(field(det, "賃料", 24))
-        kanri = to_yen(field(det, "管理費", 24)) or 0
-        area_m = re.search(r"専有面積[|\s：:]*([\d.]+)㎡", det)
         stations = [(s.strip(), int(w)) for _l, s, w in
                     re.findall(r"([^|]{2,24}?線)\s*「([^」]+)」駅?\s*徒歩(\d+)分", det)]
         hit = [(s, w) for s, w in stations if s in TARGET_STATIONS and w <= WALK_MAX]
         if not hit:
             continue
-
+        area_m = re.search(r"専有面積[|\s：:]*([\d.]+)㎡", det)
+        rent = to_yen(field(det, "賃料", 24))
+        kanri = to_yen(field(det, "管理費", 24)) or 0
         out.append({
-            "id": f"fdj:{pno.group(1)}",
-            "source": "不動産ジャパン",
-            "rent": rent,
-            "kanri": kanri,
+            "source": "不動産ジャパン", "rent": rent, "kanri": kanri,
             "total": (rent or 0) + kanri,
             "area": float(area_m.group(1)) if area_m else None,
-            "madori": field(det, "間取り", 10),
-            "built": field(det, "築年月", 20),
-            "age": round(age, 1),
-            "kouzou": kouzou,
-            "stations": hit,
-            "addr": field(det, "所在地", 40),
-            "taiyou": field(det, "取引態様", 14),
-            "koushin": field(det, "更新日", 16),
-            "setsubi": setsubi[:200],
-            "url": detail_url,
+            "madori": field(det, "間取り", 10), "built": field(det, "築年月", 20),
+            "age": round(age, 1), "kouzou": kouzou, "stations": hit,
+            "addr": field(det, "所在地", 40), "taiyou": field(det, "取引態様", 14),
+            "url": url,
         })
     return out
 
 
 # --------------------------------------------------------------------------
-# ハトマークサイト
+# ソース2: ハトマークサイト（区指定 → 対象駅で絞る）
 # --------------------------------------------------------------------------
 def hatomark():
-    q = [f"m_adr%5B%5D={w}" for w in HATO_WARDS]
-    q += ["home_category%5B%5D=mansion"]
+    q = [f"m_adr%5B%5D={w}" for w in HATO_WARDS] + ["home_category%5B%5D=mansion"]
     q += [f"floor_plan%5B%5D={f}" for f in FLOOR_PLANS + ["4XXSLDK"]]
     q += [f"eki_walk={WALK_MAX}", "bath%5B%5D=BATH01", "wash%5B%5D=WASH04",
           f"built_to={AGE_MAX}", f"building_area_all_from={int(AREA_MIN)}",
           f"price_r_to={RENT_CAP}", "limit=100"]
-    base = ("https://www.hatomarksite.com/search/zentaku/rent/home/area/13/list?"
-            + "&".join(q))
+    base = "https://www.hatomarksite.com/search/zentaku/rent/home/area/13/list?" + "&".join(q)
 
-    out, seen_keys, sane = [], set(), False
+    out, keys, sane = [], set(), False
     for page_no in range(1, 5):
-        url = base + (f"&page={page_no}" if page_no > 1 else "")
-        page = fetch(url, timeout=120)
+        page = fetch(base + (f"&page={page_no}" if page_no > 1 else ""), timeout=120)
         if "検索結果" in page:
             sane = True
         cards = re.split(r'(?=<div class="search-result-box detail-link")', page)[1:]
@@ -196,42 +220,86 @@ def hatomark():
             addr = re.search(r"(東京都[^|]{4,32})\|MAP", blk)
             rent_m = re.search(r"賃料[|\s]*([\d.]+)万円", blk)
             area_m = re.search(r"専有面積[|\s]*([\d.]+)㎡", blk)
-            built_m = re.search(r"築年月[|\s]*(\d{4})\[[^\]]*\]年(\d{1,2})月", blk) \
-                or re.search(r"築年月[|\s]*(\d{4})年(\d{1,2})月", blk)
             if not (rent_m and area_m):
                 continue
+            built_m = (re.search(r"築年月[|\s]*(\d{4})\[[^\]]*\]年(\d{1,2})月", blk)
+                       or re.search(r"築年月[|\s]*(\d{4})年(\d{1,2})月", blk))
             names = [c.strip() for c in re.findall(r"\|([^|]{2,40}?)\|", blk[:600])
                      if c.strip() not in ("マンション", "アパート")
                      and "画像" not in c and "閲覧" not in c and "東京都" not in c]
             rent = int(float(rent_m.group(1)) * 10000)
-            kanri = to_yen(field(blk, "管理費等", 14)) or 0
-            name = names[0] if names else ""
-            key = (addr.group(1) if addr else "", name, rent, area_m.group(1))
-            if key in seen_keys:
+            key = (addr.group(1) if addr else "", names[0] if names else "", rent, area_m.group(1))
+            if key in keys:
                 continue
-            seen_keys.add(key)
+            keys.add(key)
             built = f"{built_m.group(1)}年{int(built_m.group(2))}月" if built_m else ""
             out.append({
-                "id": "hato:" + re.sub(r"\W+", "", "".join(str(x) for x in key))[:60],
-                "source": "ハトマークサイト",
-                "rent": rent,
-                "kanri": kanri,
-                "total": rent + kanri,
-                "area": float(area_m.group(1)),
-                "madori": "",
-                "built": built,
+                "source": "ハトマークサイト", "rent": rent,
+                "kanri": to_yen(field(blk, "管理費等", 14)) or 0,
+                "total": rent + (to_yen(field(blk, "管理費等", 14)) or 0),
+                "area": float(area_m.group(1)), "madori": "", "built": built,
                 "age": round(age_years(built), 1) if built else None,
-                "kouzou": "マンション(RC近似)",
-                "stations": hit,
-                "addr": (addr.group(1) if addr else "") + " " + name,
-                "taiyou": "",
-                "koushin": "",
-                "setsubi": "バス・トイレ別/洗面所独立(検索条件)",
-                "url": base,
+                "kouzou": "マンション(RC近似)", "stations": hit,
+                "addr": (addr.group(1) if addr else "") + " " + (names[0] if names else ""),
+                "taiyou": "", "url": base,
             })
         time.sleep(2)
     if not sane:
-        raise RuntimeError("ハトマーク: 結果ページの形が変わった可能性")
+        raise RuntimeError("結果ページの目印が消えている（構造変化の疑い）")
+    return out
+
+
+# --------------------------------------------------------------------------
+# ソース3: at home（駅ページ。絞り込みはJS依存なので条件はこちらで当てる）
+# --------------------------------------------------------------------------
+def athome():
+    out, sane = [], False
+    for slug in ATHOME_SLUGS:
+        url = f"https://www.athome.co.jp/chintai/tokyo/{slug}-st/list/"
+        try:
+            page = fetch(url, timeout=90)
+        except RuntimeError:
+            continue
+        if "賃貸" in page:
+            sane = True
+        blocks = re.split(r'(?=<[^>]*class="p-property p-property--building js-block")', page)[1:]
+        for raw in blocks:
+            blk = flatten(raw)
+            head = blk[:900]
+            name_m = re.search(r"\|([^|]{2,40}?)\s*\d+階建\|", head)
+            addr_m = re.search(r"\|([^|]*?[区市][^|]{1,20}?[０-９0-9一二三四五六七八九十]+丁目)\|", head)
+            st_m = re.findall(r"「([^」]+)」駅\s*徒歩(\d+)分", head)
+            built_m = re.search(r"\|(\d{4})年\s*(\d{1,2})月\s*\(築", head)
+            hit = [(s, int(w)) for s, w in st_m if s in TARGET_STATIONS and int(w) <= WALK_MAX]
+            if not hit or not built_m:
+                continue
+            built = f"{built_m.group(1)}年{int(built_m.group(2))}月"
+            age = age_years(built)
+            if age is None or age > AGE_MAX:
+                continue
+            bt_sep = "バス・トイレ別" in blk
+            for rent_s, kanri_s, mad, area_s in re.findall(
+                    r"\|([\d.]+)\|万円[^|]*\|([\d,]*)円\|(?:[^|]*\|){0,10}?"
+                    r"\s*([0-9A-Za-zＬＤＫSＫ]{1,8})\s*\|[\s|]*([\d.]+)m", blk):
+                area = float(area_s)
+                rent = int(float(rent_s) * 10000)
+                kanri = int(kanri_s.replace(",", "")) if kanri_s else 0
+                if area < AREA_MIN or rent > RENT_CAP or not madori_ok(mad):
+                    continue
+                if not bt_sep:
+                    continue
+                out.append({
+                    "source": "at home", "rent": rent, "kanri": kanri,
+                    "total": rent + kanri, "area": area, "madori": mad,
+                    "built": built, "age": round(age, 1),
+                    "kouzou": "未確認(一覧に構造なし)", "stations": hit,
+                    "addr": (addr_m.group(1) if addr_m else "")
+                            + " " + (name_m.group(1) if name_m else ""),
+                    "taiyou": "", "url": url,
+                })
+        time.sleep(2)
+    if not sane:
+        raise RuntimeError("結果ページの目印が消えている（構造変化の疑い）")
     return out
 
 
@@ -239,26 +307,66 @@ def hatomark():
 def render(item):
     st = " / ".join(f"{s}歩{w}分" for s, w in item["stations"])
     rent = f"{item['rent']:,}円" if item["rent"] else "要問合せ"
-    total = f"{item['total']:,}円" if item["total"] else "-"
     over = "  ⚠[管理費込みで17万超]" if item["total"] and item["total"] > RENT_CAP else ""
     lines = [
-        f"### {item['addr'] or '(名称なし)'}",
-        f"- **賃料 {rent}**（管理費 {item['kanri']:,}円 / 込み {total}）{over}",
+        f"### {item['addr'].strip() or '(名称なし)'}",
+        f"- **賃料 {rent}**（管理費 {item['kanri']:,}円 / 込み {item['total']:,}円）{over}",
         f"- {item['madori'] or '1LDK以上'} / {item['area']}㎡ / 築{item['built']}"
         f"（{item['age']}年）/ {item['kouzou']}",
         f"- 駅: {st}",
     ]
-    if item["taiyou"]:
-        lines.append(f"- 取引態様: {item['taiyou']} / 更新: {item['koushin']}")
-    lines.append(f"- {item['url']}")
-    lines.append(f"- 出典: {item['source']}")
+    if item.get("taiyou"):
+        lines.append(f"- 取引態様: {item['taiyou']}")
+    lines += [f"- {item['url']}", f"- 出典: {item['source']}"]
     return "\n".join(lines)
+
+
+def speed_report(seen):
+    """複数ソースで観測できた物件から、掲載の先行時間を集計する。"""
+    rows = []
+    for fp, rec in seen.items():
+        src = rec.get("sources", {})
+        if len(src) < 2:
+            continue
+        parsed = []
+        for name, ts in src.items():
+            try:
+                parsed.append((name, datetime.strptime(ts, "%Y-%m-%d %H:%M JST")))
+            except ValueError:
+                pass
+        if len(parsed) < 2:
+            continue
+        parsed.sort(key=lambda x: x[1])
+        lead = (parsed[-1][1] - parsed[0][1]).total_seconds() / 3600.0
+        rows.append((parsed[0][0], parsed[-1][0], lead, rec.get("addr", "")))
+    print(f"## 掲載速度の実測 — 複数ソースで観測できた物件 {len(rows)}件\n")
+    if not rows:
+        print("まだ比較できる物件がない。同じ部屋が2サイト以上に出るまで蓄積が要る。")
+        return
+    wins = {}
+    for first, _last, lead, addr in rows:
+        wins[first] = wins.get(first, 0) + 1
+        print(f"- **{first}** が先行 {lead:.1f}時間 — {addr[:40]}")
+    print("\n### 先行回数")
+    for name, n in sorted(wins.items(), key=lambda x: -x[1]):
+        print(f"- {name}: {n}回")
+
+
+def append_runlog(line):
+    new = not os.path.exists(RUNLOG_PATH)
+    with open(RUNLOG_PATH, "a", encoding="utf-8") as fh:
+        if new:
+            fh.write("# 実行ログ\n\n"
+                     "監視が「静かに成功」しているのか「静かに失敗」しているのかを\n"
+                     "外から見分けるための記録。3時間おきに1行ずつ増えるのが正常。\n\n")
+        fh.write(line + "\n")
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--all", action="store_true")
+    ap.add_argument("--speed", action="store_true")
     args = ap.parse_args()
 
     seen = {}
@@ -266,17 +374,30 @@ def main():
         with open(SEEN_PATH, encoding="utf-8") as fh:
             seen = json.load(fh)
 
-    hits, errors = [], []
-    for name, fn in (("不動産ジャパン", fudousan_japan), ("ハトマークサイト", hatomark)):
+    if args.speed:
+        speed_report(seen)
+        return 0
+
+    hits, errors, counts = [], [], {}
+    for name, fn in (("不動産ジャパン", fudousan_japan),
+                     ("ハトマークサイト", hatomark),
+                     ("at home", athome)):
         try:
             got = fn()
             hits.extend(got)
+            counts[name] = len(got)
             print(f"[ok] {name}: {len(got)}件", file=sys.stderr)
         except Exception as exc:  # noqa: BLE001 - どの失敗も健全性エラーとして扱う
             errors.append(f"{name}: {exc}")
+            counts[name] = "NG"
             print(f"[NG] {name}: {exc}", file=sys.stderr)
 
+    ts = stamp()
+    summary = " / ".join(f"{k}{v}" for k, v in counts.items())
+
     if errors and not hits:
+        if not args.dry_run:
+            append_runlog(f"- {ts}  **ERROR**  {summary}  — {'; '.join(errors)[:120]}")
         print("## ⚠ 監視エラー（取得できなかった）\n")
         for e in errors:
             print(f"- {e}")
@@ -284,18 +405,16 @@ def main():
               "「新着ゼロ」と混同しないこと。")
         return 2
 
-    new = [h for h in hits if h["id"] not in seen]
+    new = [h for h in hits if fingerprint(h) not in seen]
     show = hits if args.all else new
-    stamp = datetime.now(JST).strftime("%Y-%m-%d %H:%M JST")
 
     if show:
-        head = "全ヒット" if args.all else "🔔 新着"
-        print(f"## {head} {len(show)}件 ({stamp})\n")
+        print(f"## {'全ヒット' if args.all else '🔔 新着'} {len(show)}件 ({ts})\n")
         for item in sorted(show, key=lambda x: x["total"] or 0):
             print(render(item))
             print()
     else:
-        print(f"## 新着なし ({stamp}) — 監視中の全ヒット {len(hits)}件")
+        print(f"## 新着なし ({ts}) — 監視中の全ヒット {len(hits)}件")
 
     if errors:
         print("\n### ⚠ 一部ソースで取得失敗")
@@ -304,10 +423,15 @@ def main():
 
     if not args.dry_run:
         for h in hits:
-            seen[h["id"]] = {"first_seen": seen.get(h["id"], {}).get("first_seen", stamp),
-                             "addr": h["addr"], "rent": h["rent"], "area": h["area"]}
+            fp = fingerprint(h)
+            rec = seen.setdefault(fp, {"first_seen": ts, "sources": {}})
+            rec.setdefault("sources", {}).setdefault(h["source"], ts)
+            rec.update({"addr": h["addr"].strip(), "rent": h["rent"], "area": h["area"]})
         with open(SEEN_PATH, "w", encoding="utf-8") as fh:
             json.dump(seen, fh, ensure_ascii=False, indent=1, sort_keys=True)
+        mark = "**新着%d**" % len(new) if new else "新着0"
+        append_runlog(f"- {ts}  ok  {summary}  {mark}"
+                      + (f"  ※一部失敗: {'; '.join(errors)[:80]}" if errors else ""))
 
     return 1 if new else 0
 
