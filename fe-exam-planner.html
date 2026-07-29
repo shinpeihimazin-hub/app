@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<title>FE 作戦</title>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --cream:#FFFBF0;--warm:#FFFFFF;--amber:#F59E0B;--amber-pale:#FEF3C7;--coral:#F97316;--coral-pale:#FFEDD5;
+  --green:#10B981;--green-pale:#D1FAE5;--red:#EF4444;--red-pale:#FEE2E2;--purple:#8B5CF6;--purple-pale:#EDE9FE;
+  --blue:#3B82F6;--blue-pale:#DBEAFE;--text:#1C1917;--muted:#78716C;--light:#A8A29E;
+  --border:rgba(0,0,0,.07);--shadow:0 2px 12px rgba(0,0,0,.06);--r:14px;--rs:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--cream);color:var(--text);font-family:'M PLUS Rounded 1c',sans-serif;min-height:100vh;overflow-x:hidden;padding-bottom:40px}
+input,select,button{font-family:'M PLUS Rounded 1c',sans-serif}
+.header{background:linear-gradient(135deg,var(--amber-pale),var(--coral-pale));padding:14px 14px 0;position:sticky;top:0;z-index:100;border-bottom:1px solid rgba(245,158,11,.15)}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.header-title{font-size:17px;font-weight:800}
+.header-date{font-size:11px;color:var(--muted);font-weight:500;background:rgba(255,255,255,.6);padding:3px 8px;border-radius:20px}
+.tabs{display:flex;gap:4px}
+.tab-btn{flex:1;padding:8px 4px;background:none;border:none;border-bottom:2.5px solid transparent;font-size:12px;font-weight:700;cursor:pointer;color:var(--muted)}
+.tab-btn.active{color:var(--amber);border-bottom-color:var(--amber)}
+.wrap{padding:12px}
+.card{background:var(--warm);border-radius:var(--r);box-shadow:var(--shadow);padding:12px 14px;margin-bottom:10px;border:1px solid var(--border)}
+.card-amber{border-left:3px solid var(--amber)}.card-green{border-left:3px solid var(--green)}
+.card-red{border-left:3px solid var(--red)}.card-blue{border-left:3px solid var(--blue)}
+.card-purple{border-left:3px solid var(--purple)}
+.lbl{font-size:9px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;margin-bottom:7px;color:var(--muted)}
+.lbl-amber{color:var(--amber)}.lbl-red{color:var(--red)}.lbl-blue{color:var(--blue)}.lbl-purple{color:var(--purple)}
+.big{font-size:30px;font-weight:800;line-height:1.1}
+.sub{font-size:12px;color:var(--muted);margin-top:3px}
+.row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px dashed var(--border);font-size:14px}
+.row:last-child{border-bottom:none}
+.row .n{font-weight:800;font-size:16px}
+.grp{font-size:10px;color:var(--light);margin-left:6px}
+.btn{width:100%;padding:13px;border:none;border-radius:var(--rs);background:var(--amber);color:#fff;font-size:15px;font-weight:800;cursor:pointer;margin-top:10px}
+.btn:disabled{background:var(--light)}
+.btn-sub{background:var(--warm);color:var(--text);border:1.5px solid var(--border)}
+.floor{background:var(--green-pale);color:#065F46;font-size:12px;font-weight:700;padding:9px 12px;border-radius:var(--rs);margin-top:10px;text-align:center}
+.warn{background:var(--red-pale);color:#991B1B;font-size:12px;font-weight:600;padding:10px 12px;border-radius:var(--rs);margin-top:10px;line-height:1.6}
+.note{background:var(--blue-pale);color:#1E40AF;font-size:11px;padding:9px 11px;border-radius:var(--rs);margin-top:9px;line-height:1.6}
+.fld{margin-bottom:11px}
+.fld label{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px}
+.input{width:100%;background:var(--cream);border:1.5px solid rgba(0,0,0,.08);border-radius:var(--rs);padding:9px 10px;font-size:14px;outline:none}
+.input:focus{border-color:var(--amber)}
+.two{display:flex;gap:8px}.two>*{flex:1}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;font-size:10px;color:var(--muted);font-weight:800;padding:5px 4px;border-bottom:1px solid var(--border)}
+td{padding:8px 4px;border-bottom:1px dashed var(--border)}
+.pill{display:inline-block;font-size:10px;font-weight:800;padding:2px 7px;border-radius:20px}
+.pill-ok{background:var(--green-pale);color:#065F46}
+.pill-ng{background:var(--red-pale);color:#991B1B}
+.pill-todo{background:var(--amber-pale);color:#92400E}
+.hide{display:none}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="header-title">FE 作戦</div>
+    <div class="header-date" id="hdrDate"></div>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="today">今日</button>
+    <button class="tab-btn" data-tab="plan">作戦</button>
+    <button class="tab-btn" data-tab="config">設定</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <div id="tab-today"></div>
+  <div id="tab-plan" class="hide"></div>
+  <div id="tab-config" class="hide"></div>
+</div>
+
+<script id="engine">
+/* エンジン: 純粋関数のみ。DOM・localStorageに触らない。 */
+const Engine = (function(){
+  const DAY = 86400000;
+
+  // 科目A 23分野。weight = 60問中の出題数（大分類の概数 テクノロジ41/マネジメント7/ストラテジ12 を分野へ割り振った推定値）
+  const TOPICS_A = [
+    {id:'t_kiso', name:'基礎理論',                   group:'テクノロジ', weight:4},
+    {id:'t_algo', name:'アルゴリズムとプログラミング', group:'テクノロジ', weight:3},
+    {id:'t_comp', name:'コンピュータ構成要素',        group:'テクノロジ', weight:4},
+    {id:'t_sys',  name:'システム構成要素',            group:'テクノロジ', weight:3},
+    {id:'t_soft', name:'ソフトウェア',                group:'テクノロジ', weight:4},
+    {id:'t_hard', name:'ハードウェア',                group:'テクノロジ', weight:2},
+    {id:'t_hi',   name:'ヒューマンインタフェース',     group:'テクノロジ', weight:1},
+    {id:'t_multi',name:'マルチメディア',              group:'テクノロジ', weight:1},
+    {id:'t_db',   name:'データベース',                group:'テクノロジ', weight:4},
+    {id:'t_nw',   name:'ネットワーク',                group:'テクノロジ', weight:5},
+    {id:'t_sec',  name:'セキュリティ',                group:'テクノロジ', weight:6},
+    {id:'t_dev',  name:'システム開発技術',            group:'テクノロジ', weight:3},
+    {id:'t_devm', name:'ソフトウェア開発管理技術',     group:'テクノロジ', weight:1},
+    {id:'m_pm',   name:'プロジェクトマネジメント',     group:'マネジメント', weight:3},
+    {id:'m_sm',   name:'サービスマネジメント',        group:'マネジメント', weight:3},
+    {id:'m_audit',name:'システム監査',                group:'マネジメント', weight:1},
+    {id:'s_strat',name:'システム戦略',                group:'ストラテジ', weight:2},
+    {id:'s_plan', name:'システム企画',                group:'ストラテジ', weight:2},
+    {id:'s_mgmt', name:'経営戦略マネジメント',        group:'ストラテジ', weight:2},
+    {id:'s_tech', name:'技術戦略マネジメント',        group:'ストラテジ', weight:1},
+    {id:'s_biz',  name:'ビジネスインダストリ',        group:'ストラテジ', weight:2},
+    {id:'s_corp', name:'企業活動',                    group:'ストラテジ', weight:2},
+    {id:'s_law',  name:'法務',                        group:'ストラテジ', weight:1}
+  ];
+  // 科目B 20問の内訳（概数）
+  const TOPICS_B = [
+    {id:'b_algo', name:'アルゴリズムとプログラミング', group:'科目B', weight:16},
+    {id:'b_sec',  name:'情報セキュリティ',            group:'科目B', weight:4}
+  ];
+
+  const EXAM = { qA:60, minA:90, qB:20, minB:100, passScore:600, fullScore:1000 };
+  const GOAL = { a:0.75, b:0.80 };   // 本番目標正答率
+  const CURVE = 0.7;                 // 必要ラインの前倒しカーブ
+  const GAP_K = 3;                   // 未達1ptあたりのノルマ増加係数
+  const CAP_K = 1.5;                 // 1日の上限 = 申告可処分 × これ
+  const B_SHARE = 0.15;              // ノルマのうち科目Bに回す割合
+
+  function parseDate(s){ const p=String(s).split('-').map(Number); return new Date(p[0], p[1]-1, p[2]); }
+  function fmtDate(d){
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  function addDays(d,n){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()+n); }
+  function diffDays(a,b){ return Math.round((parseDate(b)-parseDate(a))/DAY); }
+  function isWeekend(d){ const w=d.getDay(); return w===0||w===6; }
+
+  /* チェックポイント（模試）の配置 */
+  function checkpointPlan(startDate, examDate){
+    const N = diffDays(startDate, examDate);
+    if(N<=0) return {N:N, k:0, warning:'exam_passed', points:[]};
+    let k, warning=null;
+    if(N>=84) k=4; else if(N>=42) k=3; else if(N>=21) k=2; else { k=1; warning='too_short'; }
+    const last = Math.max(0, N-7);
+    const points=[];
+    for(let i=0;i<k;i++){
+      const offset = (k===1) ? 0 : Math.round(last*i/(k-1));
+      points.push({
+        index:i, offset:offset,
+        date: fmtDate(addDays(parseDate(startDate), offset)),
+        p: offset/N,
+        baseline: i===0
+      });
+    }
+    return {N:N, k:k, warning:warning, points:points};
+  }
+
+  /* チェックポイントで必要な正答率。S=初回実測, G=本番目標, p=進捗率 */
+  function requiredRate(S, G, p){
+    if(S>=G) return G;
+    return S + (G-S)*Math.pow(p, CURVE);
+  }
+
+  /* 残り期間の可処分問数の合計（今日を含み、試験日は含まない） */
+  function remainingCapacity(today, examDate, capacity){
+    let sum=0, d=parseDate(today), end=parseDate(examDate);
+    while(d < end){
+      sum += isWeekend(d) ? capacity.weekend : capacity.weekday;
+      d = addDays(d,1);
+    }
+    return sum;
+  }
+
+  /* 目標総問数（消化しきったら自動で1周分 追加） */
+  function targetTotal(base, consumed){
+    if(base<=0) return 0;
+    return base * Math.max(1, Math.ceil((consumed+1)/base));
+  }
+
+  /* 今日のノルマ問数 */
+  function quotaForDay(o){
+    const capToday = o.capacityToday;
+    const remaining = o.remaining;
+    if(remaining<=0 || capToday<=0) return {total:0, base:0, gapFactor:1, raw:0, cap:0, capped:false};
+    const base = (o.remainingCapacity>0) ? remaining/o.remainingCapacity*capToday : capToday;
+    const gapFactor = 1 + Math.max(0, o.gap)*GAP_K;
+    const raw = base*gapFactor;
+    const cap = capToday*CAP_K;
+    const capped = raw > cap;
+    return {
+      total: Math.max(1, Math.ceil(Math.min(raw, cap))),
+      base:base, gapFactor:gapFactor, raw:raw, cap:cap, capped:capped
+    };
+  }
+
+  /* 分野への配分。accuracy = {topicId: 0..1}（未測定はfallbackを使う） */
+  function allocateTopics(quota, topics, accuracy, fallback, topN){
+    topN = topN||3;
+    if(quota<=0) return [];
+    const scored = topics.map(function(t){
+      const acc = (accuracy && accuracy[t.id]!=null) ? accuracy[t.id] : (fallback||0);
+      return {id:t.id, name:t.name, group:t.group, priority:(1-acc)*t.weight};
+    }).sort(function(a,b){ return b.priority-a.priority; }).slice(0, topN);
+    const sum = scored.reduce(function(s,t){ return s+t.priority; },0);
+    if(sum<=0) return [{id:scored[0].id, name:scored[0].name, group:scored[0].group, count:quota}];
+    const out=[]; let rest=quota;
+    for(let i=0;i<scored.length;i++){
+      const isLast = (i===scored.length-1);
+      let n = isLast ? rest : Math.max(1, Math.round(quota*scored[i].priority/sum));
+      n = Math.min(n, rest);
+      if(n<0) n=0;
+      rest -= n;
+      if(n>0) out.push({id:scored[i].id, name:scored[i].name, group:scored[i].group, count:n});
+    }
+    return out;
+  }
+
+  /* ノルマを科目A / 科目B に割る */
+  function splitAB(total){
+    const b = (total<=2) ? 0 : Math.max(1, Math.round(total*B_SHARE));
+    return {a: total-b, b: b};
+  }
+
+  const api = {
+    DAY:DAY, TOPICS_A:TOPICS_A, TOPICS_B:TOPICS_B, EXAM:EXAM, GOAL:GOAL,
+    CURVE:CURVE, GAP_K:GAP_K, CAP_K:CAP_K, B_SHARE:B_SHARE,
+    parseDate:parseDate, fmtDate:fmtDate, addDays:addDays, diffDays:diffDays, isWeekend:isWeekend,
+    checkpointPlan:checkpointPlan, requiredRate:requiredRate, remainingCapacity:remainingCapacity,
+    targetTotal:targetTotal, quotaForDay:quotaForDay, allocateTopics:allocateTopics, splitAB:splitAB
+  };
+  if(typeof globalThis!=='undefined') globalThis.Engine = api;
+  return api;
+})();
+</script>
+
+<script id="app">
+(function(){
+  const KEY='fe-exam-planner-v1';
+  const E = Engine;
+
+  const DEFAULTS = {
+    version:1,
+    examDate:'',
+    startDate:E.fmtDate(new Date()),
+    capacity:{weekday:10, weekend:25},
+    goalPerTopicA:20,
+    goalTotalB:120,
+    goal:{a:E.GOAL.a, b:E.GOAL.b},
+    weights:{},
+    consumed:{a:0, b:0},
+    topicConsumed:{},
+    checkpoints:[]     // {date, offset, p, baseline, done, correctA, correctB, topicCorrect:{id:{c,t}}}
+  };
+
+  let S = load();
+
+  function load(){
+    try{
+      const raw = localStorage.getItem(KEY);
+      if(!raw) return JSON.parse(JSON.stringify(DEFAULTS));
+      const s = Object.assign(JSON.parse(JSON.stringify(DEFAULTS)), JSON.parse(raw));
+      s.capacity = Object.assign({}, DEFAULTS.capacity, s.capacity||{});
+      s.goal = Object.assign({}, DEFAULTS.goal, s.goal||{});
+      s.consumed = Object.assign({}, DEFAULTS.consumed, s.consumed||{});
+      return s;
+    }catch(e){ return JSON.parse(JSON.stringify(DEFAULTS)); }
+  }
+  function save(){ localStorage.setItem(KEY, JSON.stringify(S)); }
+  function today(){ return E.fmtDate(new Date()); }
+  function pct(x){ return Math.round(x*100)+'%'; }
+  function weightOf(t){ return (S.weights[t.id]!=null) ? S.weights[t.id] : t.weight; }
+  function topicsA(){ return E.TOPICS_A.map(function(t){ return Object.assign({}, t, {weight:weightOf(t)}); }); }
+  function topicsB(){ return E.TOPICS_B.map(function(t){ return Object.assign({}, t, {weight:weightOf(t)}); }); }
+
+  /* 設定変更時にチェックポイントを引き直す（実施済みの結果は日付が一致するものだけ引き継ぐ） */
+  function rebuildCheckpoints(){
+    if(!S.examDate){ S.checkpoints=[]; return; }
+    const plan = E.checkpointPlan(S.startDate, S.examDate);
+    const old = {};
+    S.checkpoints.forEach(function(c){ if(c.done) old[c.date]=c; });
+    S.checkpoints = plan.points.map(function(p){
+      const prev = old[p.date];
+      return Object.assign({date:p.date, offset:p.offset, p:p.p, baseline:p.baseline, done:false,
+                            correctA:null, correctB:null, topicCorrect:{}}, prev||{});
+    });
+  }
+
+  function baselineRates(){
+    const b = S.checkpoints.find(function(c){ return c.baseline && c.done; });
+    if(!b) return null;
+    return {a:(b.correctA||0)/E.EXAM.qA, b:(b.correctB||0)/E.EXAM.qB};
+  }
+  function lastDone(){
+    const done = S.checkpoints.filter(function(c){ return c.done; });
+    return done.length ? done[done.length-1] : null;
+  }
+  function requiredAt(cp){
+    const base = baselineRates();
+    if(!base || cp.baseline) return null;
+    return {a:E.requiredRate(base.a, S.goal.a, cp.p), b:E.requiredRate(base.b, S.goal.b, cp.p)};
+  }
+  /* 直近の実施済みチェックポイントでの未達（0..1） */
+  function currentGap(){
+    const last = lastDone();
+    if(!last || last.baseline) return 0;
+    const req = requiredAt(last);
+    if(!req) return 0;
+    const gapA = req.a - (last.correctA||0)/E.EXAM.qA;
+    const gapB = req.b - (last.correctB||0)/E.EXAM.qB;
+    return Math.max(0, gapA, gapB);
+  }
+  function accuracyMap(){
+    const acc = {};
+    S.checkpoints.forEach(function(c){
+      if(!c.done || !c.topicCorrect) return;
+      Object.keys(c.topicCorrect).forEach(function(id){
+        const v = c.topicCorrect[id];
+        if(v && v.t>0) acc[id] = v.c/v.t;   // 新しい回で上書き
+      });
+    });
+    return acc;
+  }
+  function overallRate(){
+    const last = lastDone();
+    if(!last) return 0;
+    return (last.correctA||0)/E.EXAM.qA;
+  }
+
+  function computeToday(){
+    const t = today();
+    const baseTotal = E.TOPICS_A.length*S.goalPerTopicA + S.goalTotalB;
+    const consumed = S.consumed.a + S.consumed.b;
+    const target = E.targetTotal(baseTotal, consumed);
+    const remaining = Math.max(0, target - consumed);
+    const capToday = E.isWeekend(new Date()) ? S.capacity.weekend : S.capacity.weekday;
+    const remCap = E.remainingCapacity(t, S.examDate, S.capacity);
+    const gap = currentGap();
+    const q = E.quotaForDay({remaining:remaining, remainingCapacity:remCap, capacityToday:capToday, gap:gap});
+    const split = E.splitAB(q.total);
+    const acc = accuracyMap();
+    const fb = overallRate();
+    return {
+      quota:q, split:split, gap:gap,
+      listA: E.allocateTopics(split.a, topicsA(), acc, fb, 3),
+      listB: E.allocateTopics(split.b, topicsB(), acc, fb, 1),
+      daysLeft: E.diffDays(t, S.examDate)
+    };
+  }
+
+  /* ===== 描画 ===== */
+  function h(html){ return html; }
+
+  function renderToday(){
+    const el = document.getElementById('tab-today');
+    if(!S.examDate){
+      el.innerHTML = '<div class="card card-amber"><div class="lbl lbl-amber">まだ試験日が無い</div>'
+        + '<div style="font-size:14px;line-height:1.7">作戦は試験日が決まらないと1行も引けない。'
+        + '設定タブで試験日を入れる。CBTなので好きな日を予約できる（受験料 約7,500円）。</div></div>';
+      return;
+    }
+    const t = today();
+    const cp = S.checkpoints.find(function(c){ return c.date===t && !c.done; });
+    const dLeft = E.diffDays(t, S.examDate);
+
+    if(dLeft<0){ el.innerHTML='<div class="card"><div class="big">試験日を過ぎてる</div><div class="sub">設定で次の試験日を入れる。</div></div>'; return; }
+
+    let html = '<div class="card card-amber"><div class="lbl lbl-amber">本番まで</div>'
+             + '<div class="big">'+dLeft+'<span style="font-size:15px;font-weight:700"> 日</span></div>';
+    const next = S.checkpoints.find(function(c){ return !c.done && E.diffDays(t,c.date)>=0; });
+    if(next){
+      const req = requiredAt(next);
+      html += '<div class="sub">次の模試まで '+E.diffDays(t,next.date)+' 日'
+           + (req ? '（必要ライン 科目A '+pct(req.a)+' / 科目B '+pct(req.b)+'）' : '（実力測定・目標なし）')+'</div>';
+    }
+    html += '</div>';
+
+    if(cp){
+      html += renderMockCard(cp);
+      el.innerHTML = html;
+      bindMock(cp);
+      return;
+    }
+
+    const c = computeToday();
+    html += '<div class="card card-blue"><div class="lbl lbl-blue">今日のノルマ '+c.quota.total+'問</div>';
+    c.listA.forEach(function(x){
+      html += '<div class="row"><div>科目A '+x.name+'<span class="grp">'+x.group+'</span></div><div class="n">'+x.count+'</div></div>';
+    });
+    c.listB.forEach(function(x){
+      html += '<div class="row"><div>科目B '+x.name+'</div><div class="n">'+x.count+'</div></div>';
+    });
+    html += '<button class="btn" id="doneBtn">今日の分をやった</button>';
+    html += '<div class="floor">1問でもやれば今日は勝ち（床）</div>';
+    if(c.gap>0){
+      html += '<div class="note">直近の模試が必要ラインに '+pct(c.gap)+' 届いてない。その分ノルマが増えてる。</div>';
+    }
+    if(c.quota.capped){
+      html += '<div class="warn"><b>量では届かない。</b><br>'
+           + '必要な問数が、お前が申告した可処分（'+ (E.isWeekend(new Date())?S.capacity.weekend:S.capacity.weekday) +'問/日）の1.5倍を超えた。'
+           + 'ノルマはここで頭打ちにしてある。取れる手は2つ：<br>'
+           + '① 試験日を後ろにずらす　② 目標正答率を下げる（設定タブ）</div>';
+    }
+    html += '</div>';
+    html += '<div class="card"><div class="lbl">これまでの消化</div>'
+         + '<div style="font-size:14px">科目A '+S.consumed.a+'問 / 科目B '+S.consumed.b+'問</div>'
+         + '<div class="sub">日ごとの履歴は残していない。残り問数は毎朝ゼロから割り直す。</div></div>';
+    el.innerHTML = html;
+    const btn = document.getElementById('doneBtn');
+    if(btn) btn.onclick = function(){
+      c.listA.forEach(function(x){ S.topicConsumed[x.id]=(S.topicConsumed[x.id]||0)+x.count; });
+      c.listB.forEach(function(x){ S.topicConsumed[x.id]=(S.topicConsumed[x.id]||0)+x.count; });
+      S.consumed.a += c.split.a; S.consumed.b += c.split.b;
+      save(); render();
+    };
+  }
+
+  function renderMockCard(cp){
+    let html = '<div class="card card-purple"><div class="lbl lbl-purple">今日は模試</div>';
+    html += '<div style="font-size:14px;line-height:1.8">科目A：<b>全分野ランダム60問・90分</b><br>科目B：<b>20問・100分</b><br>'
+         + '過去問道場で本番と同じ条件を組んで、時間を計って通しで解く。</div>';
+    html += '<div class="note">FEの採点はIRT（項目応答理論）で、1問◯点の配点は非公開。'
+         + 'だからここでは点数ではなく<b>正答率</b>で管理する。</div>';
+    const req = requiredAt(cp);
+    if(req){
+      html += '<div class="warn" style="background:var(--amber-pale);color:#92400E"><b>今日の必要ライン</b><br>'
+           + '科目A '+pct(req.a)+'（'+Math.ceil(req.a*E.EXAM.qA)+'問以上） / 科目B '+pct(req.b)+'（'+Math.ceil(req.b*E.EXAM.qB)+'問以上）</div>';
+    }else{
+      html += '<div class="floor">初回は実力測定。目標は無い。今の実力を測るのが仕事。</div>';
+    }
+    html += '<div class="fld" style="margin-top:12px"><label>科目A 正答数（/60）</label><input class="input" type="number" id="mA" min="0" max="60"></div>';
+    html += '<div class="fld"><label>科目B 正答数（/20）</label><input class="input" type="number" id="mB" min="0" max="20"></div>';
+    html += '<button class="btn" id="mockSave">結果を入れて作戦を更新</button></div>';
+    return html;
+  }
+  function bindMock(cp){
+    document.getElementById('mockSave').onclick = function(){
+      const a = parseInt(document.getElementById('mA').value,10);
+      const b = parseInt(document.getElementById('mB').value,10);
+      if(isNaN(a)||isNaN(b)){ alert('科目A・科目Bの正答数を入れて'); return; }
+      cp.done = true; cp.correctA = Math.max(0,Math.min(E.EXAM.qA,a)); cp.correctB = Math.max(0,Math.min(E.EXAM.qB,b));
+      save(); render();
+    };
+  }
+
+  function renderPlan(){
+    const el = document.getElementById('tab-plan');
+    if(!S.examDate){ el.innerHTML='<div class="card"><div class="sub">設定で試験日を入れると作戦が出る。</div></div>'; return; }
+    const plan = E.checkpointPlan(S.startDate, S.examDate);
+    let html = '<div class="card card-amber"><div class="lbl lbl-amber">作戦</div>'
+      + '<div style="font-size:14px;line-height:1.8">試験日 <b>'+S.examDate+'</b>（残り '+E.diffDays(today(),S.examDate)+'日）<br>'
+      + '模試 <b>'+plan.k+'回</b>／本番目標 科目A <b>'+pct(S.goal.a)+'</b>・科目B <b>'+pct(S.goal.b)+'</b></div>';
+    if(plan.warning==='too_short'){
+      html += '<div class="warn">試験日まで21日未満。模試は1回（＝実力測定）しか置けない。立て直す余地がほぼ無い日程だ。</div>';
+    }
+    html += '</div>';
+
+    html += '<div class="card"><div class="lbl">チェックポイント</div><table><tr><th>日付</th><th>必要ライン A/B</th><th>実測 A/B</th><th></th></tr>';
+    S.checkpoints.forEach(function(c){
+      const req = requiredAt(c);
+      const reqTxt = c.baseline ? '<span style="color:var(--muted)">実力測定</span>'
+                   : (req ? pct(req.a)+' / '+pct(req.b) : '<span style="color:var(--muted)">初回待ち</span>');
+      let actTxt = '—', pill='<span class="pill pill-todo">未</span>';
+      if(c.done){
+        const ra=(c.correctA||0)/E.EXAM.qA, rb=(c.correctB||0)/E.EXAM.qB;
+        actTxt = pct(ra)+' / '+pct(rb);
+        if(c.baseline) pill='<span class="pill pill-ok">測定済</span>';
+        else if(req) pill = (ra>=req.a && rb>=req.b) ? '<span class="pill pill-ok">到達</span>' : '<span class="pill pill-ng">未達</span>';
+        else pill='<span class="pill pill-ok">済</span>';
+      }
+      html += '<tr><td>'+c.date+'</td><td>'+reqTxt+'</td><td>'+actTxt+'</td><td>'+pill+'</td></tr>';
+    });
+    html += '</table>';
+    const base = baselineRates();
+    if(!base){
+      html += '<div class="note">初回（実力測定）の結果を入れるまで、必要ラインは引けない。まず測る。</div>';
+    }else{
+      html += '<div class="note">必要ラインは「初回実測 → 本番目標」を前倒しカーブ（p^0.7）で結んだもの。'
+           + '終盤に追い上げる計画は、遅れた時に取り返す場所が残らないから前倒しにしてある。</div>';
+    }
+    html += '</div>';
+
+    html += '<div class="card"><div class="lbl">合格の条件（IPA公表）</div>'
+      + '<div style="font-size:13px;line-height:1.8">科目A 60問/90分・科目B 20問/100分。<br>'
+      + '各科目 1,000点満点で <b>600点以上</b>。ただし採点はIRTで配点は非公開＝正答率と点数は比例しない。'
+      + 'このアプリが「6割で受かる」と保証することはできない。だから目標は6割より上に置いてある。</div></div>';
+    el.innerHTML = html;
+  }
+
+  function renderConfig(){
+    const el = document.getElementById('tab-config');
+    let html = '<div class="card card-amber"><div class="lbl lbl-amber">試験</div>'
+      + '<div class="fld"><label>試験日（CBTなので好きな日を予約できる）</label><input class="input" type="date" id="cExam" value="'+(S.examDate||'')+'"></div>'
+      + '<div class="fld"><label>作戦の開始日</label><input class="input" type="date" id="cStart" value="'+S.startDate+'"></div>'
+      + '</div>';
+    html += '<div class="card"><div class="lbl">1日に解ける問数（正直な数字を入れる）</div><div class="two">'
+      + '<div class="fld"><label>平日</label><input class="input" type="number" id="cWd" value="'+S.capacity.weekday+'"></div>'
+      + '<div class="fld"><label>休日</label><input class="input" type="number" id="cWe" value="'+S.capacity.weekend+'"></div>'
+      + '</div><div class="sub">盛るとノルマが不可能になって、アプリが自己否定装置に変わる。低めでいい。</div></div>';
+    html += '<div class="card"><div class="lbl">目標正答率</div><div class="two">'
+      + '<div class="fld"><label>科目A（%）</label><input class="input" type="number" id="cGa" value="'+Math.round(S.goal.a*100)+'"></div>'
+      + '<div class="fld"><label>科目B（%）</label><input class="input" type="number" id="cGb" value="'+Math.round(S.goal.b*100)+'"></div>'
+      + '</div><div class="sub">初期値は A75% / B80%。合格は各600/1000（≒6割が目安）だが、IRTで素点比例じゃないのと、'
+      + '科目Bは20問しかなくブレるので、Bを厚くしてある。</div></div>';
+    html += '<div class="card"><div class="lbl">問題量</div><div class="two">'
+      + '<div class="fld"><label>科目A 1分野あたり</label><input class="input" type="number" id="cPer" value="'+S.goalPerTopicA+'"></div>'
+      + '<div class="fld"><label>科目B 合計</label><input class="input" type="number" id="cB" value="'+S.goalTotalB+'"></div>'
+      + '</div><div class="sub">科目A 合計 = 23分野 × この数。消化しきったら自動で2周目に入る。</div></div>';
+    html += '<button class="btn" id="cSave">保存して作戦を引き直す</button>';
+    html += '<button class="btn btn-sub" id="cReset">データを全部消す</button>';
+    el.innerHTML = html;
+
+    document.getElementById('cSave').onclick = function(){
+      const ex = document.getElementById('cExam').value;
+      if(!ex){ alert('試験日を入れて'); return; }
+      S.examDate = ex;
+      S.startDate = document.getElementById('cStart').value || today();
+      S.capacity.weekday = Math.max(1, parseInt(document.getElementById('cWd').value,10)||1);
+      S.capacity.weekend = Math.max(1, parseInt(document.getElementById('cWe').value,10)||1);
+      S.goal.a = Math.min(1, Math.max(0.1, (parseInt(document.getElementById('cGa').value,10)||75)/100));
+      S.goal.b = Math.min(1, Math.max(0.1, (parseInt(document.getElementById('cGb').value,10)||80)/100));
+      S.goalPerTopicA = Math.max(1, parseInt(document.getElementById('cPer').value,10)||20);
+      S.goalTotalB = Math.max(1, parseInt(document.getElementById('cB').value,10)||120);
+      rebuildCheckpoints();
+      save(); switchTab('plan'); render();
+    };
+    document.getElementById('cReset').onclick = function(){
+      if(confirm('全部消す？戻せない')){ localStorage.removeItem(KEY); S=load(); render(); }
+    };
+  }
+
+  function render(){
+    document.getElementById('hdrDate').textContent = today();
+    renderToday(); renderPlan(); renderConfig();
+  }
+  function switchTab(name){
+    ['today','plan','config'].forEach(function(n){
+      document.getElementById('tab-'+n).classList.toggle('hide', n!==name);
+    });
+    document.querySelectorAll('.tab-btn').forEach(function(b){
+      b.classList.toggle('active', b.dataset.tab===name);
+    });
+  }
+  document.querySelectorAll('.tab-btn').forEach(function(b){
+    b.onclick = function(){ switchTab(b.dataset.tab); };
+  });
+
+  if(S.examDate && S.checkpoints.length===0) rebuildCheckpoints();
+  render();
+  if(!S.examDate) switchTab('config');
+})();
+</script>
+</body>
+</html>
