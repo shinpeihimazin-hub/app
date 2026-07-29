@@ -5,6 +5,9 @@
 - 詰まったものを投げる → ここにファイルが増える
 - 「問題出して」 → ここからランダムに1件 引いて、前回と違う形式で出る
 
+`quiz.json` はここから作る**派生物**（`study-buddy.html` が同一オリジンで fetch する出題データ）。
+md を直したら再生成する。スキーマは `.claude/skills/study-buddy/references/quiz-json-schema.md`。
+
 索引ファイルは作らない（本体とズレて腐るから）。一覧は grep で取る:
 
 ```bash

@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<title>詰まり置き場</title>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet"/>
+<!--
+  設計上の禁止事項（このファイルを直す時に読め）
+  ・正答率・連続日数・累計問題数・「◯日ぶり」を表示しない。計算もしない。
+    理由: progress-engine-log.md「已に潰した案」で「記録/可視化で動機づけ」は本人に効かない、
+          むしろ自己否定の燃料になると確定している。クイズUIで一番 足したくなる機能だが、足さない。
+    唯一 出す数字は「送るタブに溜まっている件数」＝貼り忘れ防止のためのTODO件数。成績ではない。
+  ・localStorage は下書き。正の記憶は study-memory/*.md（Claudeが書く）。
+-->
+<style>
+:root{
+  --cream:#FFFBF0;--warm:#FFFFFF;--amber:#F59E0B;--amber-pale:#FEF3C7;--coral:#F97316;--coral-pale:#FFEDD5;
+  --green:#10B981;--green-pale:#D1FAE5;--red:#EF4444;--red-pale:#FEE2E2;--purple:#8B5CF6;--purple-pale:#EDE9FE;
+  --blue:#3B82F6;--blue-pale:#DBEAFE;--text:#1C1917;--muted:#78716C;--light:#A8A29E;
+  --border:rgba(0,0,0,.07);--shadow:0 2px 12px rgba(0,0,0,.06);--r:14px;--rs:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--cream);color:var(--text);font-family:'M PLUS Rounded 1c',system-ui,sans-serif;min-height:100vh;overflow-x:hidden;padding-bottom:30px}
+input,textarea,select,button{font-family:inherit}
+.header{background:linear-gradient(135deg,var(--amber-pale),var(--coral-pale));padding:14px 14px 0;position:sticky;top:0;z-index:100;border-bottom:1px solid rgba(245,158,11,.15)}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.header-title{font-size:17px;font-weight:800}
+.header-note{font-size:11px;color:var(--muted);font-weight:500;background:rgba(255,255,255,.6);padding:3px 8px;border-radius:20px}
+.tabs{display:flex;gap:4px}
+.tab-btn{flex:1;padding:9px 4px;background:none;border:none;border-bottom:2.5px solid transparent;font-size:12px;font-weight:700;cursor:pointer;color:var(--muted)}
+.tab-btn.active{color:var(--amber);border-bottom-color:var(--amber)}
+.badge{display:inline-block;min-width:17px;padding:0 5px;margin-left:4px;background:var(--coral);color:#fff;border-radius:20px;font-size:10px;font-weight:800;line-height:17px}
+.badge.zero{display:none}
+.wrap{padding:12px 12px 0;max-width:640px;margin:0 auto}
+.card{background:var(--warm);border-radius:var(--r);box-shadow:var(--shadow);padding:13px 14px;margin-bottom:10px;border:1px solid var(--border)}
+.card-amber{border-left:3px solid var(--amber)}.card-green{border-left:3px solid var(--green)}
+.card-red{border-left:3px solid var(--red)}.card-blue{border-left:3px solid var(--blue)}
+.card-purple{border-left:3px solid var(--purple)}
+.lbl{font-size:9px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;margin-bottom:7px;color:var(--amber)}
+.lbl-blue{color:var(--blue)}.lbl-green{color:var(--green)}.lbl-red{color:var(--red)}.lbl-purple{color:var(--purple)}
+.input,.textarea,.select{width:100%;background:var(--cream);border:1.5px solid rgba(0,0,0,.08);border-radius:var(--rs);padding:9px 10px;color:var(--text);font-size:14px;outline:none}
+.textarea{resize:vertical;line-height:1.6}
+.input:focus,.textarea:focus{border-color:var(--amber)}
+.select{-webkit-appearance:auto}
+.btn{background:linear-gradient(135deg,var(--amber),var(--coral));color:#fff;border:none;border-radius:var(--rs);padding:11px 16px;font-size:14px;font-weight:700;cursor:pointer;width:100%}
+.btn:disabled{opacity:.4}
+.btn-sm{background:var(--cream);color:var(--muted);border:1.5px solid rgba(0,0,0,.1);border-radius:var(--rs);padding:6px 11px;font-size:12px;font-weight:600;cursor:pointer}
+.btn-ghost{background:none;border:none;color:var(--light);font-size:16px;cursor:pointer;padding:2px 6px;line-height:1}
+.row{display:flex;gap:7px;align-items:center}
+.mb{margin-bottom:9px}
+.q-topic{font-size:10px;font-weight:800;color:var(--purple);letter-spacing:.5px;margin-bottom:6px}
+.q-body{font-size:15px;font-weight:700;line-height:1.65;margin-bottom:12px;white-space:pre-wrap}
+.choice{display:block;width:100%;text-align:left;background:var(--cream);border:1.5px solid rgba(0,0,0,.09);border-radius:var(--rs);padding:12px 13px;font-size:14px;font-weight:600;margin-bottom:7px;cursor:pointer;line-height:1.5}
+.choice:disabled{cursor:default;color:var(--text);opacity:1}   /* 答え合わせ後に読み返す画面なので、disabledでも文字を薄くしない */
+.choice.ok{background:var(--green-pale);border-color:var(--green)}
+.choice.ng{background:var(--red-pale);border-color:var(--red)}
+.verdict{font-size:14px;font-weight:800;margin-bottom:7px}
+.verdict.ok{color:var(--green)}.verdict.ng{color:var(--red)}
+.why{font-size:13px;line-height:1.7;color:var(--text);background:var(--cream);border-radius:var(--rs);padding:10px 11px;white-space:pre-wrap}
+.hint{font-size:12px;color:var(--muted);line-height:1.6}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;line-height:1.55}
+.item{display:flex;gap:8px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px;line-height:1.55}
+.item:last-child{border-bottom:none}
+.item-body{flex:1;white-space:pre-wrap;word-break:break-word}
+.item-meta{font-size:10px;color:var(--light);font-weight:700;margin-top:3px}
+.empty{text-align:center;padding:26px 14px;color:var(--muted);font-size:13px;line-height:1.8}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:22px;background:var(--text);color:#fff;font-size:13px;font-weight:700;padding:10px 18px;border-radius:22px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:999}
+.toast.show{opacity:.94}
+.warn{background:var(--red-pale);border-left:3px solid var(--red);border-radius:var(--rs);padding:9px 11px;font-size:12px;line-height:1.6;color:#7F1D1D}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="header-title">詰まり置き場</div>
+    <div class="header-note" id="srcNote">…</div>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="in">投げる</button>
+    <button class="tab-btn" data-tab="q">問題</button>
+    <button class="tab-btn" data-tab="out">送る<span class="badge zero" id="outBadge">0</span></button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ===== 投げる ===== -->
+  <div id="tab-in">
+    <div class="card card-amber">
+      <div class="lbl">詰まったことを放り込む</div>
+      <textarea class="textarea mb" id="inBody" rows="4" placeholder="例: デッドロックの4条件が言えない&#10;例: 稼働率の並列、式が出てこない&#10;（雑でいい。あとでClaudeが解説して記憶に変える）"></textarea>
+      <div class="row mb">
+        <select class="select" id="inTopic">
+          <option value="">分野（任意）</option>
+          <option>テクノロジ/基礎理論</option>
+          <option>テクノロジ/アルゴリズム</option>
+          <option>テクノロジ/コンピュータ構成</option>
+          <option>テクノロジ/システム構成</option>
+          <option>テクノロジ/OS</option>
+          <option>テクノロジ/データベース</option>
+          <option>テクノロジ/ネットワーク</option>
+          <option>テクノロジ/セキュリティ</option>
+          <option>テクノロジ/開発技術</option>
+          <option>マネジメント/プロジェクト</option>
+          <option>マネジメント/サービス</option>
+          <option>ストラテジ/経営戦略</option>
+          <option>ストラテジ/システム戦略</option>
+          <option>ストラテジ/企業と法務</option>
+        </select>
+      </div>
+      <input class="input mb" id="inSrc" placeholder="出典（任意）例: 過去問道場 R5春 問18"/>
+      <button class="btn" id="inAdd">溜める</button>
+    </div>
+    <div class="card card-blue">
+      <div class="lbl lbl-blue">溜まってるやつ</div>
+      <div id="inboxList"></div>
+    </div>
+  </div>
+
+  <!-- ===== 問題 ===== -->
+  <div id="tab-q" style="display:none">
+    <div id="qArea"></div>
+    <button class="btn" id="qNext">問題を出す</button>
+  </div>
+
+  <!-- ===== 送る ===== -->
+  <div id="tab-out" style="display:none">
+    <div class="card card-green">
+      <div class="lbl lbl-green">Claudeに貼るテキスト</div>
+      <div class="hint mb">これを丸ごとコピーしてClaudeに貼る。解説・記憶ファイルの作成・採点の反映は向こうがやる。</div>
+      <textarea class="textarea mono mb" id="outText" rows="12" readonly></textarea>
+      <button class="btn mb" id="outCopy">コピー</button>
+      <div class="warn mb">貼る前に消すな。消したら復元できない。</div>
+      <button class="btn-sm" id="outClear">貼り終えた → 溜まりを消す</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+const $ = s => document.querySelector(s);
+const K = { inbox:'sb-inbox', results:'sb-results', explains:'sb-explains', hist:'sb-hist', cache:'sb-quizcache' };
+const load = (k,d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(e){ return d; } };
+const save = (k,v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){ toast('保存に失敗した'); } };
+const esc = s => String(s==null?'':s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let toastT;
+function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),1700); }
+const today = () => new Date().toISOString().slice(0,10);
+
+/* ---------- タブ ---------- */
+document.querySelectorAll('.tab-btn').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.tab-btn').forEach(x => x.classList.toggle('active', x===b));
+  ['in','q','out'].forEach(t => $('#tab-'+t).style.display = (t===b.dataset.tab ? '' : 'none'));
+  if(b.dataset.tab==='out') renderOut();
+});
+
+/* ---------- 投げる ---------- */
+function renderInbox(){
+  const list = load(K.inbox, []);
+  $('#inboxList').innerHTML = list.length ? list.map((it,i) =>
+    `<div class="item"><div class="item-body">${esc(it.body)}<div class="item-meta">${esc(it.topic||'分野なし')}${it.source?' ・ '+esc(it.source):''} ・ ${esc(it.at)}</div></div>`+
+    `<button class="btn-ghost" data-del="${i}">×</button></div>`).join('')
+    : '<div class="empty">まだ空。詰まった瞬間に放り込め。</div>';
+  $('#inboxList').querySelectorAll('[data-del]').forEach(b => b.onclick = () => {
+    const l = load(K.inbox, []); l.splice(+b.dataset.del, 1); save(K.inbox, l); renderInbox(); renderBadge();
+  });
+}
+$('#inAdd').onclick = () => {
+  const body = $('#inBody').value.trim();
+  if(!body){ toast('中身が空'); return; }
+  const l = load(K.inbox, []);
+  l.push({ body, topic:$('#inTopic').value, source:$('#inSrc').value.trim(), at:today() });
+  save(K.inbox, l);
+  $('#inBody').value=''; $('#inSrc').value='';
+  renderInbox(); renderBadge(); toast('溜めた');
+};
+
+/* ---------- 出題データ ---------- */
+let QUIZ = { items: [] };
+async function loadQuiz(){
+  try{
+    const r = await fetch('study-memory/quiz.json?t=' + Date.now(), { cache:'no-store' });
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    QUIZ = await r.json();
+    save(K.cache, QUIZ);
+    $('#srcNote').textContent = '記憶: 最新';
+  }catch(e){
+    QUIZ = load(K.cache, { items: [] });
+    $('#srcNote').textContent = QUIZ.items.length ? '記憶: キャッシュ' : '記憶: 未取得';
+  }
+  if(!QUIZ || !Array.isArray(QUIZ.items)) QUIZ = { items: [] };
+}
+
+/* ---------- 出題対象と形式の選定 ----------
+   study-buddy スキルの B2/B3 と同じ規則をクライアント側で再現する。
+   プール = 「未出題」∪「直近が誤答」。空なら last_asked が古い半分。 */
+function pickItem(){
+  const items = (QUIZ.items||[]).filter(it => (it.questions||[]).length);
+  if(!items.length) return null;
+  const hist = load(K.hist, {});
+  const pool = items.filter(it => !hist[it.id] || hist[it.id].lastR === 'x');
+  let cand = pool;
+  if(!cand.length){
+    const sorted = items.slice().sort((a,b) => (hist[a.id]?.lastAt||'') < (hist[b.id]?.lastAt||'') ? -1 : 1);
+    cand = sorted.slice(0, Math.max(2, Math.ceil(sorted.length/2)));
+  }
+  return cand[Math.floor(Math.random()*cand.length)];
+}
+function pickFormat(item){
+  const hist = load(K.hist, {});
+  const last = hist[item.id]?.lastFmt;
+  const qs = item.questions;
+  const rot = qs.length > 1 ? qs.filter(q => q.fmt !== last) : qs;
+  const use = rot.length ? rot : qs;
+  return use[Math.floor(Math.random()*use.length)];
+}
+function markHist(id, fmt, r){
+  const hist = load(K.hist, {});
+  hist[id] = { lastFmt:fmt, lastR:(r||hist[id]?.lastR||null), lastAt:today() };
+  save(K.hist, hist);
+}
+
+/* ---------- 照合 ---------- */
+const norm = s => String(s==null?'':s).normalize('NFKC').replace(/\s+/g,'').toLowerCase()
+  .replace(/[ァ-ヶ]/g, m => String.fromCharCode(m.charCodeAt(0)-0x60));
+function calcGen(q){
+  const names = Object.keys(q.vars||{}), vals = {};
+  names.forEach(n => {
+    const v = q.vars[n];
+    if(Array.isArray(v.values)) vals[n] = v.values[Math.floor(Math.random()*v.values.length)];
+    else { const steps = Math.floor((v.max - v.min)/v.step); vals[n] = +(v.min + Math.floor(Math.random()*(steps+1))*v.step).toFixed(10); }
+  });
+  let text = q.q; names.forEach(n => text = text.split('{'+n+'}').join(vals[n]));
+  let ans;
+  try { ans = new Function(...names, 'return ('+q.expr+')')(...names.map(n => vals[n])); }
+  catch(e){ return { text, ans:null, err:String(e) }; }
+  if(typeof q.round === 'number') ans = +Number(ans).toFixed(q.round);
+  return { text, ans };
+}
+
+/* ---------- 出題の描画 ---------- */
+let CUR = null;
+function renderQuestion(){
+  const item = pickItem();
+  if(!item){
+    CUR = null;
+    $('#qArea').innerHTML = '<div class="card"><div class="empty">出せる記憶がまだ無い。<br>「投げる」に詰まったことを放り込んで、Claudeに貼れ。<br>向こうが解説して記憶にしたら、ここに問題が降りてくる。</div></div>';
+    $('#qNext').textContent = '問題を出す';
+    return;
+  }
+  const q = pickFormat(item);
+  CUR = { item, q, answered:false };
+  const head = `<div class="q-topic">${esc(item.topic||'')} ・ ${esc({mcq:'4択',cloze:'一問一答',calc:'計算',explain:'口頭試問'}[q.fmt]||q.fmt)}</div>`;
+  let html = '';
+  if(q.fmt === 'mcq'){
+    html = `<div class="card card-amber">${head}<div class="q-body">${esc(q.q)}</div><div id="qChoices">`+
+      (q.choices||[]).map((c,i) => `<button class="choice" data-c="${i}">${esc('アイウエオカ'[i]||i+1)}　${esc(c)}</button>`).join('')+
+      `</div><div id="qAfter"></div></div>`;
+  } else if(q.fmt === 'cloze'){
+    html = `<div class="card card-amber">${head}<div class="q-body">${esc(q.q)}</div>`+
+      `<input class="input mb" id="qIn" placeholder="答えを書く" autocomplete="off"/>`+
+      `<button class="btn" id="qSubmit">答え合わせ</button><div id="qAfter"></div></div>`;
+  } else if(q.fmt === 'calc'){
+    const g = calcGen(q);
+    CUR.gen = g;
+    if(g.ans === null){
+      html = `<div class="card card-red">${head}<div class="q-body">${esc(g.text)}</div>`+
+        `<div class="warn">この問題の式が評価できない（${esc(g.err)}）。quiz.json の expr を直す必要がある。</div></div>`;
+    } else {
+      html = `<div class="card card-amber">${head}<div class="q-body">${esc(g.text)}</div>`+
+        `<input class="input mb" id="qIn" inputmode="decimal" placeholder="数値で答える${typeof q.round==='number'?'（小数第'+q.round+'位まで）':''}" autocomplete="off"/>`+
+        `<button class="btn" id="qSubmit">答え合わせ</button><div id="qAfter"></div></div>`;
+    }
+  } else if(q.fmt === 'explain'){
+    html = `<div class="card card-purple">${head}<div class="q-body">${esc(q.q)}</div>`+
+      `<textarea class="textarea mb" id="qIn" rows="5" placeholder="自分の言葉で書く。教科書の文言はいらない"></textarea>`+
+      `<div class="hint mb">これは自然文なのでここでは採点しない。Claudeが採点する（「送る」に入る）。</div>`+
+      `<button class="btn" id="qSubmit">これで出す</button><div id="qAfter"></div></div>`;
+  }
+  $('#qArea').innerHTML = html;
+  $('#qNext').textContent = '別の問題にする';
+  if(q.fmt === 'mcq') $('#qChoices').querySelectorAll('[data-c]').forEach(b => b.onclick = () => gradeMcq(+b.dataset.c));
+  const sub = $('#qSubmit'); if(sub) sub.onclick = () => { if(q.fmt==='cloze') gradeCloze(); else if(q.fmt==='calc') gradeCalc(); else gradeExplain(); };
+}
+function afterBox(ok, lines){
+  return `<div class="verdict ${ok?'ok':'ng'}">${ok?'○':'×'}</div>` + lines.map(l => `<div class="why mb">${l}</div>`).join('');
+}
+function pushResult(r, note){
+  const l = load(K.results, []);
+  l.push({ id:CUR.item.id, fmt:CUR.q.fmt, r, note:note||'', at:today() });
+  save(K.results, l); markHist(CUR.item.id, CUR.q.fmt, r); renderBadge();
+}
+function gradeMcq(i){
+  if(CUR.answered) return; CUR.answered = true;
+  const q = CUR.q, ok = (i === q.answer);
+  $('#qChoices').querySelectorAll('[data-c]').forEach(b => {
+    b.disabled = true;
+    if(+b.dataset.c === q.answer) b.classList.add('ok');
+    else if(+b.dataset.c === i) b.classList.add('ng');
+  });
+  const lines = [];
+  if(q.why) lines.push(esc(q.why));
+  lines.push(ok ? '当てずっぽうじゃないなら、なぜそれかを一言 書いておくと、次に穴を突ける（任意）。'
+                : 'そこはまだ穴。また出す。');
+  $('#qAfter').innerHTML = afterBox(ok, lines) +
+    `<input class="input mb" id="qNote" placeholder="${ok?'なぜそれを選んだか（任意）':'何と取り違えたか（任意）'}" autocomplete="off"/>`+
+    `<button class="btn-sm" id="qNoteSave">メモを添える</button>`;
+  pushResult(ok ? 'o' : 'x', '');
+  $('#qNoteSave').onclick = () => {
+    const v = $('#qNote').value.trim(); if(!v){ toast('空'); return; }
+    const l = load(K.results, []); if(l.length) l[l.length-1].note = v; save(K.results, l); toast('添えた');
+  };
+}
+function gradeCloze(){
+  if(CUR.answered) return;
+  const v = $('#qIn').value.trim();
+  if(!v){ toast('答えが空'); return; }
+  CUR.answered = true;
+  const q = CUR.q;
+  const accepts = [q.answer].concat(q.accept||[]).map(norm);
+  const ok = accepts.includes(norm(v));
+  const lines = [`正解: ${esc(q.answer)}`];
+  if(q.why) lines.push(esc(q.why));
+  if(!ok) lines.push('そこはまだ穴。また出す。<br><span class="hint">意味は合ってるのに×になったなら、quiz.json の accept に書き足す案件。Claudeに言え。</span>');
+  $('#qAfter').innerHTML = afterBox(ok, lines);
+  $('#qIn').disabled = true; $('#qSubmit').disabled = true;
+  pushResult(ok ? 'o' : 'x', '答えた: ' + v);
+}
+function gradeCalc(){
+  if(CUR.answered) return;
+  const raw = $('#qIn').value.trim();
+  if(!raw){ toast('答えが空'); return; }
+  const v = Number(raw.replace(/[^0-9.\-]/g,''));
+  if(!isFinite(v)){ toast('数値として読めない'); return; }
+  CUR.answered = true;
+  const q = CUR.q, ans = CUR.gen.ans;
+  const tol = typeof q.round === 'number' ? Math.pow(10, -q.round)/2 : 1e-9;
+  const ok = Math.abs(v - ans) <= tol;
+  const lines = [`正解: ${esc(ans)}${esc(q.unit||'')}`];
+  if(q.why) lines.push(esc(q.why));
+  lines.push(ok ? '数字が合っていても手順が違うことがある。計算過程を一言 書いておけ（任意）。' : 'そこはまだ穴。また出す。');
+  $('#qAfter').innerHTML = afterBox(ok, lines) +
+    `<input class="input mb" id="qNote" placeholder="どう計算したか（任意）" autocomplete="off"/>`+
+    `<button class="btn-sm" id="qNoteSave">メモを添える</button>`;
+  $('#qIn').disabled = true; $('#qSubmit').disabled = true;
+  pushResult(ok ? 'o' : 'x', '答えた: ' + raw);
+  $('#qNoteSave').onclick = () => {
+    const t = $('#qNote').value.trim(); if(!t){ toast('空'); return; }
+    const l = load(K.results, []); if(l.length) l[l.length-1].note = (l[l.length-1].note?l[l.length-1].note+' / ':'') + t;
+    save(K.results, l); toast('添えた');
+  };
+}
+function gradeExplain(){
+  if(CUR.answered) return;
+  const v = $('#qIn').value.trim();
+  if(!v){ toast('答えが空'); return; }
+  CUR.answered = true;
+  const l = load(K.explains, []);
+  l.push({ id:CUR.item.id, body:v, at:today() });
+  save(K.explains, l);
+  markHist(CUR.item.id, 'explain', null);   /* ○×はClaudeが付ける。ここでは付けない */
+  renderBadge();
+  const must = (CUR.q.must||[]);
+  $('#qArea').querySelector('#qAfter').innerHTML =
+    `<div class="verdict" style="color:var(--purple)">送りに入れた</div>`+
+    `<div class="why mb">採点はClaude側。「送る」タブから貼れ。</div>`+
+    (must.length ? `<button class="btn-sm" id="qReveal">自己照合したい（必須要素を見る）</button><div id="qMust"></div>` : '');
+  $('#qIn').disabled = true; $('#qSubmit').disabled = true;
+  const rv = $('#qReveal');
+  if(rv) rv.onclick = () => {
+    $('#qMust').innerHTML = `<div class="why" style="margin-top:9px">言えていてほしかった要素:<br>・${must.map(esc).join('<br>・')}<br><span class="hint">これは自己照合用。記録には残らない（正の採点はClaudeがやる）。</span></div>`;
+    rv.style.display = 'none';
+  };
+}
+$('#qNext').onclick = renderQuestion;
+
+/* ---------- 送る ---------- */
+function pendingCount(){
+  return load(K.inbox,[]).length + load(K.results,[]).length + load(K.explains,[]).length;
+}
+function renderBadge(){
+  const n = pendingCount(), b = $('#outBadge');
+  b.textContent = n; b.classList.toggle('zero', n === 0);
+}
+function buildExport(){
+  const inbox = load(K.inbox,[]), res = load(K.results,[]), exp = load(K.explains,[]);
+  if(!inbox.length && !res.length && !exp.length) return '';
+  const L = ['=== STUDY-BUDDY EXPORT ' + new Date().toISOString().slice(0,16) + ' ==='];
+  inbox.forEach(it => {
+    L.push(`[NEW] topic=${it.topic||''} src=${it.source||''} at=${it.at||''}`);
+    L.push(it.body);
+    L.push('[/NEW]');
+  });
+  res.forEach(r => L.push(`[RESULT] id=${r.id} fmt=${r.fmt} r=${r.r} at=${r.at||''}${r.note?' note='+r.note.replace(/\n/g,' '):''}`));
+  exp.forEach(e => { L.push(`[EXPLAIN] id=${e.id} at=${e.at||''}`); L.push(e.body); L.push('[/EXPLAIN]'); });
+  L.push('=== END ===');
+  return L.join('\n');
+}
+function renderOut(){
+  const t = buildExport();
+  $('#outText').value = t || '（溜まってない）';
+  $('#outCopy').disabled = !t;
+  $('#outClear').disabled = !t;
+}
+$('#outCopy').onclick = async () => {
+  const t = buildExport(); if(!t) return;
+  try { await navigator.clipboard.writeText(t); toast('コピーした'); }
+  catch(e){ const a = $('#outText'); a.removeAttribute('readonly'); a.select(); a.setSelectionRange(0, t.length);
+            const ok = document.execCommand && document.execCommand('copy'); a.setAttribute('readonly','');
+            toast(ok ? 'コピーした' : '手で選択してコピーしてくれ'); }
+};
+$('#outClear').onclick = () => {
+  if(!confirm('溜まりを消す。Claudeに貼り終えたか？')) return;
+  save(K.inbox, []); save(K.results, []); save(K.explains, []);
+  renderInbox(); renderOut(); renderBadge(); toast('消した');
+};
+
+/* ---------- 起動 ---------- */
+(async function(){
+  renderInbox(); renderBadge(); renderOut();   /* 起動時にrenderOutを呼ばないと、送るタブを開くまでコピーボタンが押せる見た目のまま残る */
+  await loadQuiz();
+  renderQuestion();
+})();
+</script>
+</body>
+</html>
