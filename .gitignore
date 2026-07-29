@@ -1,0 +1,6 @@
+# pptx-maker: 機密はローカル完結（配布先PCからリポジトリへ戻さない）
+pptx-work/
+.claude/skills/pptx-maker/local/
+
+# タスクごとのスコープ宣言（scope-guardフックが参照。タスク完了時に削除）
+.claude/task-scope
