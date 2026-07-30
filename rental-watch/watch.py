@@ -43,18 +43,39 @@ AREA_MIN = 40.0              # 専有面積 下限（㎡）
 AGE_MAX = 25                 # 築年数 上限（年）
 WALK_MAX = 15                # 駅徒歩 上限（分）
 
-TARGET_STATIONS = {"田町", "高輪ゲートウェイ", "品川", "大崎",
-                   "五反田", "目黒", "大井町", "大森"}
+# 中核8駅（本人が最初に指定した「田町ー目黒／品川ー大森」の範囲）
+CORE_STATIONS = {"田町", "高輪ゲートウェイ", "品川", "大崎",
+                 "五反田", "目黒", "大井町", "大森"}
+# 周辺駅。通勤MUST（秋葉原40分以内・二子玉川50分以内・いずれも乗換1回以内）を
+# 実測で満たしたものだけを入れている。石川台・洗足・自由が丘などは秋葉原41分以上で不採用。
+NEAR_STATIONS = {"大岡山", "北千束", "荏原町", "中延", "戸越公園", "戸越銀座", "旗の台",
+                 "長原", "洗足池", "荏原中延", "武蔵小山", "西小山", "不動前",
+                 "池上", "蓮沼", "戸越", "白金台", "高輪台", "三田", "泉岳寺"}
+TARGET_STATIONS = CORE_STATIONS | NEAR_STATIONS
 
-FDJ_STATION_CODES = ["C8MR8BDBN", "C8MR8BD5N", "C8MR8B5BD", "C8MR8BRBI",
-                     "C8MR8BSB9", "C8MR8BXB4", "C8MX58RBI", "C8MX58SB9"]
+FDJ_STATION_CODES = [
+    # 中核8駅
+    "C8MR8BDBN", "C8MR8BD5N", "C8MR8B5BD", "C8MR8BRBI",
+    "C8MR8BSB9", "C8MR8BXB4", "C8MX58RBI", "C8MX58SB9",
+    # 周辺20駅
+    "Y8W8WBSB9", "Y8W8WBRBI", "Y8W8WBDBN", "Y8W8WBPB3", "Y8W8WBWBY",
+    "Y8W8DBWBY", "Y8W8WB5BD", "Y8W8DB5BD", "Y8W8DBRBI", "Y8W8DBPB3",
+    "Y8W8R8WBY", "Y8W8R8PB3", "Y8W8R88BS", "Y8W8DMWBY", "Y8W8DMPB3",
+    "Y8WDMMRBI", "Y8WPXBMBC", "Y8WDMMDBN", "Y8WDMMWBY", "Y8WWMBMBC",
+]
 HATO_WARDS = ["13109", "13111", "13110", "13103"]
+# at home だけは駅ごとに1リクエスト必要で、叩きすぎるとボット判定（「認証中」ページ）に入る。
+# 実測で8駅・間隔3秒までは通ることを確認しているので、ここは中核8駅に据え置く。
+# 不動産ジャパンは全駅を1クエリ、ハトマークは区単位なので、駅を増やしてもリクエストは増えない。
 ATHOME_SLUGS = ["tamachi", "takanawagateway", "shinagawa", "osaki",
                 "gotanda", "meguro", "oimachi", "omori"]
 FLOOR_PLANS = ["1XXSLDK", "2XXXXSK", "2XXXSDK", "2XXSLDK",
                "3XXXXSK", "3XXXSDK", "3XXSLDK", "4XXXXSK", "4XXXSDK"]
 
 JST = timezone(timedelta(hours=9))
+
+# 致命的ではないが報告すべき事象（部分ブロック等）をソースから積む
+WARNINGS = []
 
 
 def now_jst():
@@ -123,7 +144,7 @@ def fingerprint(item):
 
     住所（正規化）＋専有面積＋賃料。住所が取れないソースは駅＋徒歩で代替する。
     """
-    a = norm_addr(item.get("addr", ""))
+    a = norm_addr(item.get("addr_key", ""))
     if not a and item.get("stations"):
         st, w = item["stations"][0]
         a = f"{st}{w}"
@@ -198,7 +219,8 @@ def fudousan_japan():
             "area": float(area_m.group(1)) if area_m else None,
             "madori": field(det, "間取り", 10), "built": field(det, "築年月", 20),
             "age": round(age, 1), "kouzou": kouzou, "stations": hit,
-            "addr": field(det, "所在地", 40), "taiyou": field(det, "取引態様", 14),
+            "addr": field(det, "所在地", 40), "addr_key": field(det, "所在地", 40),
+            "taiyou": field(det, "取引態様", 14),
             "url": url,
         })
     return out
@@ -230,7 +252,7 @@ def hatomark():
             hit = [(s, w) for s, w in stations if s in TARGET_STATIONS and w <= WALK_MAX]
             if not hit:
                 continue
-            addr = re.search(r"(東京都[^|]{4,32})\|MAP", blk)
+            addr = re.search(r"\|(東京都[^|]{4,40}?)\|", blk)
             rent_m = re.search(r"賃料[|\s]*([\d.]+)万円", blk)
             area_m = re.search(r"専有面積[|\s]*([\d.]+)㎡", blk)
             if not (rent_m and area_m):
@@ -253,7 +275,9 @@ def hatomark():
                 "area": float(area_m.group(1)), "madori": "", "built": built,
                 "age": round(age_years(built), 1) if built else None,
                 "kouzou": "マンション(RC近似)", "stations": hit,
-                "addr": (addr.group(1) if addr else "") + " " + (names[0] if names else ""),
+                "addr": ((addr.group(1) if addr else "") + " "
+                         + (names[0] if names else "")).strip(),
+                "addr_key": addr.group(1) if addr else "",
                 "taiyou": "", "url": base,
             })
         time.sleep(2)
@@ -266,14 +290,20 @@ def hatomark():
 # ソース3: at home（駅ページ。絞り込みはJS依存なので条件はこちらで当てる）
 # --------------------------------------------------------------------------
 def athome():
-    out, sane = [], False
+    out, sane, blocked = [], False, []
     for slug in ATHOME_SLUGS:
         url = f"https://www.athome.co.jp/chintai/tokyo/{slug}-st/list/"
         try:
             page = fetch(url, timeout=90)
         except RuntimeError:
             continue
-        if "賃貸" in page:
+        # at home はボット判定に入ると HTTP 200 のまま「認証中」ページを返す。
+        # ここを素通りさせると「ブロックされた」が「0件」に化けて静かに壊れる。
+        if "認証中" in page[:4000] or "お探しのページが見つかりません" in page[:4000]:
+            blocked.append(slug)
+            time.sleep(5)
+            continue
+        if "駅の賃貸物件" in page:
             sane = True
         blocks = re.split(r'(?=<[^>]*class="p-property p-property--building js-block")', page)[1:]
         for raw in blocks:
@@ -306,11 +336,18 @@ def athome():
                     "total": rent + kanri, "area": area, "madori": mad,
                     "built": built, "age": round(age, 1),
                     "kouzou": "未確認(一覧に構造なし)", "stations": hit,
-                    "addr": (addr_m.group(1) if addr_m else "")
-                            + " " + (name_m.group(1) if name_m else ""),
+                    "addr": ((addr_m.group(1) if addr_m else "") + " "
+                             + (name_m.group(1) if name_m else "")).strip(),
+                    "addr_key": addr_m.group(1) if addr_m else "",
                     "taiyou": "", "url": url,
                 })
-        time.sleep(2)
+        time.sleep(3)
+    if blocked and len(blocked) == len(ATHOME_SLUGS):
+        raise RuntimeError("全駅がボット判定でブロックされた（認証中ページ）")
+    if blocked:
+        WARNINGS.append(
+            f"at home: {len(blocked)}駅がボット判定でブロック（{'/'.join(blocked)}）。"
+            f"残り{len(ATHOME_SLUGS)-len(blocked)}駅の結果のみ反映")
     if not sane:
         raise RuntimeError("結果ページの目印が消えている（構造変化の疑い）")
     return out
@@ -331,7 +368,9 @@ def render(item):
     ]
     if item.get("taiyou"):
         lines.append(f"- 取引態様: {item['taiyou']}")
-    lines += [f"- {item['url']}", f"- 出典: {item['source']}"]
+    srcs = item.get("also_on") or [item["source"]]
+    lines += [f"- {item['url']}",
+              f"- 掲載: {' / '.join(dict.fromkeys(srcs))}"]
     return "\n".join(lines)
 
 
@@ -448,6 +487,27 @@ def main():
     if dropped:
         print(f"[info] 管理費込みで上限超過のため除外: {len(dropped)}件", file=sys.stderr)
 
+    # 同じ部屋が複数サイトから来たら1件にまとめる。
+    # まとめないと同一回の通知で件数が水増しされる（住所が取れている方を残す）。
+    merged = {}
+    for h in hits:
+        fp = fingerprint(h)
+        prev = merged.get(fp)
+        if prev is None:
+            h["also_on"] = [h["source"]]
+            merged[fp] = h
+        else:
+            prev["also_on"].append(h["source"])
+            # 構造や住所がはっきりしている方を代表にする
+            if prev["kouzou"].startswith(("マンション", "未確認")) and \
+                    not h["kouzou"].startswith(("マンション", "未確認")):
+                h["also_on"] = prev["also_on"]
+                merged[fp] = h
+    if len(merged) != len(hits):
+        print(f"[info] 複数サイトで重複していた物件を統合: {len(hits)}→{len(merged)}件",
+              file=sys.stderr)
+    hits = list(merged.values())
+
     if errors and not hits:
         if not args.dry_run:
             append_runlog(f"- {ts}  **ERROR**  {summary}  — {'; '.join(errors)[:120]}")
@@ -471,9 +531,11 @@ def main():
     else:
         print(f"## 新着なし ({ts}) — 監視中の全ヒット {len(hits)}件")
 
-    if errors:
-        print("\n### ⚠ 一部ソースで取得失敗")
+    if errors or WARNINGS:
+        print("\n### ⚠ 取得に問題があった箇所")
         for e in errors:
+            print(f"- {e}")
+        for e in WARNINGS:
             print(f"- {e}")
 
     if not args.dry_run:
@@ -485,8 +547,9 @@ def main():
         with open(SEEN_PATH, "w", encoding="utf-8") as fh:
             json.dump(seen, fh, ensure_ascii=False, indent=1, sort_keys=True)
         mark = "**新着%d**" % len(new) if new else "新着0"
+        note = "; ".join(errors + WARNINGS)
         append_runlog(f"- {ts}  ok  {summary}  {mark}"
-                      + (f"  ※一部失敗: {'; '.join(errors)[:80]}" if errors else ""))
+                      + (f"  ※{note[:110]}" if note else ""))
         if not args.no_commit:
             print(f"[git] {persist(f'chore(rental-watch): 定期監視 {ts} {mark}')}",
                   file=sys.stderr)
