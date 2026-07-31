@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """賃貸物件 監視スクリプト
 
-不動産ジャパン / ハトマークサイト / at home を確定条件で叩き、
+SUUMO / 不動産ジャパン / ハトマークサイト / at home を確定条件で叩き、
 seen.json に無い物件だけを報告する。
-SUUMO / LIFULL HOME'S / カナリー は対象外（本人が自分で見ているため）。
+
+LIFULL HOME'S は物件データがサーバ側で描画されず取得できないため未対応。
+カナリーは未対応。
 
 物件はサイトを跨いで同一判定（fingerprint）するので、
 「同じ部屋がどのサイトに何時間早く出たか」が seen.json に蓄積される。
@@ -42,6 +44,12 @@ RENT_CAP_INCLUSIVE = True    # True = 管理費・共益費込みで上限を判
 AREA_MIN = 40.0              # 専有面積 下限（㎡）
 AGE_MAX = 25                 # 築年数 上限（年）
 WALK_MAX = 15                # 駅徒歩 上限（分）
+
+# 初期費用（本人確定 2026-07-30）。仲介手数料は0.55ヶ月で固定して見積もる。
+INIT_CAP = 400000            # 初期費用の上限（円）
+CHUKAI_MONTHS = 0.55         # 仲介手数料（宅建業法の原則。1.1ヶ月は借主の承諾が要る）
+HOSHO_RATIO = 0.5            # 保証会社の初回保証料（賃料比）
+MISC_COST = 40000            # 火災保険2万＋鍵交換2万
 
 # 中核8駅（本人が最初に指定した「田町ー目黒／品川ー大森」の範囲）
 CORE_STATIONS = {"田町", "高輪ゲートウェイ", "品川", "大崎",
@@ -97,6 +105,11 @@ def fetch(url, timeout=90, retries=3):
             last = exc
             time.sleep(2 * (i + 1))
     raise RuntimeError(f"fetch failed: {url} :: {last}")
+
+
+def html_unescape(x):
+    import html as _h
+    return _h.unescape(x)
 
 
 def flatten(html_text):
@@ -166,6 +179,57 @@ def madori_ok(m):
     return bool(re.search(r"[1-5]S?LDK|[2-5]S?[DL]?K", m))
 
 
+VALUE_PATTERNS = [r"^[|\s：:]*([\d.,]+\s*万\s*[\d,]*\s*円)",
+                  r"^[|\s：:]*([\d,]+\s*円)",
+                  r"^[|\s：:]*([\d.]+\s*[ヵヶか]月)",
+                  r"^[|\s：:]*(無|なし|礼金なし|敷金なし|不要)"]
+
+
+def grab_value(text, label):
+    """ラベルの各出現を順に見て、最初に値が続いた箇所を返す。
+
+    詳細ページは「敷金| | | | |敷金| |2ヵ月」のように見出しだけの出現が先に来る。
+    素直に最初の出現を取ると空文字を掴む。
+    """
+    for m in re.finditer(re.escape(label), text):
+        seg = text[m.end():m.end() + 40]
+        for pat in VALUE_PATTERNS:
+            hit = re.search(pat, seg)
+            if hit:
+                return hit.group(1).strip()
+    return ""
+
+
+def deposit_yen(txt, rent):
+    """「2ヵ月」「14万円」「無」を円に直す。"""
+    if not txt or txt.strip() in ("無", "なし", "礼金なし", "敷金なし", "不要", "-", "―"):
+        return 0
+    m = re.search(r"([\d.]+)\s*[ヵヶか]月", txt)
+    if m:
+        return int(float(m.group(1)) * rent)
+    return to_yen(txt) or 0
+
+
+def initial_cost(item):
+    """初期費用の見積り。
+
+    敷金 + 礼金 + 仲介(0.55ヶ月) + 前家賃(管理費込) + 保証会社(賃料50%) + 火災保険・鍵交換。
+
+    仲介0.55を固定すると、上限40万に収めるには敷礼がほぼゼロでないと数学的に届かない
+    （敷礼合計1ヶ月だと賃料11.8万が上限になり、想定レンジの外に出る）。
+    """
+    rent = item.get("rent") or 0
+    return (item.get("shiki", 0) + item.get("rei", 0)
+            + int(rent * CHUKAI_MONTHS) + (item.get("total") or 0)
+            + int(rent * HOSHO_RATIO) + MISC_COST)
+
+
+def within_init_cap(item):
+    if item.get("shiki") is None or item.get("rei") is None:
+        return True  # 敷礼が読めなかったものは落とさず人に判断させる
+    return initial_cost(item) <= INIT_CAP
+
+
 def within_budget(item):
     """家賃上限の判定。
 
@@ -229,6 +293,8 @@ def fudousan_japan():
             "madori": field(det, "間取り", 10), "built": field(det, "築年月", 20),
             "age": round(age, 1), "kouzou": kouzou, "stations": hit,
             "addr": field(det, "所在地", 40), "addr_key": field(det, "所在地", 40),
+            "shiki": deposit_yen(grab_value(det, "敷金"), rent or 0),
+            "rei": deposit_yen(grab_value(det, "礼金"), rent or 0),
             "taiyou": field(det, "取引態様", 14),
             "url": url,
         })
@@ -287,6 +353,8 @@ def hatomark():
                 "addr": ((addr.group(1) if addr else "") + " "
                          + (names[0] if names else "")).strip(),
                 "addr_key": addr.group(1) if addr else "",
+                "shiki": deposit_yen(grab_value(blk, "敷金"), rent),
+                "rei": deposit_yen(grab_value(blk, "礼金"), rent),
                 "taiyou": "", "url": base,
             })
         time.sleep(2)
@@ -330,9 +398,11 @@ def athome():
             if age is None or age > AGE_MAX:
                 continue
             bt_sep = "バス・トイレ別" in blk
-            for rent_s, kanri_s, mad, area_s in re.findall(
-                    r"\|([\d.]+)\|万円[^|]*\|([\d,]*)円\|(?:[^|]*\|){0,10}?"
-                    r"\s*([0-9A-Za-zＬＤＫSＫ]{1,8})\s*\|[\s|]*([\d.]+)m", blk):
+            # 並びは 賃料|万円|管理費|敷金|礼金|…|間取り|面積
+            for rent_s, kanri_s, shiki_s, rei_s, mad, area_s in re.findall(
+                    r"\|([\d.]+)\|万円[^|]*\|([\d,]*)円\|"
+                    r"[\s|]*([^|]{0,12}?)\|[\s|]*([^|]{0,12}?)\|"
+                    r"(?:[^|]*\|){0,4}?\s*([0-9A-Za-zＬＤＫSＫ]{1,8})\s*\|[\s|]*([\d.]+)m", blk):
                 area = float(area_s)
                 rent = int(float(rent_s) * 10000)
                 kanri = int(kanri_s.replace(",", "")) if kanri_s else 0
@@ -348,6 +418,8 @@ def athome():
                     "addr": ((addr_m.group(1) if addr_m else "") + " "
                              + (name_m.group(1) if name_m else "")).strip(),
                     "addr_key": addr_m.group(1) if addr_m else "",
+                    "shiki": deposit_yen(shiki_s, rent),
+                    "rei": deposit_yen(rei_s, rent),
                     "taiyou": "", "url": url,
                 })
         time.sleep(3)
@@ -362,6 +434,90 @@ def athome():
     return out
 
 
+
+# --------------------------------------------------------------------------
+# ソース4: SUUMO（区指定 → 対象駅で絞る）
+# --------------------------------------------------------------------------
+# 当初は「本人が自分で見ているから」除外していたが、敷礼ゼロ物件の実測が
+# SUUMO 26件 / 不動産ジャパン 1件 / ハトマーク 0件 と桁違いだったため追加した。
+# 初期費用40万を仲介0.55で満たすには礼金ゼロが事実上の必須条件になるので、
+# co=3（礼金なし）をサーバ側で効かせて母数を992件から95件に落としている。
+def suumo():
+    base = ("https://suumo.jp/jj/chintai/ichiran/FR301FC001/?ar=030&bs=040&ta=13"
+            "&sc=13109&sc=13111&sc=13110&sc=13103"
+            f"&cb=0.0&ct={RENT_CAP/10000:.1f}&co=1&co=3"
+            "&md=04&md=05&md=06&md=07"
+            f"&mb={int(AREA_MIN)}&mt=9999999&cn={AGE_MAX}&et={WALK_MAX}"
+            "&ts=1&tc=0400301&tc=0400501&pc=50&page={p}")
+    out, sane = [], False
+    for page_no in (1, 2, 3):
+        page = fetch(base.format(p=page_no), timeout=90)
+        if "cassetteitem" in page or "pagecaption" in page:
+            sane = True
+        cass = re.findall(
+            r'<div class="cassetteitem">(.*?)(?=<div class="cassetteitem">|<div id="js-bukkenList-end")',
+            page, re.S)
+        if not cass:
+            break
+        for c in cass:
+            nm = re.search(r'cassetteitem_content-title">(.*?)<', c, re.S)
+            name = flatten(nm.group(1)).strip(" |") if nm else ""
+            ad = re.search(r'cassetteitem_detail-col1">(.*?)</div>', c, re.S)
+            addr = flatten(ad.group(1)).strip(" |") if ad else ""
+            # col1 には住所に続けて「東急目黒線/武蔵小山駅 歩9分」等が入る。丁目までで切る。
+            am = re.match(r"(東京都[^|]*?[０-９0-9一二三四五六七八九十]+丁目)", addr) \
+                or re.match(r"(東京都[^|]*?[市区町村][^|]{0,12}?)(?:\||$)", addr)
+            addr = am.group(1).strip() if am else addr.split("|")[0].strip()
+            mm = re.search(r"築(\d+)年", c)
+            age = int(mm.group(1)) if mm else (0 if "新築" in c else None)
+            if age is None or age > AGE_MAX:
+                continue
+            hit = []
+            for a in (flatten(x) for x in
+                      re.findall(r'cassetteitem_detail-text">(.*?)</div>', c, re.S)):
+                m = re.search(r"([^/歩\s|]+?)駅?\s*歩(\d+)分", a)
+                if not m:
+                    continue
+                st = m.group(1).replace("駅", "").strip(" |")
+                for t in TARGET_STATIONS:
+                    if (st == t or st.endswith(t)) and int(m.group(2)) <= WALK_MAX:
+                        hit.append((t, int(m.group(2))))
+            if not hit:
+                continue
+            for tr in re.findall(r'<tr class="js-cassette_link">(.*?)</tr>', c, re.S):
+                r = re.search(r'cassetteitem_other-emphasis ui-text--bold">(.*?)<', tr, re.S)
+                a2 = re.search(r'cassetteitem_menseki">(.*?)m', tr, re.S)
+                if not (r and a2):
+                    continue
+                k = re.search(r'cassetteitem_price--administration">(.*?)<', tr, re.S)
+                d = re.search(r'cassetteitem_price--deposit">(.*?)<', tr, re.S)
+                g = re.search(r'cassetteitem_price--gratuity">(.*?)<', tr, re.S)
+                md = re.search(r'cassetteitem_madori">(.*?)<', tr, re.S)
+                u = re.search(r'href="(/chintai/jnc_\d+/\?bc=\d+)"', tr)
+                rent = to_yen(flatten(r.group(1))) or 0
+                kanri = (to_yen(flatten(k.group(1))) if k else 0) or 0
+                area = float(flatten(a2.group(1)))
+                if area < AREA_MIN or rent < 50000:
+                    continue
+                out.append({
+                    "source": "SUUMO", "rent": rent, "kanri": kanri,
+                    "total": rent + kanri,
+                    "shiki": (to_yen(flatten(d.group(1))) if d else 0) or 0,
+                    "rei": (to_yen(flatten(g.group(1))) if g else 0) or 0,
+                    "area": area,
+                    "madori": flatten(md.group(1)).strip(" |") if md else "",
+                    "built": f"{age}年", "age": float(age),
+                    "kouzou": "マンション(RC近似)",
+                    "stations": sorted(set(hit), key=lambda x: x[1]),
+                    "addr": (addr + " " + name).strip(), "addr_key": addr,
+                    "taiyou": "",
+                    "url": ("https://suumo.jp" + html_unescape(u.group(1))) if u else "",
+                })
+        time.sleep(1.5)
+    if not sane:
+        raise RuntimeError("結果ページの目印が消えている（構造変化の疑い）")
+    return out
+
 # --------------------------------------------------------------------------
 def render(item):
     st = " / ".join(f"{s}歩{w}分" for s, w in item["stations"])
@@ -373,6 +529,8 @@ def render(item):
         f"- **賃料 {rent}**（管理費 {item['kanri']:,}円 / 込み {item['total']:,}円）{over}",
         f"- {item['madori'] or '1LDK以上'} / {item['area']}㎡ / 築{item['built']}"
         f"（{item['age']}年）/ {item['kouzou']}",
+        f"- 敷{item.get('shiki', 0):,}円 / 礼{item.get('rei', 0):,}円 → "
+        f"**初期費用 約{initial_cost(item):,}円**（仲介{CHUKAI_MONTHS}ヶ月・保証会社50%・諸費用4万で試算）",
         f"- 駅: {st}",
     ]
     if item.get("taiyou"):
@@ -475,7 +633,8 @@ def main():
     hits, errors, counts = [], [], {}
     for name, fn in (("不動産ジャパン", fudousan_japan),
                      ("ハトマークサイト", hatomark),
-                     ("at home", athome)):
+                     ("at home", athome),
+                     ("SUUMO", suumo)):
         try:
             got = fn()
             hits.extend(got)
@@ -495,6 +654,12 @@ def main():
     hits = [h for h in hits if within_budget(h)]
     if dropped:
         print(f"[info] 管理費込みで上限超過のため除外: {len(dropped)}件", file=sys.stderr)
+
+    over = [h for h in hits if not within_init_cap(h)]
+    hits = [h for h in hits if within_init_cap(h)]
+    if over:
+        print(f"[info] 初期費用{INIT_CAP:,}円超のため除外: {len(over)}件"
+              f"（仲介{CHUKAI_MONTHS}ヶ月で計算）", file=sys.stderr)
 
     # 同じ部屋が複数サイトから来たら1件にまとめる。
     # まとめないと同一回の通知で件数が水増しされる（住所が取れている方を残す）。
