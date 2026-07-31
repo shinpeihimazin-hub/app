@@ -31,6 +31,7 @@ from datetime import datetime, timezone, timedelta
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SEEN_PATH = os.path.join(HERE, "seen.json")
+REJECTED_PATH = os.path.join(HERE, "rejected.json")
 RUNLOG_PATH = os.path.join(HERE, "runlog.md")
 UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/126.0 Safari/537.36")
@@ -215,6 +216,19 @@ def fingerprint(item):
         a = f"{st}{w}"
     area = round(item["area"], 1) if item.get("area") else 0
     return f"{item.get('rent') or 0}|{area}|{a}"
+
+
+def load_rejected():
+    """本人が見て落とした物件。二度と通知しない。
+
+    条件は満たしているので、これを入れないと毎回「新着」として上がってくる。
+    実測で、新着モードの初回通知4件が全部この既NG物件だった。
+    キーは fingerprint、値は落とした理由（後から見て判断を思い出せるように）。
+    """
+    if not os.path.exists(REJECTED_PATH):
+        return {}
+    with open(REJECTED_PATH, encoding="utf-8") as fh:
+        return json.load(fh)
 
 
 def madori_ok(m):
@@ -743,9 +757,11 @@ def homes():
                 total = int(m.group(1).replace(",", ""))
             before = len(out)
             out.extend(got)
-            # 1ページ10件。「総物件数：N件」が出ないページ構成のときもあるので、
-            # 取得が伸びなくなったら打ち切る（数えられないまま無限に送らない）。
-            if page_no >= max_pages or len(out) == before:
+            # 1ページ10件。10件に満たなければ次のページは存在しない
+            # （存在しないページを叩くと404になり、取得失敗と誤認する）。
+            # 「総物件数：N件」が出ないページ構成もあるので、
+            # 取得が伸びなくなった場合も打ち切る。
+            if page_no >= max_pages or len(out) == before or len(got) < 10:
                 break
             if total is not None and page_no * 10 >= total:
                 break
@@ -1067,6 +1083,12 @@ def main():
         print("\nサイト構造が変わったか、ネットワークが遮断されている可能性がある。"
               "「新着ゼロ」と混同しないこと。")
         return 2
+
+    rejected = load_rejected()
+    ng = [h for h in hits if fingerprint(h) in rejected]
+    hits = [h for h in hits if fingerprint(h) not in rejected]
+    if ng:
+        print(f"[info] 本人が却下済みのため除外: {len(ng)}件", file=sys.stderr)
 
     new = [h for h in hits if fingerprint(h) not in seen]
     for h in new:
