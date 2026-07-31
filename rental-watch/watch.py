@@ -103,6 +103,16 @@ JST = timezone(timedelta(hours=9))
 # 致命的ではないが報告すべき事象（部分ブロック等）をソースから積む
 WARNINGS = []
 
+# --new（新着モード）で立つ。全在庫を数え直すのをやめ、各サイトの
+# 「情報公開日が新しいもの」だけを取る。
+#
+# なぜ必要か: 条件に合う部屋は掲載された瞬間に埋まる。後から全在庫を
+# 数え直しても、出てくるのは「もう埋まっている物件」ばかりで意味がない。
+# しかも全件走査は1回10分以上かかり、定期実行が完走できなくなっていた
+# （2026-07-30 17:12 を最後に実行記録が途絶えた）。
+# 新着だけなら1〜2分で終わるので、発火間隔を詰められる。
+NEW_ONLY = False
+
 
 def now_jst():
     return datetime.now(JST)
@@ -274,7 +284,18 @@ def within_budget(item):
 # ソース1: 不動産ジャパン（駅指定・築年は詳細ページで判定）
 # --------------------------------------------------------------------------
 def fudousan_japan():
-    q = ["ptm%5B%5D=0303"]
+    """不動産ジャパン。一覧に載っている情報で先に落とし、残りだけ詳細を取る。
+
+    以前は結果の全件について詳細ページを引いていた。構造・築年・設備が
+    一覧に無いと思い込んでいたためだが、**建物構造・敷金礼金・管理費は
+    一覧に載っている**。家賃上限を18万に上げて母数が64件に増えたとき、
+    64回の詳細取得で5分以上かかり、定期実行が完走しなくなっていた。
+
+    一覧で構造と初期費用を判定すれば、詳細を引く必要があるのは
+    「築年月」と「設備」を確認する数件だけになる。
+    並びは sort1=ASRT46（更新日新しい順）が既定。
+    """
+    q = ["ptm%5B%5D=0303", "sort1=ASRT46"]
     q += [f"wst%5B%5D={c}" for c in FDJ_STATION_CODES]
     q += [f"floor_plan%5B%5D={f}" for f in FLOOR_PLANS]
     q += [f"eki_walk={WALK_MAX}", "toil%5B%5D=TOIL04", "wsng%5B%5D=WSNG02",
@@ -284,46 +305,70 @@ def fudousan_japan():
     if "件見つかりました" not in page and "【マンション】" not in page:
         raise RuntimeError("結果ページの目印が消えている（構造変化の疑い）")
 
-    out = []
+    out, checked = [], 0
     for raw in re.split(r"(?=【(?:マンション|アパート)】)", page)[1:]:
         pno = re.search(r"p_no=(\d+)", raw)
         if not pno:
             continue
+        b = flatten(raw)
+
+        # --- ここまでは一覧の情報だけで判定する（詳細を引かない） ---
+        kouzou = field(b, "建物構造", 12)
+        if kouzou not in ("ＲＣ", "ＳＲＣ", "RC", "SRC"):
+            continue
+        am = re.search(r"([\d.]+)\s*㎡", field(b, "専有面積", 24))
+        area = float(am.group(1)) if am else None
+        if not area or area < AREA_MIN:
+            continue
+        rm = re.search(r"\|([\d.,]+\s*万\s*[\d,]*\s*円|[\d,]{4,}\s*円)\|", b)
+        rent = to_yen(rm.group(1)) if rm else None
+        if not rent:
+            continue
+        kanri = to_yen(field(b, "管理費等", 20)) or 0
+        dep = field(b, "敷金・礼金", 30)
+        parts = [x.strip() for x in re.split(r"[・､、]", dep)] if dep else []
+        shiki = deposit_yen(parts[0], rent) if parts else 0
+        rei = deposit_yen(parts[1], rent) if len(parts) > 1 else 0
+        item = {"rent": rent, "kanri": kanri, "total": rent + kanri,
+                "shiki": shiki, "rei": rei}
+        if not within_budget(item) or not within_init_cap(item):
+            continue
+        stations = [(st.strip(), int(w)) for st, w in
+                    re.findall(r"「([^」]+)」駅\s*徒歩(\d+)分", b)
+                    if st.strip() in TARGET_STATIONS and int(w) <= WALK_MAX]
+        if not stations:
+            continue
+
+        # --- ここまで残ったものだけ詳細を引く（築年月と設備の確認） ---
+        checked += 1
+        if checked > 30:
+            WARNINGS.append("不動産ジャパン: 詳細確認が30件を超えたため打ち切った")
+            break
         url = f"https://www.fudousan.or.jp/property/detail?p_no={pno.group(1)}"
         try:
             det = flatten(fetch(url, timeout=60))
         except RuntimeError:
             continue
         time.sleep(0.6)
-
-        kouzou = field(det, "建物構造", 12)
-        if kouzou not in ("ＲＣ", "ＳＲＣ", "RC", "SRC"):
-            continue
         age = age_years(field(det, "築年月", 20))
         if age is None or age > AGE_MAX:
             continue
         setsubi = field(det, "設備", 400)
         if "バス・トイレ別" not in setsubi or "洗面所" not in setsubi:
             continue
-        stations = [(s.strip(), int(w)) for _l, s, w in
-                    re.findall(r"([^|]{2,24}?線)\s*「([^」]+)」駅?\s*徒歩(\d+)分", det)]
-        hit = [(s, w) for s, w in stations if s in TARGET_STATIONS and w <= WALK_MAX]
-        if not hit:
-            continue
-        area_m = re.search(r"専有面積[|\s：:]*([\d.]+)㎡", det)
-        rent = to_yen(field(det, "賃料", 24))
-        kanri = to_yen(field(det, "管理費", 24)) or 0
+        addr = field(b, "【マンション】", 40) or field(b, "【アパート】", 40)
+        m = re.match(r"([^|]*?[０-９0-9一二三四五六七八九十]+丁目)", addr) or \
+            re.match(r"([^|]*?[市区町村][^|]{0,10})", addr)
+        addr_key = (m.group(1) if m else addr).strip()
+        name = field(b, addr_key, 40).strip(" |") if addr_key else ""
         out.append({
             "source": "不動産ジャパン", "rent": rent, "kanri": kanri,
-            "total": (rent or 0) + kanri,
-            "area": float(area_m.group(1)) if area_m else None,
-            "madori": field(det, "間取り", 10), "built": field(det, "築年月", 20),
-            "age": round(age, 1), "kouzou": kouzou, "stations": hit,
-            "addr": field(det, "所在地", 40), "addr_key": field(det, "所在地", 40),
-            "shiki": deposit_yen(grab_value(det, "敷金"), rent or 0),
-            "rei": deposit_yen(grab_value(det, "礼金"), rent or 0),
-            "taiyou": field(det, "取引態様", 14),
-            "url": url,
+            "total": rent + kanri, "shiki": shiki, "rei": rei, "area": area,
+            "madori": field(b, "間取り", 12), "built": field(det, "築年月", 20),
+            "age": age, "kouzou": kouzou,
+            "stations": sorted(set(stations), key=lambda x: x[1]),
+            "addr": (addr_key + " " + name).strip(), "addr_key": addr_key,
+            "taiyou": field(det, "取引態様", 20), "url": url,
         })
     return out
 
@@ -478,9 +523,11 @@ def suumo():
             f"&cb=0.0&ct={RENT_CAP/10000:.1f}&co=1"
             "&md=04&md=05&md=06&md=07&md=08&md=09&md=10&md=11&md=12&md=13"
             f"&mb={int(AREA_MIN)}&mt=9999999&cn={AGE_MAX}&et={WALK_MAX}"
-            "&ts=1&tc=0400301&tc=0400501&pc=50&page={p}")
+            "&ts=1&tc=0400301&tc=0400501&pc=50"
+            + ("&po1=09" if NEW_ONLY else "")   # po1=09 は新着順
+            + "&page={p}")
     out, sane = [], False
-    for page_no in range(1, 25):
+    for page_no in range(1, 5 if NEW_ONLY else 25):
         page = fetch(base.format(p=page_no), timeout=90)
         if "cassetteitem" in page or "pagecaption" in page:
             sane = True
@@ -577,6 +624,10 @@ def homes_cell(s):
 
 
 def homes_query():
+    """HOME'S の検索クエリ。新着モードでは cond[newdate]=3（3日以内）を足す。
+
+    実測（池上駅）: フィルタなし16件 → 7日以内7件 → 3日以内5件 → 本日4件。
+    """
     # URLエンコード済みの %5B/%5D を含むので、%書式ではなくf文字列で組む
     return (f"cond%5Bmonthmoneyroomh%5D={RENT_CAP // 10000}"
             + f"&cond%5Bhousearea%5D={int(AREA_MIN)}"
@@ -585,7 +636,8 @@ def homes_query():
             + "&cond%5Bhousekouzougroup%5D%5Brebar%5D=rebar"   # 鉄筋系＝RC/SRC
             + "".join(f"&cond%5Bmcf%5D%5B{c}%5D={c}" for c in HOMES_MCF)
             + "".join(f"&cond%5Bmadori%5D%5B{m}%5D={m}" for m in HOMES_MADORI)
-            + "&cond%5Bsortby%5D=newdate")
+            + "&cond%5Bsortby%5D=newdate"
+            + ("&cond%5Bnewdate%5D=3" if NEW_ONLY else ""))
 
 
 def homes_parse(page):
@@ -670,9 +722,15 @@ def homes():
             m = HOMES_TOTAL.search(page)
             if m and total is None:
                 total = int(m.group(1).replace(",", ""))
+            before = len(out)
             out.extend(got)
             # 1ページ10件。総物件数に届くまでページを送る。
-            if total is None or page_no * 10 >= total or page_no >= 12:
+            # 「総物件数：N件」が出ないページ構成のときもあるので、
+            # その場合は10件未満で打ち切る（数えられないまま無限に送らない）。
+            limit = 2 if NEW_ONLY else 12
+            if page_no >= limit or len(out) == before or len(got) < 10:
+                break
+            if total is not None and page_no * 10 >= total:
                 break
             page_no += 1
             time.sleep(2.5)
@@ -764,7 +822,10 @@ def able():
     for ward in HATO_WARDS:
         i = 1
         while True:
+            # jks=3 は「3日以内の新着」。実測で品川区が100棟→18棟に落ちる。
             url = f"https://www.able.co.jp/tokyo/area/{ward}/list/?{ABLE_QUERY}"
+            if NEW_ONLY:
+                url += "&jks=3"
             if i > 1:
                 url += f"&i={i}"
             page = fetch(url, timeout=90)
@@ -773,7 +834,7 @@ def able():
             items = able_parse(page)
             blocks = len(ABLE_BLOCK.findall(page))
             out.extend(items)
-            if blocks < 100 or i >= 12:
+            if blocks < 100 or i >= (2 if NEW_ONLY else 12):
                 break
             i += 1
             time.sleep(2)
@@ -784,6 +845,27 @@ def able():
 
 
 # --------------------------------------------------------------------------
+# 見つけた瞬間に電話できるように、新着だけ問い合わせ先を引く。
+# 条件に合う部屋は掲載直後に埋まるので、通知を見てから連絡先を探す時間が惜しい。
+PHONE_RE = re.compile(r"0\d{1,3}[-‐－]\d{2,4}[-‐－]\d{3,4}")
+PHONE_NG = re.compile(r"0120|0570|0800")     # フリーダイヤル・ナビダイヤルは代表窓口で使えない
+
+
+def lookup_phone(url):
+    """物件ページから取扱店舗の電話番号を1つ拾う。取れなければ空文字。"""
+    if not url:
+        return ""
+    try:
+        page = flatten(fetch(url, timeout=45, retries=2))
+    except Exception:  # noqa: BLE001 - 連絡先が取れなくても通知自体は出す
+        return ""
+    for m in PHONE_RE.finditer(page):
+        tel = m.group(0)
+        if not PHONE_NG.search(tel):
+            return tel
+    return ""
+
+
 def render(item):
     st = " / ".join(f"{s}歩{w}分" for s, w in item["stations"])
     rent = f"{item['rent']:,}円" if item["rent"] else "要問合せ"
@@ -800,6 +882,8 @@ def render(item):
     ]
     if item.get("taiyou"):
         lines.append(f"- 取引態様: {item['taiyou']}")
+    if item.get("phone"):
+        lines.append(f"- **☎ {item['phone']}**")
     srcs = item.get("also_on") or [item["source"]]
     lines += [f"- {item['url']}",
               f"- 掲載: {' / '.join(dict.fromkeys(srcs))}"]
@@ -884,7 +968,12 @@ def main():
     ap.add_argument("--speed", action="store_true")
     ap.add_argument("--no-commit", action="store_true",
                     help="記録をリポジトリにコミットしない（ローカル検証用）")
+    ap.add_argument("--new", action="store_true",
+                    help="新着だけを見る（定期実行はこちら。全件走査より10倍速い）")
     args = ap.parse_args()
+
+    global NEW_ONLY
+    NEW_ONLY = args.new
 
     seen = {}
     if os.path.exists(SEEN_PATH):
@@ -895,6 +984,7 @@ def main():
         speed_report(seen)
         return 0
 
+    started = time.time()
     hits, errors, counts = [], [], {}
     for name, fn in (("不動産ジャパン", fudousan_japan),
                      ("ハトマークサイト", hatomark),
@@ -962,6 +1052,8 @@ def main():
         return 2
 
     new = [h for h in hits if fingerprint(h) not in seen]
+    for h in new:
+        h["phone"] = lookup_phone(h.get("url", ""))
     show = hits if args.all else new
 
     if show:
@@ -989,7 +1081,10 @@ def main():
             json.dump(seen, fh, ensure_ascii=False, indent=1, sort_keys=True)
         mark = "**新着%d**" % len(new) if new else "新着0"
         note = "; ".join(errors + WARNINGS)
-        append_runlog(f"- {ts}  ok  {summary}  {mark}"
+        # 所要時間も残す。定期実行が完走できなくなったとき、遅くなったのか
+        # 落ちたのかを後から区別できるようにする（実際に一度これで詰まった）。
+        append_runlog(f"- {ts}  ok{'(新着モード)' if NEW_ONLY else ''}  {summary}  {mark}"
+                      f"  [{int(time.time() - started)}秒]"
                       + (f"  ※{note[:110]}" if note else ""))
         if not args.no_commit:
             print(f"[git] {persist(f'chore(rental-watch): 定期監視 {ts} {mark}')}",
