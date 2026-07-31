@@ -763,11 +763,13 @@ def homes():
                 total = int(m.group(1).replace(",", ""))
             before = len(out)
             out.extend(got)
-            # 1ページ10件。10件に満たなければ次のページは存在しない
-            # （存在しないページを叩くと404になり、取得失敗と誤認する）。
-            # 「総物件数：N件」が出ないページ構成もあるので、
-            # 取得が伸びなくなった場合も打ち切る。
-            if page_no >= max_pages or len(out) == before or len(got) < 10:
+            # 次ページの有無は**ページャのリンクで判定する**。
+            # 件数で推測すると外れる。実測では目黒駅が「10棟・ページャ無し」で、
+            # 10件だから次があるはずと判断して page=2 を叩き404、
+            # HOME'S ソースごと落ちた。品川区は30棟でページャに page=2,3 が出る。
+            has_next = any(int(n) > page_no
+                           for n in re.findall(r"[?&]page=(\d+)", page))
+            if page_no >= max_pages or len(out) == before or not has_next:
                 break
             if total is not None and page_no * 10 >= total:
                 break
