@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """賃貸物件 監視スクリプト
 
-SUUMO / 不動産ジャパン / ハトマークサイト / at home / LIFULL HOME'S を
-確定条件で叩き、seen.json に無い物件だけを報告する。カナリーは未対応。
+SUUMO / 不動産ジャパン / ハトマークサイト / at home / LIFULL HOME'S /
+エイブル を確定条件で叩き、seen.json に無い物件だけを報告する。カナリーは未対応。
 
 物件はサイトを跨いで同一判定（fingerprint）するので、
 「同じ部屋がどのサイトに何時間早く出たか」が seen.json に蓄積される。
@@ -676,6 +676,105 @@ def homes():
 
 
 # --------------------------------------------------------------------------
+# ソース6: エイブル（区指定 → 対象駅で絞る）
+# --------------------------------------------------------------------------
+# 一覧に「構造」が出るので RC/SRC を人手確認なしで判定できる（at home にはこれが無い）。
+# 家賃上限（ct）だけはサーバ側で効かない（詳細リンクに ct=0 で伝播する）ので、
+# 面積・築年・徒歩・間取りだけサーバ側で当てて、家賃と初期費用はこちらで落とす。
+ABLE_QUERY = ("sf=%d&h=7&j=5&p=10&" % int(AREA_MIN)   # sf=面積下限 h=7:築25年 j=5:徒歩15分 p=10:100件/頁
+              + "&".join(f"m={m}" for m in
+                         ["3", "4", "5", "6", "7", "8", "9", "A", "B"]))  # 1LDK以上
+ABLE_BLOCK = re.compile(r"js-detailLinkUrl(.*?)(?=js-detailLinkUrl|</body>)", re.S)
+ABLE_ROOM = re.compile(
+    r'<td class="floar[^"]*">(?P<floor>.*?)</td>\s*'
+    r'<td class="price[^"]*">(?P<price>.*?)</td>\s*'
+    r'<td class="price[^"]*">(?P<dep>.*?)</td>\s*'
+    r'<td class="layout[^"]*">(?P<layout>.*?)</td>', re.S)
+
+
+def able_cell(s):
+    """エイブルの td を1行に。HOME'S と同じく <br> だけを | にする。"""
+    s = re.sub(r"<br\s*/?>", "|", s or "")
+    s = re.sub(r"<[^>]+>", " ", s)
+    return re.sub(r"\s+", " ", html_unescape(s)).replace(" ", " ").strip()
+
+
+def able_parse(page):
+    out = []
+    for blk in ABLE_BLOCK.findall(page):
+        m = re.search(r'data-bkKey="(\d+)"', blk)
+        bk = m.group(1) if m else ""
+        # ブロックの分割目印が "js-detailLinkUrl" なので、建物名のアンカーは
+        # ブロック先頭（class属性の途中）から始まる。先頭の > の後ろを名前として拾う。
+        m = re.match(r'[^>]*>\s*(.*?)\s*</a>', blk, re.S)
+        name = able_cell(m.group(1)) if m else ""
+        m = re.search(r'<th>住所</th>\s*<td>(.*?)<p class="map"', blk, re.S)
+        addr = able_cell(m.group(1)) if m else ""
+        m = re.search(r"<th>構造</th>\s*<td>(.*?)</td>", blk, re.S)
+        kouzou = able_cell(m.group(1)) if m else ""
+        m = re.search(r"<th>築年</th>\s*<td>(.*?)</td>", blk, re.S)
+        built = able_cell(m.group(1)) if m else ""
+        age = age_years(built)
+        if age is None or age > AGE_MAX:
+            continue
+        if "鉄筋" not in kouzou:          # RC/SRC 以外は落とす（構造が一覧に出る強み）
+            continue
+        hit = []
+        for li in re.findall(r"<li>([^<]*?徒歩\d+分)</li>", blk):
+            mm = re.search(r"/?([^/]+?)駅\s*徒歩(\d+)分", able_cell(li))
+            if mm and mm.group(1) in TARGET_STATIONS and int(mm.group(2)) <= WALK_MAX:
+                hit.append((mm.group(1), int(mm.group(2))))
+        if not hit:
+            continue
+        for r in ABLE_ROOM.finditer(blk):
+            price = able_cell(r.group("price")).split("|")
+            dep = able_cell(r.group("dep")).split("|")
+            layout = able_cell(r.group("layout")).split("|")
+            rent = to_yen(price[0]) or 0
+            am = re.search(r"([\d.]+)\s*㎡", " ".join(layout))
+            area = float(am.group(1)) if am else None
+            if not area or area < AREA_MIN or rent < 50000:
+                continue
+            kanri = (to_yen(price[1]) if len(price) > 1 else 0) or 0
+            out.append({
+                "source": "エイブル", "rent": rent, "kanri": kanri, "total": rent + kanri,
+                "shiki": deposit_yen(dep[0] if dep else "", rent),
+                "rei": deposit_yen(dep[1] if len(dep) > 1 else "", rent),
+                "area": area, "madori": layout[0] if layout else "",
+                "built": built, "age": round(age, 1), "kouzou": kouzou,
+                "stations": sorted(set(hit), key=lambda x: x[1]),
+                "addr": (addr + " " + name).strip(), "addr_key": addr,
+                "taiyou": "",
+                "url": f"https://www.able.co.jp/detail/Detail.do?bk={bk}",
+            })
+    return out
+
+
+def able():
+    out, sane = [], False
+    for ward in HATO_WARDS:
+        i = 1
+        while True:
+            url = f"https://www.able.co.jp/tokyo/area/{ward}/list/?{ABLE_QUERY}"
+            if i > 1:
+                url += f"&i={i}"
+            page = fetch(url, timeout=90)
+            if "js-detailLinkUrl" in page or "条件を保存" in page:
+                sane = True
+            items = able_parse(page)
+            blocks = len(ABLE_BLOCK.findall(page))
+            out.extend(items)
+            if blocks < 100 or i >= 12:
+                break
+            i += 1
+            time.sleep(2)
+        time.sleep(2)
+    if not sane:
+        raise RuntimeError("結果ページの目印が消えている（構造変化の疑い）")
+    return out
+
+
+# --------------------------------------------------------------------------
 def render(item):
     st = " / ".join(f"{s}歩{w}分" for s, w in item["stations"])
     rent = f"{item['rent']:,}円" if item["rent"] else "要問合せ"
@@ -792,7 +891,8 @@ def main():
                      ("ハトマークサイト", hatomark),
                      ("at home", athome),
                      ("SUUMO", suumo),
-                     ("HOME'S", homes)):
+                     ("HOME'S", homes),
+                     ("エイブル", able)):
         try:
             got = fn()
             hits.extend(got)
