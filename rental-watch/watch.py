@@ -443,14 +443,17 @@ def athome():
 # 初期費用40万を仲介0.55で満たすには礼金ゼロが事実上の必須条件になるので、
 # co=3（礼金なし）をサーバ側で効かせて母数を992件から95件に落としている。
 def suumo():
+    # co=3（礼金なし）は使わない。敷金ゼロ＋礼金0.5ヶ月のような組み合わせでも
+    # 賃料14.1万までなら初期費用40万に収まるため、サーバ側で切ると取りこぼす。
+    # 間取りは 1LDK 以上を全部（3LDK/4LDKも条件上は対象）。
     base = ("https://suumo.jp/jj/chintai/ichiran/FR301FC001/?ar=030&bs=040&ta=13"
             "&sc=13109&sc=13111&sc=13110&sc=13103"
-            f"&cb=0.0&ct={RENT_CAP/10000:.1f}&co=1&co=3"
-            "&md=04&md=05&md=06&md=07"
+            f"&cb=0.0&ct={RENT_CAP/10000:.1f}&co=1"
+            "&md=04&md=05&md=06&md=07&md=08&md=09&md=10&md=11&md=12&md=13"
             f"&mb={int(AREA_MIN)}&mt=9999999&cn={AGE_MAX}&et={WALK_MAX}"
             "&ts=1&tc=0400301&tc=0400501&pc=50&page={p}")
     out, sane = [], False
-    for page_no in (1, 2, 3):
+    for page_no in range(1, 25):
         page = fetch(base.format(p=page_no), timeout=90)
         if "cassetteitem" in page or "pagecaption" in page:
             sane = True
