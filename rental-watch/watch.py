@@ -114,9 +114,18 @@ def field(text, label, width=60):
 
 
 def to_yen(s):
-    m = re.search(r"([\d,]+(?:\.\d+)?)\s*万", s)
+    """金額表記を円に直す。
+
+    不動産ジャパンは「14万5,000円」のように万と千を分けて書く。
+    万だけを読むと5,000円を取りこぼし、賃料が5千円ずれる。
+    賃料は fingerprint のキーにも使うので、ずれると同一物件を別物と誤判定する。
+    """
+    m = re.search(r"([\d,]+(?:\.\d+)?)\s*万\s*([\d,]+)?\s*円?", s)
     if m:
-        return int(float(m.group(1).replace(",", "")) * 10000)
+        v = float(m.group(1).replace(",", "")) * 10000
+        if m.group(2):
+            v += int(m.group(2).replace(",", ""))
+        return int(v)
     m = re.search(r"([\d,]+)\s*円", s)
     return int(m.group(1).replace(",", "")) if m else None
 
