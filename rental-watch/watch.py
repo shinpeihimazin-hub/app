@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
 """賃貸物件 監視スクリプト
 
-SUUMO / 不動産ジャパン / ハトマークサイト / at home を確定条件で叩き、
-seen.json に無い物件だけを報告する。
-
-LIFULL HOME'S は物件データがサーバ側で描画されず取得できないため未対応。
-カナリーは未対応。
+SUUMO / 不動産ジャパン / ハトマークサイト / at home / LIFULL HOME'S を
+確定条件で叩き、seen.json に無い物件だけを報告する。カナリーは未対応。
 
 物件はサイトを跨いで同一判定（fingerprint）するので、
 「同じ部屋がどのサイトに何時間早く出たか」が seen.json に蓄積される。
@@ -79,6 +76,27 @@ ATHOME_SLUGS = ["tamachi", "takanawagateway", "shinagawa", "osaki",
                 "gotanda", "meguro", "oimachi", "omori"]
 FLOOR_PLANS = ["1XXSLDK", "2XXXXSK", "2XXXSDK", "2XXSLDK",
                "3XXXXSK", "3XXXSDK", "3XXSLDK", "4XXXXSK", "4XXXSDK"]
+
+# LIFULL HOME'S の駅スラッグ（駅名 → {slug}_{駅コード}）。
+# 路線ページ（例 /chintai/tokyo/yamanote-line/）の
+# name="cond[roseneki][...]" と隣接する駅リンクから採取した実測値。
+HOMES_STATIONS = {
+    "田町": "tamachi_00573", "高輪ゲートウェイ": "takanawagateway_10177",
+    "品川": "shinagawa_00224", "大崎": "osaki_00574", "五反田": "gotanda_00575",
+    "目黒": "meguro_00576", "大井町": "oimachi_00603", "大森": "omori_00604",
+    "大岡山": "ookayama_05072", "北千束": "kitasenzoku_05084",
+    "荏原町": "ebaramachi_05082", "中延": "nakanobu_05081",
+    "戸越公園": "togoshikoen_05080", "戸越銀座": "togoshiginza_05115",
+    "旗の台": "hatanodai_05083", "長原": "nagahara_05117",
+    "洗足池": "senzokuike_05118", "荏原中延": "ebaranakanobu_05116",
+    "武蔵小山": "musashikoyama_05069", "西小山": "nishikoyama_05070",
+    "不動前": "fudomae_05068", "池上": "ikegami_05124", "蓮沼": "hasunuma_05125",
+    "戸越": "togoshi_06400", "白金台": "shirokanedai_09216",
+    "高輪台": "takanawadai_06401", "三田": "mita_06402", "泉岳寺": "sengakuji_05181",
+}
+# HOME'S の間取りコード（1LDK以上）と設備コード。
+HOMES_MADORI = ["15", "22", "23", "25", "32", "33", "35", "42", "43", "45-"]
+HOMES_MCF = ["220301", "223101"]   # バス・トイレ別 / 洗面所独立
 
 JST = timezone(timedelta(hours=9))
 
@@ -522,6 +540,142 @@ def suumo():
     return out
 
 # --------------------------------------------------------------------------
+# ソース5: LIFULL HOME'S（駅指定・28駅）
+# --------------------------------------------------------------------------
+# 当初「ページは200で返るが物件データが描画されない」として未対応にしていたが、
+# これは駅スラッグを取り違えて404ページを掴んでいたための誤判定だった。
+# 正しいスラッグならHTMLに物件が全部入っている。母数は監視5サイト中で最大。
+HOMES_ZERO = "条件に一致する情報は見つかりませんでした"
+HOMES_TOTAL = re.compile(r"総物件数：([\d,]+)件")
+HOMES_BLOCK = re.compile(
+    r'class="[^"]*mod-mergeBuilding[^"]*"(.*?)(?=class="[^"]*mod-mergeBuilding|</body>)', re.S)
+HOMES_ROOM = re.compile(
+    r'data-href="(?P<url>[^"]+)"[^>]*class="prg-room .*?'
+    r'<td class="floar"[^>]*>(?P<floor>.*?)</td>.*?'
+    r'<td class="price">(?P<price>.*?)</td>.*?'
+    r'<td class="layout"[^>]*>(?P<layout>.*?)</td>', re.S)
+
+
+def homes_cell(s):
+    """HOME'S の td を1行に。改行(<br>)だけを | にし、他のタグは消す。
+
+    共用の flatten() は全タグを | にするので、
+    「賃料/管理費<br>敷金/礼金/…」の段組みが区別できなくなる。
+    """
+    s = re.sub(r"<br\s*/?>", "|", s or "")
+    s = re.sub(r"<[^>]+>", "", s)
+    return re.sub(r"\s+", " ", html_unescape(s)).replace(" ", " ").strip()
+
+
+def homes_query():
+    # URLエンコード済みの %5B/%5D を含むので、%書式ではなくf文字列で組む
+    return (f"cond%5Bmonthmoneyroomh%5D={RENT_CAP // 10000}"
+            + f"&cond%5Bhousearea%5D={int(AREA_MIN)}"
+            + f"&cond%5Bhouseageh%5D={AGE_MAX}"
+            + f"&cond%5Bwalkminutesh%5D={WALK_MAX}"
+            + "&cond%5Bhousekouzougroup%5D%5Brebar%5D=rebar"   # 鉄筋系＝RC/SRC
+            + "".join(f"&cond%5Bmcf%5D%5B{c}%5D={c}" for c in HOMES_MCF)
+            + "".join(f"&cond%5Bmadori%5D%5B{m}%5D={m}" for m in HOMES_MADORI)
+            + "&cond%5Bsortby%5D=newdate")
+
+
+def homes_parse(page):
+    out = []
+    for blk in HOMES_BLOCK.findall(page):
+        m = re.search(r"<th>所在地</th>\s*<td>(.*?)</td>", blk, re.S)
+        addr = flatten(m.group(1)).strip(" |") if m else ""
+        m = re.search(r'class="bukkenName[^"]*">(.*?)</span>', blk, re.S)
+        name = flatten(m.group(1)).strip(" |") if m else ""
+        m = re.search(r"<th>築年数/階数</th>\s*<td>(.*?)</td>", blk, re.S)
+        age = None
+        if m:
+            t = flatten(m.group(1))
+            mm = re.search(r"(\d+)\s*年", t)
+            age = 0 if "新築" in t else (int(mm.group(1)) if mm else None)
+        hit = []
+        for sm in re.finditer(r'class="prg-stationText[^"]*">(.*?)</span>', blk, re.S):
+            mm = re.search(r"(\S+?)駅\s*徒歩(\d+)分", flatten(sm.group(1)))
+            if mm and mm.group(1) in TARGET_STATIONS and int(mm.group(2)) <= WALK_MAX:
+                hit.append((mm.group(1), int(mm.group(2))))
+        if not hit:
+            continue
+        if age is None or age > AGE_MAX:
+            continue
+
+        for r in HOMES_ROOM.finditer(blk):
+            # price 例: "16.5万円/14,000円|1ヶ月/2ヶ月/-/-"（後半が 敷/礼/保証/敷引）
+            parts = homes_cell(r.group("price")).split("|")
+            money = parts[0].split("/")
+            rent = to_yen(money[0]) or 0
+            kanri = (to_yen(money[1]) if len(money) > 1 else 0) or 0
+            shiki = rei = None
+            if len(parts) > 1:
+                dep = parts[1].split("/")
+                if len(dep) >= 2:
+                    shiki, rei = deposit_yen(dep[0], rent), deposit_yen(dep[1], rent)
+            layout = homes_cell(r.group("layout"))
+            am = re.search(r"([\d.]+)\s*m", layout)
+            area = float(am.group(1)) if am else None
+            if not area or area < AREA_MIN or rent < 50000:
+                continue
+            out.append({
+                "source": "HOME'S", "rent": rent, "kanri": kanri, "total": rent + kanri,
+                "shiki": shiki if shiki is not None else 0,
+                "rei": rei if rei is not None else 0,
+                "area": area, "madori": layout.split("|")[0].strip(),
+                "built": f"{age}年", "age": float(age),
+                "kouzou": "鉄筋系(RC/SRC)",
+                "stations": sorted(set(hit), key=lambda x: x[1]),
+                "addr": (addr + " " + name).strip(), "addr_key": addr,
+                "taiyou": "",
+                "url": html_unescape(r.group("url")),
+            })
+    return out
+
+
+def homes():
+    """28駅を1駅ずつ。「本当に0件」と「取れなかった」を必ず区別する。
+
+    HOME'S は連続アクセスすると、0件マーカーの無い“物件ブロックだけ落ちた”
+    通常ページを返してくる。これを0件として扱うと、監視しているつもりで
+    静かに何も見ていない状態になるので、待って引き直し、駄目なら失敗にする。
+    """
+    q, out, blocked = homes_query(), [], []
+    for st, slug in HOMES_STATIONS.items():
+        page_no, total, tries = 1, None, 0
+        while True:
+            url = (f"https://www.homes.co.jp/chintai/tokyo/{slug}-st/list/?{q}"
+                   + (f"&page={page_no}" if page_no > 1 else ""))
+            page = fetch(url, timeout=90)
+            if HOMES_ZERO in page and "mod-mergeBuilding--rent" not in page:
+                break                                   # この駅は本当に0件
+            got = homes_parse(page)
+            if not got and "mod-mergeBuilding--rent" not in page:
+                tries += 1
+                if tries > 3:
+                    blocked.append(st)
+                    break
+                time.sleep(10 * tries)
+                continue
+            tries = 0
+            m = HOMES_TOTAL.search(page)
+            if m and total is None:
+                total = int(m.group(1).replace(",", ""))
+            out.extend(got)
+            # 1ページ10件。総物件数に届くまでページを送る。
+            if total is None or page_no * 10 >= total or page_no >= 12:
+                break
+            page_no += 1
+            time.sleep(2.5)
+        time.sleep(2.5)
+    if len(blocked) == len(HOMES_STATIONS):
+        raise RuntimeError("全駅で物件ブロックが取れない（規制か構造変化）")
+    if blocked:
+        WARNINGS.append(f"HOME'S: {len(blocked)}駅で取得できず（{'/'.join(blocked)}）")
+    return out
+
+
+# --------------------------------------------------------------------------
 def render(item):
     st = " / ".join(f"{s}歩{w}分" for s, w in item["stations"])
     rent = f"{item['rent']:,}円" if item["rent"] else "要問合せ"
@@ -637,7 +791,8 @@ def main():
     for name, fn in (("不動産ジャパン", fudousan_japan),
                      ("ハトマークサイト", hatomark),
                      ("at home", athome),
-                     ("SUUMO", suumo)):
+                     ("SUUMO", suumo),
+                     ("HOME'S", homes)):
         try:
             got = fn()
             hits.extend(got)
