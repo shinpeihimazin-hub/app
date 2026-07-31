@@ -94,6 +94,12 @@ HOMES_STATIONS = {
     "戸越": "togoshi_06400", "白金台": "shirokanedai_09216",
     "高輪台": "takanawadai_06401", "三田": "mita_06402", "泉岳寺": "sengakuji_05181",
 }
+# HOME'S の区スラッグ。新着モードではこちらを使う。
+# 駅ごとに28リクエスト投げると実測203秒かかるが、区なら5リクエストで済む。
+# 世田谷区は対象駅（大岡山・洗足池）の徒歩15分圏が食い込むので入れてある
+# ——駅ページ方式では拾えていた奥沢・緑が丘側を落とさないため。
+HOMES_WARDS = ["shinagawa-city", "ota-city", "meguro-city",
+               "minato-city", "setagaya-city"]
 # HOME'S の間取りコード（1LDK以上）と設備コード。
 HOMES_MADORI = ["15", "22", "23", "25", "32", "33", "35", "42", "43", "45-"]
 HOMES_MCF = ["220301", "223101"]   # バス・トイレ別 / 洗面所独立
@@ -381,11 +387,13 @@ def hatomark():
     q += [f"floor_plan%5B%5D={f}" for f in FLOOR_PLANS + ["4XXSLDK"]]
     q += [f"eki_walk={WALK_MAX}", "bath%5B%5D=BATH01", "wash%5B%5D=WASH04",
           f"built_to={AGE_MAX}", f"building_area_all_from={int(AREA_MIN)}",
-          f"price_r_to={RENT_CAP}", "limit=100"]
+          f"price_r_to={RENT_CAP}", "limit=100", "sort1=ASRT11"]  # ASRT11=更新日 新しい順
     base = "https://www.hatomarksite.com/search/zentaku/rent/home/area/13/list?" + "&".join(q)
 
+    # 1ページ20件。更新日順に並べてあるので、新着モードは先頭2ページで足りる。
+    # 全ページ舐めると実測136秒かかり、定期実行の完走を妨げていた。
     out, keys, sane = [], set(), False
-    for page_no in range(1, 5):
+    for page_no in range(1, 3 if NEW_ONLY else 5):
         page = fetch(base + (f"&page={page_no}" if page_no > 1 else ""), timeout=120)
         if "検索結果" in page:
             sane = True
@@ -695,26 +703,37 @@ def homes_parse(page):
 
 
 def homes():
-    """28駅を1駅ずつ。「本当に0件」と「取れなかった」を必ず区別する。
+    """HOME'S。新着モードは区単位、全件モードは駅単位で回す。
 
-    HOME'S は連続アクセスすると、0件マーカーの無い“物件ブロックだけ落ちた”
-    通常ページを返してくる。これを0件として扱うと、監視しているつもりで
-    静かに何も見ていない状態になるので、待って引き直し、駄目なら失敗にする。
+    「本当に0件」と「取れなかった」を必ず区別する。HOME'S は連続アクセスすると、
+    0件マーカーの無い“物件ブロックだけ落ちた”通常ページを返してくる。
+    これを0件として扱うと、監視しているつもりで静かに何も見ていない状態になる。
+
+    駅単位（28駅）は実測203秒かかり、定期実行が完走しなくなる原因のひとつだった。
+    区単位なら5リクエストで済む。物件が対象駅の徒歩15分圏にあるかは
+    homes_parse() が交通欄を見て判定するので、絞り込みの精度は変わらない。
     """
     q, out, blocked = homes_query(), [], []
-    for st, slug in HOMES_STATIONS.items():
+    if NEW_ONLY:
+        targets = [(w, f"https://www.homes.co.jp/chintai/tokyo/{w}/list/") for w in HOMES_WARDS]
+        max_pages = 3
+    else:
+        targets = [(st, f"https://www.homes.co.jp/chintai/tokyo/{slug}-st/list/")
+                   for st, slug in HOMES_STATIONS.items()]
+        max_pages = 12
+
+    for label, url_base in targets:
         page_no, total, tries = 1, None, 0
         while True:
-            url = (f"https://www.homes.co.jp/chintai/tokyo/{slug}-st/list/?{q}"
-                   + (f"&page={page_no}" if page_no > 1 else ""))
+            url = f"{url_base}?{q}" + (f"&page={page_no}" if page_no > 1 else "")
             page = fetch(url, timeout=90)
             if HOMES_ZERO in page and "mod-mergeBuilding--rent" not in page:
-                break                                   # この駅は本当に0件
+                break                                   # ここは本当に0件
             got = homes_parse(page)
             if not got and "mod-mergeBuilding--rent" not in page:
                 tries += 1
                 if tries > 3:
-                    blocked.append(st)
+                    blocked.append(label)
                     break
                 time.sleep(10 * tries)
                 continue
@@ -724,21 +743,19 @@ def homes():
                 total = int(m.group(1).replace(",", ""))
             before = len(out)
             out.extend(got)
-            # 1ページ10件。総物件数に届くまでページを送る。
-            # 「総物件数：N件」が出ないページ構成のときもあるので、
-            # その場合は10件未満で打ち切る（数えられないまま無限に送らない）。
-            limit = 2 if NEW_ONLY else 12
-            if page_no >= limit or len(out) == before or len(got) < 10:
+            # 1ページ10件。「総物件数：N件」が出ないページ構成のときもあるので、
+            # 取得が伸びなくなったら打ち切る（数えられないまま無限に送らない）。
+            if page_no >= max_pages or len(out) == before:
                 break
             if total is not None and page_no * 10 >= total:
                 break
             page_no += 1
-            time.sleep(2.5)
-        time.sleep(2.5)
-    if len(blocked) == len(HOMES_STATIONS):
-        raise RuntimeError("全駅で物件ブロックが取れない（規制か構造変化）")
+            time.sleep(2.0)
+        time.sleep(2.0)
+    if blocked and len(blocked) == len(targets):
+        raise RuntimeError("全ての検索単位で物件ブロックが取れない（規制か構造変化）")
     if blocked:
-        WARNINGS.append(f"HOME'S: {len(blocked)}駅で取得できず（{'/'.join(blocked)}）")
+        WARNINGS.append(f"HOME'S: {len(blocked)}件の検索単位で取得できず（{'/'.join(blocked)}）")
     return out
 
 
