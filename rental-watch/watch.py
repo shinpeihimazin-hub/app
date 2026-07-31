@@ -39,9 +39,15 @@ UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
 # ---- 確定条件 (conditions.md と対応) -------------------------------------
 RENT_CAP = 180000            # 家賃の上限（円）※17万→18万に引き上げ（本人指示 2026-07-31）
 RENT_CAP_INCLUSIVE = True    # True = 管理費・共益費込みで上限を判定する（本人確定 2026-07-29）
-AREA_MIN = 40.0              # 専有面積 下限（㎡）
+AREA_MIN = 37.0              # 専有面積 下限（㎡）※40→37に引き下げ（本人指示 2026-07-31）
 AGE_MAX = 25                 # 築年数 上限（年）
 WALK_MAX = 15                # 駅徒歩 上限（分）
+
+# 各サイトの面積フィルタは5㎡刻みしか受け付けない（35の次が40で、37は無い）。
+# 37をそのまま投げると無効値になって絞り込みが外れるので、
+# **5の倍数に切り下げた値でクエリを投げ、37の判定はこちら側で行う**。
+# 切り下げた側は AREA_MIN の上位集合なので取りこぼしは出ない。
+AREA_QUERY_MIN = int(AREA_MIN // 5 * 5)
 
 # 初期費用（本人確定 2026-07-30）。仲介手数料は0.55ヶ月で固定して見積もる。
 INIT_CAP = 400000            # 初期費用の上限（円）
@@ -319,7 +325,7 @@ def fudousan_japan():
     q += [f"wst%5B%5D={c}" for c in FDJ_STATION_CODES]
     q += [f"floor_plan%5B%5D={f}" for f in FLOOR_PLANS]
     q += [f"eki_walk={WALK_MAX}", "toil%5B%5D=TOIL04", "wsng%5B%5D=WSNG02",
-          "wash%5B%5D=WASH13", f"exclusive_area_from={int(AREA_MIN)}",
+          "wash%5B%5D=WASH13", f"exclusive_area_from={AREA_QUERY_MIN}",
           f"price_r_to={RENT_CAP}", "limit=100"]
     page = fetch("https://www.fudousan.or.jp/property/rent/13/station/list?" + "&".join(q))
     if "件見つかりました" not in page and "【マンション】" not in page:
@@ -400,7 +406,7 @@ def hatomark():
     q = [f"m_adr%5B%5D={w}" for w in HATO_WARDS] + ["home_category%5B%5D=mansion"]
     q += [f"floor_plan%5B%5D={f}" for f in FLOOR_PLANS + ["4XXSLDK"]]
     q += [f"eki_walk={WALK_MAX}", "bath%5B%5D=BATH01", "wash%5B%5D=WASH04",
-          f"built_to={AGE_MAX}", f"building_area_all_from={int(AREA_MIN)}",
+          f"built_to={AGE_MAX}", f"building_area_all_from={AREA_QUERY_MIN}",
           f"price_r_to={RENT_CAP}", "limit=100", "sort1=ASRT11"]  # ASRT11=更新日 新しい順
     base = "https://www.hatomarksite.com/search/zentaku/rent/home/area/13/list?" + "&".join(q)
 
@@ -544,7 +550,7 @@ def suumo():
             "&sc=13109&sc=13111&sc=13110&sc=13103"
             f"&cb=0.0&ct={RENT_CAP/10000:.1f}&co=1"
             "&md=04&md=05&md=06&md=07&md=08&md=09&md=10&md=11&md=12&md=13"
-            f"&mb={int(AREA_MIN)}&mt=9999999&cn={AGE_MAX}&et={WALK_MAX}"
+            f"&mb={AREA_QUERY_MIN}&mt=9999999&cn={AGE_MAX}&et={WALK_MAX}"
             "&ts=1&tc=0400301&tc=0400501&pc=50"
             + ("&po1=09" if NEW_ONLY else "")   # po1=09 は新着順
             + "&page={p}")
@@ -652,7 +658,7 @@ def homes_query():
     """
     # URLエンコード済みの %5B/%5D を含むので、%書式ではなくf文字列で組む
     return (f"cond%5Bmonthmoneyroomh%5D={RENT_CAP // 10000}"
-            + f"&cond%5Bhousearea%5D={int(AREA_MIN)}"
+            + f"&cond%5Bhousearea%5D={AREA_QUERY_MIN}"
             + f"&cond%5Bhouseageh%5D={AGE_MAX}"
             + f"&cond%5Bwalkminutesh%5D={WALK_MAX}"
             + "&cond%5Bhousekouzougroup%5D%5Brebar%5D=rebar"   # 鉄筋系＝RC/SRC
@@ -781,7 +787,7 @@ def homes():
 # 一覧に「構造」が出るので RC/SRC を人手確認なしで判定できる（at home にはこれが無い）。
 # 家賃上限（ct）だけはサーバ側で効かない（詳細リンクに ct=0 で伝播する）ので、
 # 面積・築年・徒歩・間取りだけサーバ側で当てて、家賃と初期費用はこちらで落とす。
-ABLE_QUERY = ("sf=%d&h=7&j=5&p=10&" % int(AREA_MIN)   # sf=面積下限 h=7:築25年 j=5:徒歩15分 p=10:100件/頁
+ABLE_QUERY = ("sf=%d&h=7&j=5&p=10&" % AREA_QUERY_MIN   # sf=面積下限 h=7:築25年 j=5:徒歩15分 p=10:100件/頁
               + "&".join(f"m={m}" for m in
                          ["3", "4", "5", "6", "7", "8", "9", "A", "B"]))  # 1LDK以上
 ABLE_BLOCK = re.compile(r"js-detailLinkUrl(.*?)(?=js-detailLinkUrl|</body>)", re.S)

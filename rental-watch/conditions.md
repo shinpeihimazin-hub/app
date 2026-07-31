@@ -10,7 +10,7 @@
 | 構造 | 鉄筋コンクリート（RC）または鉄骨鉄筋コンクリート（SRC） |
 | 築年数 | 25年以内 |
 | 駅徒歩 | 15分以内 |
-| 専有面積 | 40㎡以上 |
+| 専有面積 | **37㎡以上** ※40→37に引き下げ（本人指示 2026-07-31） |
 | 各室 | リビング6畳以上・寝室4畳以上 ※**自動判定不可**。通知後に間取り図で目視確認 |
 | water回り | バス・トイレ別／洗面所独立（＝洗濯機置場がトイレと別の部屋）／室内洗濯機置場 |
 | 家賃 | **18万円（管理費・共益費込み）** ※17万→18万に引き上げ（本人指示 2026-07-31） |
@@ -37,6 +37,16 @@
 この4駅をHOME'Sで叩くと71件取れるが、**条件通過は0件**だった（2026-07-31）。
 京急線の各駅（大森町・梅屋敷・平和島・立会川・青物横丁など）は
 二子玉川へ乗換2回以上が必要でMUST違反。
+
+## 専有面積の下限 — クエリは35で投げて37はこちらで判定する
+
+各サイトの面積フィルタは**5㎡刻みしか受け付けない**（35の次が40で、37という選択肢が無い）。
+37をそのまま投げると無効値になって絞り込みが外れるので、
+`AREA_QUERY_MIN`（= 5の倍数に切り下げた値 = 35）でクエリを投げ、
+37の判定はスクリプト側で行う。切り下げた側は上位集合なので取りこぼしは出ない。
+
+対象: SUUMO `mb` / HOME'S `cond[housearea]` / エイブル `sf` /
+ハトマーク `building_area_all_from` / 不動産ジャパン `exclusive_area_from`
 
 ## 家賃の上限 — **管理費・共益費込み**（2026-07-29 本人確定 / 2026-07-31 に18万へ引き上げ）
 
@@ -119,7 +129,7 @@
 - 駅URL: `https://www.homes.co.jp/chintai/tokyo/{slug}_{駅コード}-st/list/`
   スラッグは路線ページ（例 `/chintai/tokyo/yamanote-line/`）の
   `name="cond[roseneki][...]"` の隣の駅リンクから採れる
-- `cond[monthmoneyroomh]`（**万円単位**。RENT_CAP//10000 を入れる）/ `cond[housearea]=40`
+- `cond[monthmoneyroomh]`（**万円単位**。RENT_CAP//10000 を入れる）/ `cond[housearea]={AREA_QUERY_MIN}`
   / `cond[houseageh]=25` / `cond[walkminutesh]=15`
 - `cond[housekouzougroup][rebar]=rebar` … 鉄筋系（RC/SRC）。**構造がサーバ側で効く唯一のサイト**
 - `cond[mcf][220301]` バス・トイレ別 / `cond[mcf][223101]` 洗面所独立
@@ -157,14 +167,14 @@ TLS/HTTPのクライアント指紋で弾いているので、待っても永久
   五反田`C8MR8BSB9` 目黒`C8MR8BXB4` 大井町`C8MX58RBI` 大森`C8MX58SB9`
 - `toil[]=TOIL04` バス・トイレ別室 / `wsng[]=WSNG02` 室内洗濯機置場 / `wash[]=WASH13` 洗面所
 - `wash[]=WASH03`（独立洗面脱衣所）は**賃貸では機能しない**（0件になる）ので使わない
-- `exclusive_area_from=40` / `price_r_to={RENT_CAP}` / `eki_walk=15` / `limit=100`
+- `exclusive_area_from={AREA_QUERY_MIN}` / `price_r_to={RENT_CAP}` / `eki_walk=15` / `limit=100`
 - 築年フィルタ `built` は20年までしか無い → **詳細ページの「築年月」で判定する**
 - 詳細URL: `https://www.fudousan.or.jp/property/detail?p_no={p_no}`
 
 ### ハトマークサイト
 - 区コード: 品川`13109` 大田`13111` 目黒`13110` 港`13103`
 - `bath[]=BATH01` バス・トイレ別 / `wash[]=WASH04` 洗面所独立
-- `home_category[]=mansion` / `built_to=25` / `building_area_all_from=40` / `price_r_to={RENT_CAP}`
+- `home_category[]=mansion` / `built_to=25` / `building_area_all_from={AREA_QUERY_MIN}` / `price_r_to={RENT_CAP}`
 - `eki_walk=15` / `limit=100` / ページングは `page=N`
 
 ## 自動判定できないもの（通知後に人が見る）
@@ -177,7 +187,7 @@ TLS/HTTPのクライアント指紋で弾いているので、待っても永久
 ### エイブルの実測パラメータ
 
 - 区URL: `https://www.able.co.jp/tokyo/area/{区コード}/list/`、ページングは `&i=N`
-- `sf=40` 面積下限（㎡）/ `h=7` 築25年以内 / `j=5` 徒歩15分以内 / `p=10` 100件/頁
+- `sf={AREA_QUERY_MIN}` 面積下限（㎡。**5刻みのみ有効**）/ `h=7` 築25年以内 / `j=5` 徒歩15分以内 / `p=10` 100件/頁
 - `m=3..B` 間取り（3=1LDK, 4=2K/2DK, 5=2LDK, 6=3K/3DK, 7=3LDK, 8=4K/4DK, 9=4LDK, A=5K/5DK, B=5LDK以上）
 - **家賃上限 `ct` はサーバ側で効かない**（詳細リンクに `ct=0` で伝播して上限なし扱いになる）。
   家賃と初期費用はこちらで落とす
