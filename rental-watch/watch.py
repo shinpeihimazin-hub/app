@@ -37,7 +37,7 @@ UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/126.0 Safari/537.36")
 
 # ---- 確定条件 (conditions.md と対応) -------------------------------------
-RENT_CAP = 180000            # 家賃の上限（円）※17万→18万に引き上げ（本人指示 2026-07-31）
+RENT_CAP = 190000            # 家賃の上限（円）※18万→19万に引き上げ（本人指示 2026-08-01）
 RENT_CAP_INCLUSIVE = True    # True = 管理費・共益費込みで上限を判定する（本人確定 2026-07-29）
 AREA_MIN = 37.0              # 専有面積 下限（㎡）※40→37に引き下げ（本人指示 2026-07-31）
 AGE_MAX = 25                 # 築年数 上限（年）
